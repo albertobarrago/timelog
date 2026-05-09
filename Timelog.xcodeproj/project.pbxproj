@@ -12,50 +12,50 @@
 			containerPortal = E97A4C692FAFE9D100C528C1 /* Project object */;
 			proxyType = 1;
 			remoteGlobalIDString = E97A4C702FAFE9D100C528C1;
-			remoteInfo = TimeLog2;
+			remoteInfo = Timelog;
 		};
 		E97A4C8D2FAFE9D300C528C1 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = E97A4C692FAFE9D100C528C1 /* Project object */;
 			proxyType = 1;
 			remoteGlobalIDString = E97A4C702FAFE9D100C528C1;
-			remoteInfo = TimeLog2;
+			remoteInfo = Timelog;
 		};
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
-		E97A4C712FAFE9D100C528C1 /* TimeLog2.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = TimeLog2.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		E97A4C822FAFE9D300C528C1 /* TimeLog2Tests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = TimeLog2Tests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
-		E97A4C8C2FAFE9D300C528C1 /* TimeLog2UITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = TimeLog2UITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		E97A4C712FAFE9D100C528C1 /* Timelog.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Timelog.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		E97A4C822FAFE9D300C528C1 /* TimelogTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = TimelogTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		E97A4C8C2FAFE9D300C528C1 /* TimelogUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = TimelogUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
-		E97A4C942FAFE9D300C528C1 /* Exceptions for "TimeLog2" folder in "TimeLog2" target */ = {
+		E97A4C942FAFE9D300C528C1 /* Exceptions for "Timelog" folder in "Timelog" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				Info.plist,
 			);
-			target = E97A4C702FAFE9D100C528C1 /* TimeLog2 */;
+			target = E97A4C702FAFE9D100C528C1 /* Timelog */;
 		};
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
-		E97A4C732FAFE9D100C528C1 /* TimeLog2 */ = {
+		E97A4C732FAFE9D100C528C1 /* Timelog */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
-				E97A4C942FAFE9D300C528C1 /* Exceptions for "TimeLog2" folder in "TimeLog2" target */,
+				E97A4C942FAFE9D300C528C1 /* Exceptions for "Timelog" folder in "Timelog" target */,
 			);
-			path = TimeLog2;
+			path = Timelog;
 			sourceTree = "<group>";
 		};
-		E97A4C852FAFE9D300C528C1 /* TimeLog2Tests */ = {
+		E97A4C852FAFE9D300C528C1 /* TimelogTests */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			path = TimeLog2Tests;
+			path = TimelogTests;
 			sourceTree = "<group>";
 		};
-		E97A4C8F2FAFE9D300C528C1 /* TimeLog2UITests */ = {
+		E97A4C8F2FAFE9D300C528C1 /* TimelogUITests */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			path = TimeLog2UITests;
+			path = TimelogUITests;
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
@@ -88,9 +88,9 @@
 		E97A4C682FAFE9D100C528C1 = {
 			isa = PBXGroup;
 			children = (
-				E97A4C732FAFE9D100C528C1 /* TimeLog2 */,
-				E97A4C852FAFE9D300C528C1 /* TimeLog2Tests */,
-				E97A4C8F2FAFE9D300C528C1 /* TimeLog2UITests */,
+				E97A4C732FAFE9D100C528C1 /* Timelog */,
+				E97A4C852FAFE9D300C528C1 /* TimelogTests */,
+				E97A4C8F2FAFE9D300C528C1 /* TimelogUITests */,
 				E97A4C722FAFE9D100C528C1 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -98,9 +98,9 @@
 		E97A4C722FAFE9D100C528C1 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				E97A4C712FAFE9D100C528C1 /* TimeLog2.app */,
-				E97A4C822FAFE9D300C528C1 /* TimeLog2Tests.xctest */,
-				E97A4C8C2FAFE9D300C528C1 /* TimeLog2UITests.xctest */,
+				E97A4C712FAFE9D100C528C1 /* Timelog.app */,
+				E97A4C822FAFE9D300C528C1 /* TimelogTests.xctest */,
+				E97A4C8C2FAFE9D300C528C1 /* TimelogUITests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -108,9 +108,9 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		E97A4C702FAFE9D100C528C1 /* TimeLog2 */ = {
+		E97A4C702FAFE9D100C528C1 /* Timelog */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = E97A4C952FAFE9D300C528C1 /* Build configuration list for PBXNativeTarget "TimeLog2" */;
+			buildConfigurationList = E97A4C952FAFE9D300C528C1 /* Build configuration list for PBXNativeTarget "Timelog" */;
 			buildPhases = (
 				E97A4C6D2FAFE9D100C528C1 /* Sources */,
 				E97A4C6E2FAFE9D100C528C1 /* Frameworks */,
@@ -121,18 +121,18 @@
 			dependencies = (
 			);
 			fileSystemSynchronizedGroups = (
-				E97A4C732FAFE9D100C528C1 /* TimeLog2 */,
+				E97A4C732FAFE9D100C528C1 /* Timelog */,
 			);
-			name = TimeLog2;
+			name = Timelog;
 			packageProductDependencies = (
 			);
-			productName = TimeLog2;
-			productReference = E97A4C712FAFE9D100C528C1 /* TimeLog2.app */;
+			productName = Timelog;
+			productReference = E97A4C712FAFE9D100C528C1 /* Timelog.app */;
 			productType = "com.apple.product-type.application";
 		};
-		E97A4C812FAFE9D300C528C1 /* TimeLog2Tests */ = {
+		E97A4C812FAFE9D300C528C1 /* TimelogTests */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = E97A4C9A2FAFE9D300C528C1 /* Build configuration list for PBXNativeTarget "TimeLog2Tests" */;
+			buildConfigurationList = E97A4C9A2FAFE9D300C528C1 /* Build configuration list for PBXNativeTarget "TimelogTests" */;
 			buildPhases = (
 				E97A4C7E2FAFE9D300C528C1 /* Sources */,
 				E97A4C7F2FAFE9D300C528C1 /* Frameworks */,
@@ -144,18 +144,18 @@
 				E97A4C842FAFE9D300C528C1 /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
-				E97A4C852FAFE9D300C528C1 /* TimeLog2Tests */,
+				E97A4C852FAFE9D300C528C1 /* TimelogTests */,
 			);
-			name = TimeLog2Tests;
+			name = TimelogTests;
 			packageProductDependencies = (
 			);
-			productName = TimeLog2Tests;
-			productReference = E97A4C822FAFE9D300C528C1 /* TimeLog2Tests.xctest */;
+			productName = TimelogTests;
+			productReference = E97A4C822FAFE9D300C528C1 /* TimelogTests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
 		};
-		E97A4C8B2FAFE9D300C528C1 /* TimeLog2UITests */ = {
+		E97A4C8B2FAFE9D300C528C1 /* TimelogUITests */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = E97A4C9D2FAFE9D300C528C1 /* Build configuration list for PBXNativeTarget "TimeLog2UITests" */;
+			buildConfigurationList = E97A4C9D2FAFE9D300C528C1 /* Build configuration list for PBXNativeTarget "TimelogUITests" */;
 			buildPhases = (
 				E97A4C882FAFE9D300C528C1 /* Sources */,
 				E97A4C892FAFE9D300C528C1 /* Frameworks */,
@@ -167,13 +167,13 @@
 				E97A4C8E2FAFE9D300C528C1 /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
-				E97A4C8F2FAFE9D300C528C1 /* TimeLog2UITests */,
+				E97A4C8F2FAFE9D300C528C1 /* TimelogUITests */,
 			);
-			name = TimeLog2UITests;
+			name = TimelogUITests;
 			packageProductDependencies = (
 			);
-			productName = TimeLog2UITests;
-			productReference = E97A4C8C2FAFE9D300C528C1 /* TimeLog2UITests.xctest */;
+			productName = TimelogUITests;
+			productReference = E97A4C8C2FAFE9D300C528C1 /* TimelogUITests.xctest */;
 			productType = "com.apple.product-type.bundle.ui-testing";
 		};
 /* End PBXNativeTarget section */
@@ -199,7 +199,7 @@
 					};
 				};
 			};
-			buildConfigurationList = E97A4C6C2FAFE9D100C528C1 /* Build configuration list for PBXProject "TimeLog2" */;
+			buildConfigurationList = E97A4C6C2FAFE9D100C528C1 /* Build configuration list for PBXProject "Timelog" */;
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
 			knownRegions = (
@@ -213,9 +213,9 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				E97A4C702FAFE9D100C528C1 /* TimeLog2 */,
-				E97A4C812FAFE9D300C528C1 /* TimeLog2Tests */,
-				E97A4C8B2FAFE9D300C528C1 /* TimeLog2UITests */,
+				E97A4C702FAFE9D100C528C1 /* Timelog */,
+				E97A4C812FAFE9D300C528C1 /* TimelogTests */,
+				E97A4C8B2FAFE9D300C528C1 /* TimelogUITests */,
 			);
 		};
 /* End PBXProject section */
@@ -271,12 +271,12 @@
 /* Begin PBXTargetDependency section */
 		E97A4C842FAFE9D300C528C1 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			target = E97A4C702FAFE9D100C528C1 /* TimeLog2 */;
+			target = E97A4C702FAFE9D100C528C1 /* Timelog */;
 			targetProxy = E97A4C832FAFE9D300C528C1 /* PBXContainerItemProxy */;
 		};
 		E97A4C8E2FAFE9D300C528C1 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			target = E97A4C702FAFE9D100C528C1 /* TimeLog2 */;
+			target = E97A4C702FAFE9D100C528C1 /* Timelog */;
 			targetProxy = E97A4C8D2FAFE9D300C528C1 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
@@ -287,13 +287,13 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				CODE_SIGN_ENTITLEMENTS = TimeLog2/TimeLog2.entitlements;
+				CODE_SIGN_ENTITLEMENTS = Timelog/Timelog.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = PW7G4XJ7H7;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_FILE = TimeLog2/Info.plist;
+				INFOPLIST_FILE = Timelog/Info.plist;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -304,7 +304,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.albz.TimeLog2;
+				PRODUCT_BUNDLE_IDENTIFIER = me.albz.timelog;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
@@ -321,13 +321,13 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				CODE_SIGN_ENTITLEMENTS = TimeLog2/TimeLog2.entitlements;
+				CODE_SIGN_ENTITLEMENTS = Timelog/Timelog.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = PW7G4XJ7H7;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_FILE = TimeLog2/Info.plist;
+				INFOPLIST_FILE = Timelog/Info.plist;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -338,7 +338,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.albz.TimeLog2;
+				PRODUCT_BUNDLE_IDENTIFIER = me.albz.timelog;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
@@ -481,7 +481,7 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 26.4;
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.albz.TimeLog2Tests;
+				PRODUCT_BUNDLE_IDENTIFIER = me.albz.timelog.tests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = NO;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
@@ -489,7 +489,7 @@
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/TimeLog2.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/TimeLog2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Timelog.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Timelog";
 			};
 			name = Debug;
 		};
@@ -503,7 +503,7 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 26.4;
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.albz.TimeLog2Tests;
+				PRODUCT_BUNDLE_IDENTIFIER = me.albz.timelog.tests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = NO;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
@@ -511,7 +511,7 @@
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/TimeLog2.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/TimeLog2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Timelog.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Timelog";
 			};
 			name = Release;
 		};
@@ -523,7 +523,7 @@
 				DEVELOPMENT_TEAM = PW7G4XJ7H7;
 				GENERATE_INFOPLIST_FILE = YES;
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.albz.TimeLog2UITests;
+				PRODUCT_BUNDLE_IDENTIFIER = me.albz.timelog.uitests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = NO;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
@@ -531,7 +531,7 @@
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
-				TEST_TARGET_NAME = TimeLog2;
+				TEST_TARGET_NAME = Timelog;
 			};
 			name = Debug;
 		};
@@ -543,7 +543,7 @@
 				DEVELOPMENT_TEAM = PW7G4XJ7H7;
 				GENERATE_INFOPLIST_FILE = YES;
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.albz.TimeLog2UITests;
+				PRODUCT_BUNDLE_IDENTIFIER = me.albz.timelog.uitests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = NO;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
@@ -551,14 +551,14 @@
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
-				TEST_TARGET_NAME = TimeLog2;
+				TEST_TARGET_NAME = Timelog;
 			};
 			name = Release;
 		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		E97A4C6C2FAFE9D100C528C1 /* Build configuration list for PBXProject "TimeLog2" */ = {
+		E97A4C6C2FAFE9D100C528C1 /* Build configuration list for PBXProject "Timelog" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				E97A4C982FAFE9D300C528C1 /* Debug */,
@@ -567,7 +567,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		E97A4C952FAFE9D300C528C1 /* Build configuration list for PBXNativeTarget "TimeLog2" */ = {
+		E97A4C952FAFE9D300C528C1 /* Build configuration list for PBXNativeTarget "Timelog" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				E97A4C962FAFE9D300C528C1 /* Debug */,
@@ -576,7 +576,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		E97A4C9A2FAFE9D300C528C1 /* Build configuration list for PBXNativeTarget "TimeLog2Tests" */ = {
+		E97A4C9A2FAFE9D300C528C1 /* Build configuration list for PBXNativeTarget "TimelogTests" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				E97A4C9B2FAFE9D300C528C1 /* Debug */,
@@ -585,7 +585,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		E97A4C9D2FAFE9D300C528C1 /* Build configuration list for PBXNativeTarget "TimeLog2UITests" */ = {
+		E97A4C9D2FAFE9D300C528C1 /* Build configuration list for PBXNativeTarget "TimelogUITests" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				E97A4C9E2FAFE9D300C528C1 /* Debug */,
