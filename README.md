@@ -135,7 +135,6 @@ See [CHANGELOG.md](CHANGELOG.md).
 
 1. Branch off `main`
 2. Keep one feature per PR
-3. Run UI tests before opening a PR (`⌘U`)
 
 ---
 
