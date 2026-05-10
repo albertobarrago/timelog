@@ -24,7 +24,8 @@ extension Color {
         let ns = NSColor(self).usingColorSpace(.sRGB) ?? NSColor(self)
         r = ns.redComponent; g = ns.greenComponent; b = ns.blueComponent
 #elseif canImport(UIKit)
-        UIColor(self).getRed(&r, green: &g, blue: &b, alpha: nil)
+        let resolved = UIColor(self).resolvedColor(with: UITraitCollection(userInterfaceStyle: .light))
+        resolved.getRed(&r, green: &g, blue: &b, alpha: nil)
 #endif
         return String(format: "#%02X%02X%02X", Int(r*255), Int(g*255), Int(b*255))
     }

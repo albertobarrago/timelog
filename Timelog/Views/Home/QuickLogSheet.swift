@@ -26,7 +26,7 @@ struct QuickLogSheet: View {
         NavigationStack {
             Form {
                 Section("When") {
-                    DatePicker("Date", selection: $date, displayedComponents: .date)
+                    DatePicker("Date", selection: $date, in: ...Date(), displayedComponents: .date)
                 }
 
                 Section("Duration") {

@@ -7,22 +7,31 @@ struct ClientsView: View {
 
     @State private var showingAddClient = false
     @State private var clientToEdit: Client?
+    @State private var showArchived = false
+
+    private var visibleClients: [Client] {
+        showArchived ? clients : clients.filter { !$0.isArchived }
+    }
 
     var body: some View {
         NavigationStack {
             Group {
-                if clients.isEmpty {
-                    ContentUnavailableView("No clients", systemImage: "person.2",
-                        description: Text("Tap + to add your first client"))
+                if visibleClients.isEmpty {
+                    ContentUnavailableView(
+                        showArchived ? "No clients" : "No active clients",
+                        systemImage: "person.2",
+                        description: Text(showArchived ? "Tap + to add your first client" : "All clients are archived")
+                    )
                 } else {
                     List {
-                        ForEach(clients) { client in
+                        ForEach(visibleClients) { client in
                             NavigationLink { ProjectListView(client: client) } label: {
                                 HStack(spacing: 10) {
                                     Circle()
                                         .fill(client.color)
                                         .frame(width: 12, height: 12)
                                     Text(client.name)
+                                        .foregroundStyle(client.isArchived ? .secondary : .primary)
                                     Spacer()
                                     if client.isArchived {
                                         Text("Archived")
@@ -59,6 +68,14 @@ struct ClientsView: View {
             .toolbar {
                 ToolbarItem(placement: .primaryAction) {
                     Button { showingAddClient = true } label: { Image(systemName: "plus") }
+                }
+                ToolbarItem(placement: .secondaryAction) {
+                    Button {
+                        showArchived.toggle()
+                    } label: {
+                        Label(showArchived ? "Hide archived" : "Show archived",
+                              systemImage: showArchived ? "archivebox.fill" : "archivebox")
+                    }
                 }
             }
             .sheet(isPresented: $showingAddClient) { ClientFormView() }

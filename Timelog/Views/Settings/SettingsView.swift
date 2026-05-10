@@ -4,8 +4,10 @@ import SwiftData
 struct SettingsView: View {
     @Environment(\.modelContext) private var context
     @Environment(\.openURL) private var openURL
-    @Query(sort: \TimeEntry.date, order: .reverse) private var entries: [TimeEntry]
     @Environment(SettingsStore.self) private var store
+    @Environment(TimerViewModel.self) private var timerVM
+    @Query(sort: \TimeEntry.date, order: .reverse) private var entries: [TimeEntry]
+    @Query private var activeSessions: [ActiveSession]
     @AppStorage("onboarding_completed") private var onboardingCompleted = true
     @State private var apiKey = ""
 
@@ -22,23 +24,17 @@ struct SettingsView: View {
                 }
 
                 Section("Pomodoro") {
-                    Stepper("Focus: \(store.pomodoroWork) min",
-                            value: $store.pomodoroWork, in: 1...90)
-                        .onChange(of: store.pomodoroWork) { store.save() }
-                    Stepper("Short break: \(store.pomodoroShortBreak) min",
-                            value: $store.pomodoroShortBreak, in: 1...30)
-                        .onChange(of: store.pomodoroShortBreak) { store.save() }
-                    Stepper("Long break: \(store.pomodoroLongBreak) min",
-                            value: $store.pomodoroLongBreak, in: 1...60)
-                        .onChange(of: store.pomodoroLongBreak) { store.save() }
+                    Stepper("Focus: \(store.pomodoroWork) min", value: $store.pomodoroWork, in: 1...90)
+                        .onChange(of: store.pomodoroWork) { store.save(); timerVM.applySettings(store) }
+                    Stepper("Short break: \(store.pomodoroShortBreak) min", value: $store.pomodoroShortBreak, in: 1...30)
+                        .onChange(of: store.pomodoroShortBreak) { store.save(); timerVM.applySettings(store) }
+                    Stepper("Long break: \(store.pomodoroLongBreak) min", value: $store.pomodoroLongBreak, in: 1...60)
+                        .onChange(of: store.pomodoroLongBreak) { store.save(); timerVM.applySettings(store) }
                 }
 
                 Section {
                     Toggle("Daily reminder", isOn: $store.reminderEnabled)
-                        .onChange(of: store.reminderEnabled) {
-                            store.save()
-                            store.applyReminders()
-                        }
+                        .onChange(of: store.reminderEnabled) { store.save(); store.applyReminders() }
                     if store.reminderEnabled {
                         DatePicker("Time", selection: reminderTime, displayedComponents: .hourAndMinute)
                         VStack(alignment: .leading, spacing: 8) {
@@ -46,21 +42,14 @@ struct SettingsView: View {
                                 .font(.subheadline)
                                 .foregroundStyle(.secondary)
                             DayPicker(selectedDays: $store.reminderDays)
-                                .onChange(of: store.reminderDays) {
-                                    store.save()
-                                    store.applyReminders()
-                                }
+                                .onChange(of: store.reminderDays) { store.save(); store.applyReminders() }
                         }
                     }
-                } header: {
-                    Text("Reminders")
-                }
+                } header: { Text("Reminders") }
 
                 Section {
-                    DatePicker("Notify if still open at",
-                               selection: trackingEndTime,
-                               displayedComponents: .hourAndMinute)
-                    .onChange(of: store.trackingEndHour) { store.save() }
+                    DatePicker("Notify if still open at", selection: trackingEndTime, displayedComponents: .hourAndMinute)
+                        .onChange(of: store.trackingEndHour) { store.save() }
                 } header: {
                     Text("Smart Tracking")
                 } footer: {
@@ -78,6 +67,10 @@ struct SettingsView: View {
                 Section("Danger Zone") {
                     Button("Delete all entries", role: .destructive) {
                         for e in entries { context.delete(e) }
+                        for s in activeSessions {
+                            NotificationManager.shared.cancelSession(id: s.notificationID)
+                            context.delete(s)
+                        }
                     }
                 }
             }
@@ -91,16 +84,14 @@ struct SettingsView: View {
         Binding(
             get: {
                 var c = Calendar.current.dateComponents([.year, .month, .day], from: Date())
-                c.hour = store.reminderHour
-                c.minute = store.reminderMinute
+                c.hour = store.reminderHour; c.minute = store.reminderMinute
                 return Calendar.current.date(from: c) ?? Date()
             },
             set: { date in
                 let c = Calendar.current.dateComponents([.hour, .minute], from: date)
                 store.reminderHour = c.hour ?? 17
                 store.reminderMinute = c.minute ?? 0
-                store.save()
-                store.applyReminders()
+                store.save(); store.applyReminders()
             }
         )
     }
@@ -109,8 +100,7 @@ struct SettingsView: View {
         Binding(
             get: {
                 var c = Calendar.current.dateComponents([.year, .month, .day], from: Date())
-                c.hour = store.trackingEndHour
-                c.minute = store.trackingEndMinute
+                c.hour = store.trackingEndHour; c.minute = store.trackingEndMinute
                 return Calendar.current.date(from: c) ?? Date()
             },
             set: { date in
@@ -137,7 +127,6 @@ struct SettingsView: View {
             let notes = entry.notes.map { " — \($0)" } ?? ""
             lines.append("[\(dateStr)] \(client) / \(project): \(dur)\(notes)")
         }
-
         let total = weekEntries.reduce(0) { $0 + $1.durationMinutes }
         lines += ["", "Total: \(total.formattedDuration)"]
 
@@ -152,7 +141,7 @@ private struct DayPicker: View {
     @Binding var selectedDays: Set<Int>
 
     private let days: [(label: String, index: Int)] = [
-        ("M", 2), ("T", 3), ("W", 4), ("T", 5), ("F", 6), ("S", 7), ("S", 1)
+        ("M", 2), ("Tu", 3), ("W", 4), ("Th", 5), ("F", 6), ("Sa", 7), ("Su", 1)
     ]
 
     var body: some View {
@@ -164,10 +153,9 @@ private struct DayPicker: View {
                     else { selectedDays.insert(day.index) }
                 } label: {
                     Text(day.label)
-                        .font(.system(size: 14, weight: .semibold))
+                        .font(.system(size: 13, weight: .semibold))
                         .frame(width: 34, height: 34)
-                        .background(selected ? Color.accentColor : Color.secondary.opacity(0.15),
-                                    in: Circle())
+                        .background(selected ? Color.accentColor : Color.secondary.opacity(0.15), in: Circle())
                         .foregroundStyle(selected ? .white : .primary)
                 }
                 .buttonStyle(.plain)

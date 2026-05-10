@@ -1,44 +1,81 @@
 # Changelog
 
-## [Unreleased]
+All notable changes to this project will be documented in this file.
+Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
+
+---
+
+## [0.1.0] — 2026-05-10
 
 ### Added
 
-#### Smart Tracking (auto mode)
-- New `ActiveSession` SwiftData model: start time, client, project, notes, notification ID
-- Start Tracking sheet — pick client/project, tap Start; timer begins immediately
-- Stop Tracking sheet — pre-filled elapsed duration (editable in 5-min steps), notes, then logs a `TimeEntry` automatically
+#### Smart Tracking
+- Real-time session tracker: start a session per project, stop it to auto-log a `TimeEntry`
 - Multiple concurrent sessions supported
 - Sessions survive app kill (elapsed computed from `startDate`, no Timer on the model)
-- HomeView now shows an **Active** section at the top with a live `hh:mm:ss` ticker (`TimelineView`)
+- `ActiveSession` SwiftData model with live `hh:mm:ss` display via `TimelineView`
+- Start Tracking sheet — pick client/project/notes, tap Start
+- Stop Tracking sheet — pre-filled elapsed duration via Steppers (hours 0–23, minutes 0–59), fully editable
 - Swipe-to-discard on active sessions (cancels notification, no entry logged)
-- Two toolbar buttons in HomeView: `▶` (start tracking) and `+` (manual log)
+- Today total card now includes running session time and ticks live every minute
+- Today card icon switches to red `record.circle.fill` when a session is active
 
-#### Reminders (local notifications)
-- Daily reminder: configurable time + days of week (circular day picker, Mon–Fri default)
-- Smart Tracking overdue alert: fires at configurable end-of-day time if a session is still open
-- `NotificationManager` singleton handles scheduling, rescheduling, and cancellation
-- Notification permission requested on first launch
+#### Reminders & Notifications
+- Daily reminder: configurable time + day-of-week picker (M Tu W Th F Sa Su)
+- Smart Tracking overdue alert: fires at configurable end-of-day if a session is still open
+- Pomodoro phase-end notification when the screen is locked
+- `NotificationManager` with separate `cancelAllReminders()` / `cancelAllSessions()` / `cancelPomodoroNotification()`
 
-#### macOS toolbar
-- Persistent toolbar button in all tabs showing elapsed time while a timer is running
-- Clicking navigates to the Timer tab; if already there, toggles start/pause
-- Requires Mac Catalyst destination to be enabled in Xcode
+#### Haptics
+- `.medium` impact on timer start
+- `.light` impact on timer pause
+- `.rigid` impact on timer reset
+- `.success` notification feedback on session log
 
 #### iOS Live Activity
-- Lock screen banner and Dynamic Island show timer phase, elapsed time, and running state
-- Updates every 5 seconds while running; ends when timer is reset
-- `NSSupportsLiveActivities` + `NSSupportsLiveActivitiesFrequentUpdates` added to `Info.plist`
-- Widget Extension target (`TimelogWidgetExtensionExtension`) with `TimelogLiveActivity` widget
+- Lock screen banner and Dynamic Island showing timer phase, display time, and running state
+- Updates every 5 seconds; ends on reset
+- `NSSupportsLiveActivities` + `NSSupportsLiveActivitiesFrequentUpdates` in `Info.plist`
+- Widget Extension (`TimelogWidgetExtensionExtension`) with `DynamicIsland` support
 
-#### App icon fix
-- `AppIcon-512.png` (512×512) added for macOS 1× slot; original 1024×1024 retained for iOS and macOS 2×
+#### Mac Catalyst
+- Persistent toolbar button across all tabs showing live elapsed time
+- Clicking navigates to Timer tab; if already there, toggles start/pause
 
-#### Architecture
-- `TimerViewModel` hoisted to app-level `@Observable` environment (shared across all tabs and the toolbar button)
+#### Onboarding
+- 5-page first-run guide (Welcome → Manual Log → Smart Tracking → Reminders → Ready)
+- Skippable at any time; re-openable from Settings → "Show guide again"
+- Page-style `TabView` with dot indicators (iOS) / plain tabs (macOS)
 
 ### Changed
-- `SettingsStore` — added `reminderEnabled`, `reminderHour`, `reminderMinute`, `reminderDays`, `trackingEndHour`, `trackingEndMinute`
-- `SettingsView` — new Reminders section (toggle + time picker + day picker) and Smart Tracking section (end-of-day threshold)
-- `HomeView` — refactored to show active sessions above today's entries; empty state updated
-- `TimerView` — reads `TimerViewModel` from environment instead of owning it as local state
+- Tab order: Today → Clients → Timer → Settings (all platforms)
+- `TimerViewModel` hoisted to app-level `@Observable` environment
+- `Timer` now added to `.common` RunLoop mode — no longer pauses during List scroll
+- Pomodoro settings in Settings immediately apply to the running `TimerViewModel`
+- `ClientsView`: archived clients hidden by default; toolbar toggle to show/hide
+- `QuickLogSheet`: `DatePicker` clamped to `...Date()` — no future entries
+- `Project` delete rule changed from `.cascade` to `.nullify` — time entries survive project deletion
+- `SettingsStore` midnight-safe load: uses `defaults.object != nil` check instead of `> 0`
+- `KeychainHelper` functions now return `@discardableResult Bool`
+- `Color+Hex.hex`: uses `resolvedColor(with:)` for reliable sRGB conversion on all platforms
+- `ActiveSession.elapsedMinutes` floor changed from `max(1,…)` to `max(0,…)`
+- Danger Zone now also deletes active sessions and cancels their notifications
+- Day picker labels fixed: Tu / Th (previously both showed "T")
+
+### Fixed
+- `Color+Hex.swift`: `NSColor(SwiftUI.Color)` crash on Mac Catalyst — guarded with `!targetEnvironment(macCatalyst)`
+- Widget extension platform filter: `platformFilter = ios` prevents Catalyst embed error
+- App icon: added `AppIcon-512.png` (512×512) for macOS 1× slot
+
+---
+
+## [0.0.1] — 2026-05-10
+
+### Added
+- Initial multiplatform app (iOS 17+ / macOS 14+)
+- Today tab: daily time log with quick entry sheet, swipe-to-delete
+- Timer tab: stopwatch mode and Pomodoro timer with animated ring progress
+- Clients tab: client management with color coding, project sub-list, archive support
+- Settings tab: Wethod API config (URL + Keychain-stored key), Pomodoro intervals, weekly email export
+- SwiftData persistence for `Client`, `Project`, `TimeEntry`
+- `@Observable` MVVM architecture

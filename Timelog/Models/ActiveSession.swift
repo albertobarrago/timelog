@@ -28,6 +28,6 @@ final class ActiveSession {
     }
 
     var elapsedMinutes: Int {
-        max(1, Int(Date().timeIntervalSince(startDate) / 60))
+        max(0, Int(Date().timeIntervalSince(startDate) / 60))
     }
 }

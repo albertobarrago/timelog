@@ -1,5 +1,8 @@
 import SwiftUI
 import SwiftData
+#if os(iOS)
+import UIKit
+#endif
 
 struct StopSessionSheet: View {
     @Environment(\.modelContext) private var context
@@ -13,7 +16,7 @@ struct StopSessionSheet: View {
 
     init(session: ActiveSession) {
         self.session = session
-        let elapsed = max(1, Int(Date().timeIntervalSince(session.startDate) / 60))
+        let elapsed = max(0, Int(Date().timeIntervalSince(session.startDate) / 60))
         _hours = State(initialValue: elapsed / 60)
         _minutes = State(initialValue: elapsed % 60)
         _notes = State(initialValue: session.notes ?? "")
@@ -35,21 +38,8 @@ struct StopSessionSheet: View {
                 }
 
                 Section("Duration") {
-                    HStack(spacing: 16) {
-                        Picker("Hours", selection: $hours) {
-                            ForEach(0..<24, id: \.self) { Text("\($0)h").tag($0) }
-                        }
-                        .pickerStyle(.menu)
-                        .frame(maxWidth: .infinity)
-
-                        Picker("Min", selection: $minutes) {
-                            ForEach([0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55], id: \.self) {
-                                Text("\($0)m").tag($0)
-                            }
-                        }
-                        .pickerStyle(.menu)
-                        .frame(maxWidth: .infinity)
-                    }
+                    Stepper("\(hours)h", value: $hours, in: 0...23)
+                    Stepper("\(minutes)m", value: $minutes, in: 0...59)
                 }
 
                 Section("Notes") {
@@ -82,6 +72,9 @@ struct StopSessionSheet: View {
         context.insert(entry)
         NotificationManager.shared.cancelSession(id: session.notificationID)
         context.delete(session)
+        #if os(iOS)
+        UINotificationFeedbackGenerator().notificationOccurred(.success)
+        #endif
         dismiss()
     }
 }

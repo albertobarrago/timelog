@@ -1,5 +1,8 @@
 import Foundation
 import Observation
+#if os(iOS)
+import UIKit
+#endif
 #if os(iOS) && !targetEnvironment(macCatalyst)
 import ActivityKit
 #endif
@@ -69,21 +72,29 @@ final class TimerViewModel {
 
     func start() {
         isRunning = true
-        timer = Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { [weak self] _ in
+        let t = Timer(timeInterval: 1, repeats: true) { [weak self] _ in
             MainActor.assumeIsolated { self?.tick() }
+        }
+        RunLoop.main.add(t, forMode: .common)
+        timer = t
+        if pomodoroEnabled {
+            NotificationManager.shared.schedulePomodoroEnd(phase: phase.label, in: phaseTotal - elapsed)
         }
         #if os(iOS) && !targetEnvironment(macCatalyst)
         startLiveActivity()
         #endif
+        haptic(.medium)
     }
 
     func pause() {
         isRunning = false
         timer?.invalidate()
         timer = nil
+        NotificationManager.shared.cancelPomodoroNotification()
         #if os(iOS) && !targetEnvironment(macCatalyst)
         updateLiveActivity()
         #endif
+        haptic(.light)
     }
 
     func reset() {
@@ -94,6 +105,7 @@ final class TimerViewModel {
         #if os(iOS) && !targetEnvironment(macCatalyst)
         endLiveActivity()
         #endif
+        haptic(.rigid)
     }
 
     private func tick() {
@@ -117,6 +129,12 @@ final class TimerViewModel {
         }
         #if os(iOS) && !targetEnvironment(macCatalyst)
         updateLiveActivity()
+        #endif
+    }
+
+    private func haptic(_ style: UIImpactFeedbackGenerator.FeedbackStyle) {
+        #if os(iOS)
+        UIImpactFeedbackGenerator(style: style).impactOccurred()
         #endif
     }
 

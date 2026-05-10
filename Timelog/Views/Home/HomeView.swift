@@ -14,29 +14,29 @@ struct HomeView: View {
         allEntries.filter { Calendar.current.isDateInToday($0.date) }
     }
 
-    private var totalMinutes: Int {
-        todayEntries.reduce(0) { $0 + $1.durationMinutes }
-    }
-
     var body: some View {
         NavigationStack {
             VStack(spacing: 0) {
-                HStack {
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text("Today")
-                            .font(.subheadline)
-                            .foregroundStyle(.secondary)
-                        Text(totalMinutes.formattedDuration)
-                            .font(.system(size: 36, weight: .bold, design: .rounded))
+                TimelineView(.periodic(from: .now, by: 60)) { _ in
+                    let loggedMinutes = todayEntries.reduce(0) { $0 + $1.durationMinutes }
+                    let activeMinutes = activeSessions.reduce(0) { $0 + $1.elapsedMinutes }
+                    HStack {
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text("Today")
+                                .font(.subheadline)
+                                .foregroundStyle(.secondary)
+                            Text((loggedMinutes + activeMinutes).formattedDuration)
+                                .font(.system(size: 36, weight: .bold, design: .rounded))
+                        }
+                        Spacer()
+                        Image(systemName: activeSessions.isEmpty ? "clock.fill" : "record.circle.fill")
+                            .font(.system(size: 32))
+                            .foregroundStyle(activeSessions.isEmpty ? .secondary.opacity(0.4) : .red.opacity(0.7))
                     }
-                    Spacer()
-                    Image(systemName: "clock.fill")
-                        .font(.system(size: 32))
-                        .foregroundStyle(.secondary.opacity(0.4))
+                    .padding()
+                    .background(.quinary, in: RoundedRectangle(cornerRadius: 12))
+                    .padding()
                 }
-                .padding()
-                .background(.quinary, in: RoundedRectangle(cornerRadius: 12))
-                .padding()
 
                 if activeSessions.isEmpty && todayEntries.isEmpty {
                     ContentUnavailableView(

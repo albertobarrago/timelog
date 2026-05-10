@@ -2,7 +2,8 @@ import Security
 import Foundation
 
 enum KeychainHelper {
-    static func save(key: String, value: String) {
+    @discardableResult
+    static func save(key: String, value: String) -> Bool {
         let data = Data(value.utf8)
         let query: [String: Any] = [
             kSecClass as String: kSecClassGenericPassword,
@@ -10,7 +11,7 @@ enum KeychainHelper {
             kSecValueData as String: data,
         ]
         SecItemDelete(query as CFDictionary)
-        SecItemAdd(query as CFDictionary, nil)
+        return SecItemAdd(query as CFDictionary, nil) == errSecSuccess
     }
 
     static func read(key: String) -> String? {
@@ -26,11 +27,12 @@ enum KeychainHelper {
         return String(data: data, encoding: .utf8)
     }
 
-    static func delete(key: String) {
+    @discardableResult
+    static func delete(key: String) -> Bool {
         let query: [String: Any] = [
             kSecClass as String: kSecClassGenericPassword,
             kSecAttrAccount as String: key,
         ]
-        SecItemDelete(query as CFDictionary)
+        return SecItemDelete(query as CFDictionary) == errSecSuccess
     }
 }
