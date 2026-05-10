@@ -28,7 +28,7 @@ Both apps share business logic via **TimelogCore**, a local Swift Package in the
 | **Today** | Log time manually or start real-time sessions; live daily total |
 | **Clients** | Manage clients (color coded) and their projects; archive when done |
 | **Timer** | Stopwatch or Pomodoro with ring progress and lock-screen notification |
-| **Settings** | Wethod API, Pomodoro intervals, daily reminders, smart tracking config |
+| **Settings** | Pomodoro intervals, daily reminders, smart tracking config |
 
 ### Smart Tracking
 Tap ▶ to start a session when you begin working. Stop it when done — duration is logged automatically. Multiple sessions can run simultaneously. Forgot to stop? You get a notification at your configured end-of-day time.
@@ -108,8 +108,6 @@ cd Timelog
 
 > Both projects reference `TimelogCore` as a local package — no extra setup needed.
 
-**Wethod integration**: add your Base URL and API Key in Settings — stored securely in the Keychain.
-
 **Live Activity**: requires iPhone 14 Pro or later for Dynamic Island; any iPhone for lock screen banner.
 
 ---
@@ -119,7 +117,7 @@ cd Timelog
 - **TimelogCore** — shared `@Observable` models and business logic, public API, iOS + macOS 14+
 - **MVVM** — `TimerViewModel` lives at app level, injected via SwiftUI environment
 - **SwiftData** — single `ModelContainer` shared across all scenes (window + menu bar)
-- **Keychain** — Wethod API key never stored in UserDefaults
+- **Keychain** — sensitive credentials stored via `KeychainHelper`, ready for external API integration
 - **ActivityKit** — Live Activities managed by `TimerViewModel` (iOS only, compile-guarded)
 - **UserNotifications** — daily reminders, session overdue alerts, Pomodoro phase-end
 

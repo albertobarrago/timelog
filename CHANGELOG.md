@@ -7,17 +7,22 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+---
+
+## [0.2.0] — 2026-05-10
+
 ### Added
 - Native macOS app (`TimelogMac`) with `MenuBarExtra` status bar icon
 - `TimelogCore` local Swift Package — shared models, stores, VM, helpers, extensions (public API, iOS 17+ / macOS 14+)
-- macOS main window: `NavigationSplitView` with Today, Clients, Timer sidebar
+- macOS main window: `NavigationSplitView` with Today, Clients, Timer, Settings sidebar
 - macOS Today view: live active sessions, today entries, context menus, toolbar actions
-- macOS Clients view: `NavigationSplitView` clients → projects with `Table`, inline create/edit sheets
+- macOS Clients view: `HSplitView` clients → projects with macOS `Table`, inline create/edit sheets
 - macOS Timer view: full Pomodoro / stopwatch with ring, Space shortcut
 - macOS menu bar popover: compact timer controls, active sessions, today total, open-window button
-- macOS Settings window (`⌘,`): Pomodoro config, end-of-day threshold
+- macOS Settings view: Pomodoro config, daily reminders, end-of-day threshold (`⌘,`)
 - Single shared `ModelContainer` across all macOS scenes (menu bar + window see the same data)
 - `MenuBarStatusLabel` extracted as a dedicated `View` struct for correct `@Observable` reactivity
+- `CLAUDE.md` project context file for AI-assisted development sessions
 
 ### Changed
 - **Monorepo**: `TimelogMac.xcodeproj` moved into the `TimeLog` repo alongside `Timelog.xcodeproj`
@@ -25,7 +30,9 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - All shared types migrated from inline iOS files to `TimelogCore` package (public access throughout)
 - `TimerViewModel.start()` uses `RunLoop.main.add(timer, forMode: .common)` — timer no longer pauses during scroll
 - `TimerView` ring frame moved onto `TimerRingView` itself — stopwatch mode no longer wastes vertical space
-- `TimerView` capped at `maxWidth: 480` on macOS for balanced layout
+- `SettingsStore` properties auto-save via `didSet` — views no longer call `save()` manually
+- `SettingsStore.load()` skips writes during startup via `isLoading` flag
+- Removed placeholder Wethod API integration (URL + key fields) — `KeychainHelper` stays for future use
 
 ---
 
@@ -97,6 +104,6 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Today tab: daily time log with quick entry sheet, swipe-to-delete
 - Timer tab: stopwatch mode and Pomodoro timer with animated ring progress
 - Clients tab: client management with color coding, project sub-list, archive support
-- Settings tab: Wethod API config (URL + Keychain-stored key), Pomodoro intervals, weekly email export
+- Settings tab: Pomodoro intervals, weekly email export
 - SwiftData persistence for `Client`, `Project`, `TimeEntry`
 - `@Observable` MVVM architecture
