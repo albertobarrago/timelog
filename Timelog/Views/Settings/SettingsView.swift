@@ -10,19 +10,11 @@ struct SettingsView: View {
     @Query(sort: \TimeEntry.date, order: .reverse) private var entries: [TimeEntry]
     @Query private var activeSessions: [ActiveSession]
     @AppStorage("onboarding_completed") private var onboardingCompleted = true
-    @State private var apiKey = ""
 
     var body: some View {
         @Bindable var store = store
         NavigationStack {
             Form {
-                Section("Wethod API") {
-                    TextField("Base URL", text: $store.wethodBaseURL)
-                    SecureField("API Key", text: $apiKey)
-                        .onSubmit { store.wethodAPIKey = apiKey }
-                        .onChange(of: apiKey) { store.wethodAPIKey = apiKey }
-                }
-
                 Section("Pomodoro") {
                     Stepper("Focus: \(store.pomodoroWork) min", value: $store.pomodoroWork, in: 1...90)
                         .onChange(of: store.pomodoroWork) { timerVM.applySettings(store) }
@@ -73,7 +65,6 @@ struct SettingsView: View {
             }
             .formStyle(.grouped)
             .navigationTitle("Settings")
-            .onAppear { apiKey = store.wethodAPIKey }
             #if targetEnvironment(macCatalyst)
             .toolbar {
                 ToolbarItem(placement: .secondaryAction) {

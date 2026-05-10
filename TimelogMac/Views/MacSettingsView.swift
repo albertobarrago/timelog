@@ -8,11 +8,6 @@ struct MacSettingsView: View {
     var body: some View {
         @Bindable var store = store
         Form {
-            Section("Wethod API") {
-                TextField("Base URL", text: $store.wethodBaseURL)
-                SecureField("API Key", text: apiKeyBinding)
-            }
-
             Section("Pomodoro") {
                 Stepper("Focus: \(store.pomodoroWork) min",
                         value: $store.pomodoroWork, in: 1...90)
@@ -54,13 +49,6 @@ struct MacSettingsView: View {
     }
 
     // MARK: - Bindings
-
-    private var apiKeyBinding: Binding<String> {
-        Binding(
-            get: { store.wethodAPIKey },
-            set: { store.wethodAPIKey = $0 }
-        )
-    }
 
     private var reminderTime: Binding<Date> {
         Binding(
