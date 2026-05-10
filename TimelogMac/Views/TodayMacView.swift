@@ -4,13 +4,12 @@ import TimelogCore
 
 struct TodayMacView: View {
     @Environment(\.modelContext) private var context
-    @Environment(TimerViewModel.self) private var timerVM
     @Environment(SettingsStore.self) private var settings
     @Query(sort: \TimeEntry.date, order: .reverse) private var allEntries: [TimeEntry]
     @Query(sort: \ActiveSession.startDate) private var activeSessions: [ActiveSession]
     @Query(filter: #Predicate<Client> { !$0.isArchived }, sort: \Client.name) private var clients: [Client]
 
-    @State private var showingQuickLog = false
+    @State private var showingQuickLog      = false
     @State private var showingStartTracking = false
     @State private var entryToEdit: TimeEntry?
     @State private var sessionToStop: ActiveSession?
@@ -18,54 +17,30 @@ struct TodayMacView: View {
     private var todayEntries: [TimeEntry] {
         allEntries.filter { Calendar.current.isDateInToday($0.date) }
     }
-
     private var todayTotal: Int {
         todayEntries.reduce(0) { $0 + $1.durationMinutes }
         + activeSessions.reduce(0) { $0 + $1.elapsedMinutes }
     }
 
     var body: some View {
-        VStack(spacing: 0) {
-            // Header bar
-            TimelineView(.periodic(from: .now, by: 60)) { _ in
-                HStack(spacing: 16) {
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text("Today")
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
-                        Text(todayTotal.formattedDuration)
-                            .font(.title2.bold().monospacedDigit())
-                    }
-                    Spacer()
-                    if !activeSessions.isEmpty {
-                        Label("\(activeSessions.count) active", systemImage: "record.circle.fill")
-                            .font(.caption)
-                            .foregroundStyle(.red)
-                    }
-                }
-                .padding(.horizontal)
-                .padding(.vertical, 10)
-            }
-            .background(.bar)
-
-            Divider()
-
+        Group {
             if activeSessions.isEmpty && todayEntries.isEmpty {
                 ContentUnavailableView {
                     Label("No entries today", systemImage: "clock")
                 } description: {
-                    Text("Use the toolbar to log time or start tracking a session.")
+                    Text("Log time manually or start a tracking session.")
                 } actions: {
-                    Button("Log Time") { showingQuickLog = true }
+                    Button("Log Time")      { showingQuickLog = true }
                     Button("Start Tracking") { showingStartTracking = true }
                 }
             } else {
                 List {
                     if !activeSessions.isEmpty {
-                        Section("Active Sessions") {
+                        Section("Active") {
                             TimelineView(.periodic(from: .now, by: 1)) { _ in
                                 ForEach(activeSessions) { session in
                                     ActiveSessionMacRow(session: session)
+                                        .contentShape(Rectangle())
                                         .onTapGesture { sessionToStop = session }
                                         .contextMenu {
                                             Button("Stop & Log") { sessionToStop = session }
@@ -83,6 +58,7 @@ struct TodayMacView: View {
                     Section("Entries") {
                         ForEach(todayEntries) { entry in
                             EntryMacRow(entry: entry)
+                                .contentShape(Rectangle())
                                 .onTapGesture { entryToEdit = entry }
                                 .contextMenu {
                                     Button("Edit") { entryToEdit = entry }
@@ -94,32 +70,35 @@ struct TodayMacView: View {
                 }
             }
         }
+        .navigationTitle("Today")
+        .navigationSubtitle(todayTotal > 0 ? todayTotal.formattedDuration : "")
         .toolbar {
-            ToolbarItem(placement: .primaryAction) {
+            ToolbarItemGroup(placement: .primaryAction) {
                 Button { showingStartTracking = true } label: {
-                    Label("Start Tracking", systemImage: "play.circle")
+                    Label("Track", systemImage: "play.circle")
                 }
-            }
-            ToolbarItem(placement: .primaryAction) {
+                .help("Start a new tracking session")
+
                 Button { showingQuickLog = true } label: {
-                    Label("Log Time", systemImage: "plus")
+                    Label("Log", systemImage: "plus")
                 }
+                .help("Log time manually")
             }
         }
-        .sheet(isPresented: $showingQuickLog) { QuickLogMacView() }
-        .sheet(isPresented: $showingStartTracking) { StartTrackingMacView(clients: clients).environment(settings) }
-        .sheet(item: $entryToEdit) { QuickLogMacView(entry: $0) }
-        .sheet(item: $sessionToStop) { StopSessionMacView(session: $0) }
+        .sheet(isPresented: $showingQuickLog)      { QuickLogMacView() }
+        .sheet(isPresented: $showingStartTracking)  { StartTrackingMacView(clients: clients).environment(settings) }
+        .sheet(item: $entryToEdit)                  { QuickLogMacView(entry: $0) }
+        .sheet(item: $sessionToStop)                { StopSessionMacView(session: $0) }
     }
 }
 
 struct ActiveSessionMacRow: View {
     let session: ActiveSession
     var body: some View {
-        HStack(spacing: 10) {
-            Circle()
+        HStack(spacing: 12) {
+            RoundedRectangle(cornerRadius: 3)
                 .fill(session.client?.color ?? .accentColor)
-                .frame(width: 8, height: 8)
+                .frame(width: 4, height: 32)
             VStack(alignment: .leading, spacing: 2) {
                 Text(session.client?.name ?? "No client")
                     .fontWeight(.medium)
@@ -129,30 +108,33 @@ struct ActiveSessionMacRow: View {
             }
             Spacer()
             Text(session.elapsedDisplay)
-                .font(.system(.body, design: .monospaced))
+                .font(.system(.body, design: .monospaced, weight: .medium))
                 .foregroundStyle(.tint)
                 .monospacedDigit()
-            Image(systemName: "stop.circle.fill").foregroundStyle(.red)
+            Image(systemName: "stop.circle.fill")
+                .foregroundStyle(.red)
+                .imageScale(.large)
         }
-        .padding(.vertical, 2)
     }
 }
 
 struct EntryMacRow: View {
     let entry: TimeEntry
     var body: some View {
-        HStack(spacing: 10) {
-            Circle()
+        HStack(spacing: 12) {
+            RoundedRectangle(cornerRadius: 3)
                 .fill(entry.client?.color ?? Color.secondary.opacity(0.3))
-                .frame(width: 8, height: 8)
+                .frame(width: 4, height: 32)
             VStack(alignment: .leading, spacing: 2) {
                 Text(entry.client?.name ?? "No client").fontWeight(.medium)
-                if let proj = entry.project {
-                    Text(proj.name).font(.caption).foregroundStyle(.secondary)
+                Group {
+                    if let proj = entry.project {
+                        Text(proj.name)
+                    } else if let notes = entry.notes, !notes.isEmpty {
+                        Text(notes).lineLimit(1)
+                    }
                 }
-                if let notes = entry.notes, !notes.isEmpty {
-                    Text(notes).font(.caption).foregroundStyle(.secondary).lineLimit(1)
-                }
+                .font(.caption).foregroundStyle(.secondary)
             }
             Spacer()
             Text(entry.durationMinutes.formattedDuration)
@@ -160,6 +142,5 @@ struct EntryMacRow: View {
                 .foregroundStyle(.secondary)
                 .monospacedDigit()
         }
-        .padding(.vertical, 2)
     }
 }

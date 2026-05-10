@@ -7,52 +7,59 @@ struct ClientsMacView: View {
     @Query(sort: \Client.name) private var clients: [Client]
 
     @State private var selectedClient: Client?
-    @State private var showingAddClient = false
+    @State private var showingAddClient  = false
     @State private var clientToEdit: Client?
-    @State private var showingAddProject = false
-    @State private var showArchived = false
+    @State private var showArchived      = false
 
     private var visibleClients: [Client] {
         showArchived ? clients : clients.filter { !$0.isArchived }
     }
 
     var body: some View {
-        NavigationSplitView {
-            List(visibleClients, selection: $selectedClient) { client in
-                ClientMacRow(client: client)
-                    .tag(client)
-                    .contextMenu {
-                        Button("Edit") { clientToEdit = client }
-                        Button(client.isArchived ? "Unarchive" : "Archive") {
-                            client.isArchived.toggle()
+        HSplitView {
+            // ── Clients list ──────────────────────────────
+            VStack(spacing: 0) {
+                List(visibleClients, selection: $selectedClient) { client in
+                    ClientMacRow(client: client)
+                        .tag(client)
+                        .contextMenu {
+                            Button("Edit") { clientToEdit = client }
+                            Button(client.isArchived ? "Unarchive" : "Archive") {
+                                client.isArchived.toggle()
+                            }
+                            Divider()
+                            Button("Delete", role: .destructive) { context.delete(client) }
                         }
-                        Divider()
-                        Button("Delete", role: .destructive) { context.delete(client) }
-                    }
-            }
-            .navigationSplitViewColumnWidth(220)
-            .toolbar {
-                ToolbarItem {
-                    Button { showingAddClient = true } label: {
-                        Image(systemName: "plus")
-                    }
                 }
-                ToolbarItem {
-                    Button { showArchived.toggle() } label: {
-                        Image(systemName: showArchived ? "archivebox.fill" : "archivebox")
-                    }
-                    .help(showArchived ? "Hide archived" : "Show archived")
-                }
+                .listStyle(.sidebar)
             }
-        } detail: {
+            .frame(minWidth: 180, idealWidth: 200, maxWidth: 240)
+
+            // ── Projects detail ───────────────────────────
             if let client = selectedClient {
                 ProjectsMacView(client: client)
             } else {
                 ContentUnavailableView("Select a client", systemImage: "person.2")
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
             }
         }
-        .sheet(isPresented: $showingAddClient) { ClientMacFormView() }
-        .sheet(item: $clientToEdit) { ClientMacFormView(client: $0) }
+        .navigationTitle("Clients")
+        .toolbar {
+            ToolbarItemGroup(placement: .primaryAction) {
+                Button { showingAddClient = true } label: {
+                    Label("Add Client", systemImage: "plus")
+                }
+                .help("Add a new client")
+
+                Button { showArchived.toggle() } label: {
+                    Label(showArchived ? "Hide Archived" : "Show Archived",
+                          systemImage: showArchived ? "archivebox.fill" : "archivebox")
+                }
+                .help(showArchived ? "Hide archived clients" : "Show archived clients")
+            }
+        }
+        .sheet(isPresented: $showingAddClient)  { ClientMacFormView() }
+        .sheet(item: $clientToEdit)             { ClientMacFormView(client: $0) }
     }
 }
 
@@ -61,17 +68,23 @@ private struct ClientMacRow: View {
     var body: some View {
         HStack(spacing: 8) {
             Circle().fill(client.color).frame(width: 10, height: 10)
-            VStack(alignment: .leading, spacing: 2) {
+            VStack(alignment: .leading, spacing: 1) {
                 Text(client.name)
                     .foregroundStyle(client.isArchived ? .secondary : .primary)
-                Text("\(client.projects.filter { !$0.isArchived }.count) projects")
-                    .font(.caption).foregroundStyle(.secondary)
+                Text(client.projects.filter { !$0.isArchived }.count == 1
+                     ? "1 project"
+                     : "\(client.projects.filter { !$0.isArchived }.count) projects")
+                    .font(.caption2)
+                    .foregroundStyle(.secondary)
             }
+            Spacer()
             if client.isArchived {
-                Spacer()
-                Image(systemName: "archivebox").font(.caption).foregroundStyle(.secondary)
+                Image(systemName: "archivebox")
+                    .font(.caption2)
+                    .foregroundStyle(.tertiary)
             }
         }
+        .padding(.vertical, 2)
     }
 }
 
@@ -81,91 +94,91 @@ struct ProjectsMacView: View {
 
     @State private var showingAddProject = false
     @State private var projectToEdit: Project?
-    @State private var showArchived = false
+    @State private var showArchived      = false
+    @State private var selectedProjects  = Set<Project.ID>()
 
     private var visibleProjects: [Project] {
-        let all = client.projects.sorted { $0.name < $1.name }
-        return showArchived ? all : all.filter { !$0.isArchived }
+        client.projects
+            .filter { showArchived || !$0.isArchived }
+            .sorted { $0.name < $1.name }
     }
 
     var body: some View {
         VStack(spacing: 0) {
-            HStack {
-                Circle().fill(client.color).frame(width: 12, height: 12)
-                Text(client.name).font(.title3.weight(.semibold))
+            HStack(spacing: 8) {
+                Circle().fill(client.color).frame(width: 10, height: 10)
+                Text(client.name).font(.headline)
                 Spacer()
             }
-            .padding()
+            .padding(.horizontal, 16)
+            .padding(.vertical, 10)
+            .background(.bar)
 
             Divider()
 
             if visibleProjects.isEmpty {
                 ContentUnavailableView("No projects", systemImage: "folder")
             } else {
-                Table(visibleProjects) {
+                Table(visibleProjects, selection: $selectedProjects) {
                     TableColumn("Project") { proj in
-                        HStack {
+                        HStack(spacing: 6) {
                             Text(proj.name)
+                                .foregroundStyle(proj.isArchived ? .secondary : .primary)
                             if let code = proj.code {
-                                Text(code).font(.caption).foregroundStyle(.secondary)
-                                    .padding(.horizontal, 6).padding(.vertical, 2)
+                                Text(code)
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                                    .padding(.horizontal, 5)
+                                    .padding(.vertical, 2)
                                     .background(.quaternary, in: Capsule())
                             }
                         }
                     }
-                    TableColumn("Status") { proj in
-                        Text(proj.isArchived ? "Archived" : "Active")
-                            .foregroundStyle(proj.isArchived ? Color.secondary : Color.green)
-                    }
-                    .width(80)
                     TableColumn("Entries") { proj in
                         Text("\(proj.entries.count)")
                             .foregroundStyle(.secondary)
                     }
                     .width(60)
-                }
-                .contextMenu(forSelectionType: Project.self) { projects in
-                    Button("Archive / Unarchive") {
-                        projects.forEach { $0.isArchived.toggle() }
+                    TableColumn("Status") { proj in
+                        Text(proj.isArchived ? "Archived" : "Active")
+                            .font(.caption)
+                            .foregroundStyle(proj.isArchived ? Color.secondary : Color.green)
                     }
-                    Divider()
-                    Button("Delete", role: .destructive) {
-                        projects.forEach { context.delete($0) }
-                    }
+                    .width(70)
                 }
             }
         }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
         .toolbar {
-            ToolbarItem(placement: .primaryAction) {
+            ToolbarItemGroup(placement: .secondaryAction) {
                 Button { showingAddProject = true } label: {
-                    Label("Add Project", systemImage: "plus")
+                    Label("Add Project", systemImage: "folder.badge.plus")
                 }
-            }
-            ToolbarItem {
                 Button { showArchived.toggle() } label: {
-                    Image(systemName: showArchived ? "archivebox.fill" : "archivebox")
+                    Label(showArchived ? "Hide Archived" : "Show Archived",
+                          systemImage: showArchived ? "eye.slash" : "eye")
                 }
-                .help(showArchived ? "Hide archived" : "Show archived")
             }
         }
         .sheet(isPresented: $showingAddProject) { ProjectMacFormView(client: client) }
-        .sheet(item: $projectToEdit) { ProjectMacFormView(client: client, project: $0) }
+        .sheet(item: $projectToEdit)            { ProjectMacFormView(client: client, project: $0) }
     }
 }
 
 struct ClientMacFormView: View {
     @Environment(\.modelContext) private var context
-    @Environment(\.dismiss) private var dismiss
+    @Environment(\.dismiss)      private var dismiss
     var client: Client?
 
-    @State private var name = ""
+    @State private var name     = ""
     @State private var colorHex = "#007AFF"
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
             Text(client == nil ? "New Client" : "Edit Client").font(.headline)
             TextField("Name", text: $name)
-            ColorPicker("Color", selection: Binding(
+                .textFieldStyle(.roundedBorder)
+            ColorPicker("Colour", selection: Binding(
                 get: { Color(hex: colorHex) ?? .accentColor },
                 set: { colorHex = $0.hex }
             ))
@@ -178,27 +191,21 @@ struct ClientMacFormView: View {
                     .disabled(name.isEmpty)
             }
         }
-        .padding()
+        .padding(20)
         .frame(width: 280)
-        .onAppear {
-            name = client?.name ?? ""
-            colorHex = client?.colorHex ?? "#007AFF"
-        }
+        .onAppear { name = client?.name ?? ""; colorHex = client?.colorHex ?? "#007AFF" }
     }
 
     private func save() {
-        if let client {
-            client.name = name; client.colorHex = colorHex
-        } else {
-            context.insert(Client(name: name, colorHex: colorHex))
-        }
+        if let c = client { c.name = name; c.colorHex = colorHex }
+        else { context.insert(Client(name: name, colorHex: colorHex)) }
         dismiss()
     }
 }
 
 struct ProjectMacFormView: View {
     @Environment(\.modelContext) private var context
-    @Environment(\.dismiss) private var dismiss
+    @Environment(\.dismiss)      private var dismiss
     let client: Client
     var project: Project?
 
@@ -208,8 +215,8 @@ struct ProjectMacFormView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
             Text(project == nil ? "New Project" : "Edit Project").font(.headline)
-            TextField("Name", text: $name)
-            TextField("Code (optional)", text: $code)
+            TextField("Name", text: $name).textFieldStyle(.roundedBorder)
+            TextField("Code (optional)", text: $code).textFieldStyle(.roundedBorder)
             HStack {
                 Button("Cancel") { dismiss() }.keyboardShortcut(.escape)
                 Spacer()
@@ -219,18 +226,14 @@ struct ProjectMacFormView: View {
                     .disabled(name.isEmpty)
             }
         }
-        .padding()
+        .padding(20)
         .frame(width: 280)
-        .onAppear {
-            name = project?.name ?? ""
-            code = project?.code ?? ""
-        }
+        .onAppear { name = project?.name ?? ""; code = project?.code ?? "" }
     }
 
     private func save() {
-        if let project {
-            project.name = name; project.code = code.isEmpty ? nil : code
-        } else {
+        if let p = project { p.name = name; p.code = code.isEmpty ? nil : code }
+        else {
             let p = Project(name: name, code: code.isEmpty ? nil : code)
             p.client = client
             context.insert(p)
