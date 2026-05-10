@@ -26,7 +26,6 @@
 - [x] **Color+Hex hex var: no fallback on UIColor.getRed failure** — now uses `resolvedColor(with: UITraitCollection(userInterfaceStyle: .light))` before calling `getRed`, ensuring sRGB space.
 - [x] **ActiveSession.elapsedMinutes min cap of 1** — changed to `max(0, ...)`.
 - [x] **KeychainHelper errors silently discarded** — `save()` and `delete()` now return `@discardableResult Bool`.
-- [ ] **SettingsStore: too many individual save() calls** — debounce with a short Task delay.
-- [ ] **Wethod API: no client implementation** — settings store has URL and key but no network layer.
+- [x] **SettingsStore: too many individual save() calls** — auto-save via `didSet`, no explicit `save()` calls needed.
 - [ ] **Missing unit tests** — `TimerViewModel`, `NotificationManager` scheduling math, `Int.formattedDuration`.
 - [ ] **Missing iPad layout** — scale-up iPhone layout; could use `NavigationSplitView`.
