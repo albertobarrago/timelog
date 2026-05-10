@@ -3,20 +3,21 @@ import Observation
 
 @Observable
 public final class SettingsStore {
-    public var wethodBaseURL: String = ""
-    public var pomodoroWork: Int = 25
-    public var pomodoroShortBreak: Int = 5
-    public var pomodoroLongBreak: Int = 15
+    public var wethodBaseURL: String = "" { didSet { save() } }
+    public var pomodoroWork: Int = 25 { didSet { save() } }
+    public var pomodoroShortBreak: Int = 5 { didSet { save() } }
+    public var pomodoroLongBreak: Int = 15 { didSet { save() } }
 
-    public var reminderEnabled: Bool = false
-    public var reminderHour: Int = 17
-    public var reminderMinute: Int = 0
-    public var reminderDays: Set<Int> = [2, 3, 4, 5, 6]
+    public var reminderEnabled: Bool = false { didSet { save(); applyReminders() } }
+    public var reminderHour: Int = 17 { didSet { save(); applyReminders() } }
+    public var reminderMinute: Int = 0 { didSet { save(); applyReminders() } }
+    public var reminderDays: Set<Int> = [2, 3, 4, 5, 6] { didSet { save(); applyReminders() } }
 
-    public var trackingEndHour: Int = 18
-    public var trackingEndMinute: Int = 0
+    public var trackingEndHour: Int = 18 { didSet { save() } }
+    public var trackingEndMinute: Int = 0 { didSet { save() } }
 
     private let defaults = UserDefaults.standard
+    private var isLoading = false
 
     public init() { load() }
 
@@ -26,6 +27,8 @@ public final class SettingsStore {
     }
 
     public func load() {
+        isLoading = true
+        defer { isLoading = false }
         wethodBaseURL = defaults.string(forKey: "wethod_url") ?? ""
         let w = defaults.integer(forKey: "pomodoro_work")
         let s = defaults.integer(forKey: "pomodoro_short")
@@ -44,6 +47,7 @@ public final class SettingsStore {
     }
 
     public func save() {
+        guard !isLoading else { return }
         defaults.set(wethodBaseURL,      forKey: "wethod_url")
         defaults.set(pomodoroWork,       forKey: "pomodoro_work")
         defaults.set(pomodoroShortBreak, forKey: "pomodoro_short")

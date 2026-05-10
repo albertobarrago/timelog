@@ -18,7 +18,6 @@ struct SettingsView: View {
             Form {
                 Section("Wethod API") {
                     TextField("Base URL", text: $store.wethodBaseURL)
-                        .onChange(of: store.wethodBaseURL) { store.save() }
                     SecureField("API Key", text: $apiKey)
                         .onSubmit { store.wethodAPIKey = apiKey }
                         .onChange(of: apiKey) { store.wethodAPIKey = apiKey }
@@ -26,16 +25,15 @@ struct SettingsView: View {
 
                 Section("Pomodoro") {
                     Stepper("Focus: \(store.pomodoroWork) min", value: $store.pomodoroWork, in: 1...90)
-                        .onChange(of: store.pomodoroWork) { store.save(); timerVM.applySettings(store) }
+                        .onChange(of: store.pomodoroWork) { timerVM.applySettings(store) }
                     Stepper("Short break: \(store.pomodoroShortBreak) min", value: $store.pomodoroShortBreak, in: 1...30)
-                        .onChange(of: store.pomodoroShortBreak) { store.save(); timerVM.applySettings(store) }
+                        .onChange(of: store.pomodoroShortBreak) { timerVM.applySettings(store) }
                     Stepper("Long break: \(store.pomodoroLongBreak) min", value: $store.pomodoroLongBreak, in: 1...60)
-                        .onChange(of: store.pomodoroLongBreak) { store.save(); timerVM.applySettings(store) }
+                        .onChange(of: store.pomodoroLongBreak) { timerVM.applySettings(store) }
                 }
 
                 Section {
                     Toggle("Daily reminder", isOn: $store.reminderEnabled)
-                        .onChange(of: store.reminderEnabled) { store.save(); store.applyReminders() }
                     if store.reminderEnabled {
                         DatePicker("Time", selection: reminderTime, displayedComponents: .hourAndMinute)
                         VStack(alignment: .leading, spacing: 8) {
@@ -43,14 +41,12 @@ struct SettingsView: View {
                                 .font(.subheadline)
                                 .foregroundStyle(.secondary)
                             DayPicker(selectedDays: $store.reminderDays)
-                                .onChange(of: store.reminderDays) { store.save(); store.applyReminders() }
                         }
                     }
                 } header: { Text("Reminders") }
 
                 Section {
                     DatePicker("Notify if still open at", selection: trackingEndTime, displayedComponents: .hourAndMinute)
-                        .onChange(of: store.trackingEndHour) { store.save() }
                 } header: {
                     Text("Smart Tracking")
                 } footer: {
@@ -99,7 +95,6 @@ struct SettingsView: View {
                 let c = Calendar.current.dateComponents([.hour, .minute], from: date)
                 store.reminderHour = c.hour ?? 17
                 store.reminderMinute = c.minute ?? 0
-                store.save(); store.applyReminders()
             }
         )
     }
@@ -115,7 +110,6 @@ struct SettingsView: View {
                 let c = Calendar.current.dateComponents([.hour, .minute], from: date)
                 store.trackingEndHour = c.hour ?? 18
                 store.trackingEndMinute = c.minute ?? 0
-                store.save()
             }
         )
     }
