@@ -85,7 +85,9 @@ public final class TimerViewModel {
         #if os(iOS) && !targetEnvironment(macCatalyst)
         startLiveActivity()
         #endif
+        #if os(iOS)
         haptic(.medium)
+        #endif
     }
 
     public func pause() {
@@ -96,7 +98,9 @@ public final class TimerViewModel {
         #if os(iOS) && !targetEnvironment(macCatalyst)
         updateLiveActivity()
         #endif
+        #if os(iOS)
         haptic(.light)
+        #endif
     }
 
     public func reset() {
@@ -107,7 +111,9 @@ public final class TimerViewModel {
         #if os(iOS) && !targetEnvironment(macCatalyst)
         endLiveActivity()
         #endif
+        #if os(iOS)
         haptic(.rigid)
+        #endif
     }
 
     private func tick() {
@@ -132,11 +138,11 @@ public final class TimerViewModel {
         #endif
     }
 
+    #if os(iOS)
     private func haptic(_ style: UIImpactFeedbackGenerator.FeedbackStyle) {
-        #if os(iOS)
         UIImpactFeedbackGenerator(style: style).impactOccurred()
-        #endif
     }
+    #endif
 
     deinit { timer?.invalidate() }
 }

@@ -5,6 +5,30 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
 
+## [Unreleased]
+
+### Added
+- Native macOS app (`TimelogMac`) with `MenuBarExtra` status bar icon
+- `TimelogCore` local Swift Package — shared models, stores, VM, helpers, extensions (public API, iOS 17+ / macOS 14+)
+- macOS main window: `NavigationSplitView` with Today, Clients, Timer sidebar
+- macOS Today view: live active sessions, today entries, context menus, toolbar actions
+- macOS Clients view: `NavigationSplitView` clients → projects with `Table`, inline create/edit sheets
+- macOS Timer view: full Pomodoro / stopwatch with ring, Space shortcut
+- macOS menu bar popover: compact timer controls, active sessions, today total, open-window button
+- macOS Settings window (`⌘,`): Pomodoro config, end-of-day threshold
+- Single shared `ModelContainer` across all macOS scenes (menu bar + window see the same data)
+- `MenuBarStatusLabel` extracted as a dedicated `View` struct for correct `@Observable` reactivity
+
+### Changed
+- **Monorepo**: `TimelogMac.xcodeproj` moved into the `TimeLog` repo alongside `Timelog.xcodeproj`
+- iOS app no longer uses Mac Catalyst — pure iOS target, `#if targetEnvironment(macCatalyst)` guards removed
+- All shared types migrated from inline iOS files to `TimelogCore` package (public access throughout)
+- `TimerViewModel.start()` uses `RunLoop.main.add(timer, forMode: .common)` — timer no longer pauses during scroll
+- `TimerView` ring frame moved onto `TimerRingView` itself — stopwatch mode no longer wastes vertical space
+- `TimerView` capped at `maxWidth: 480` on macOS for balanced layout
+
+---
+
 ## [0.1.0] — 2026-05-10
 
 ### Added
@@ -38,41 +62,38 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - `NSSupportsLiveActivities` + `NSSupportsLiveActivitiesFrequentUpdates` in `Info.plist`
 - Widget Extension (`TimelogWidgetExtensionExtension`) with `DynamicIsland` support
 
-#### Mac Catalyst
-- Persistent toolbar button across all tabs showing live elapsed time
-- Clicking navigates to Timer tab; if already there, toggles start/pause
-
 #### Onboarding
 - 5-page first-run guide (Welcome → Manual Log → Smart Tracking → Reminders → Ready)
 - Skippable at any time; re-openable from Settings → "Show guide again"
-- Page-style `TabView` with dot indicators (iOS) / plain tabs (macOS)
+- Page-style `TabView` with dot indicators
 
 ### Changed
-- Tab order: Today → Clients → Timer → Settings (all platforms)
+- Tab order: Today → Clients → Timer → Settings
 - `TimerViewModel` hoisted to app-level `@Observable` environment
-- `Timer` now added to `.common` RunLoop mode — no longer pauses during List scroll
 - Pomodoro settings in Settings immediately apply to the running `TimerViewModel`
 - `ClientsView`: archived clients hidden by default; toolbar toggle to show/hide
 - `QuickLogSheet`: `DatePicker` clamped to `...Date()` — no future entries
 - `Project` delete rule changed from `.cascade` to `.nullify` — time entries survive project deletion
 - `SettingsStore` midnight-safe load: uses `defaults.object != nil` check instead of `> 0`
-- `KeychainHelper` functions now return `@discardableResult Bool`
-- `Color+Hex.hex`: uses `resolvedColor(with:)` for reliable sRGB conversion on all platforms
-- `ActiveSession.elapsedMinutes` floor changed from `max(1,…)` to `max(0,…)`
-- Danger Zone now also deletes active sessions and cancels their notifications
-- Day picker labels fixed: Tu / Th (previously both showed "T")
+- `KeychainHelper` returns `@discardableResult Bool`
+- `Color+Hex.hex`: uses `resolvedColor(with:)` for reliable sRGB conversion
+- `ActiveSession.elapsedMinutes` floor changed to `max(0,…)`
+- Danger Zone deletes active sessions and cancels their notifications
+- Day picker labels fixed: Tu / Th
 
 ### Fixed
-- `Color+Hex.swift`: `NSColor(SwiftUI.Color)` crash on Mac Catalyst — guarded with `!targetEnvironment(macCatalyst)`
-- Widget extension platform filter: `platformFilter = ios` prevents Catalyst embed error
+- `Color+Hex.swift`: `NSColor(SwiftUI.Color)` unavailable on Mac Catalyst — guarded
+- Widget extension: `platformFilter = ios` prevents Catalyst embed error
 - App icon: added `AppIcon-512.png` (512×512) for macOS 1× slot
+- `StopSessionSheet` minutes Picker replaced with Stepper — no mismatch on non-multiples-of-5 values
+- `Timer` RunLoop mode changed to `.common` — no longer pauses during `List` scroll
 
 ---
 
 ## [0.0.1] — 2026-05-10
 
 ### Added
-- Initial multiplatform app (iOS 17+ / macOS 14+)
+- Initial iOS app (iPhone + iPad)
 - Today tab: daily time log with quick entry sheet, swipe-to-delete
 - Timer tab: stopwatch mode and Pomodoro timer with animated ring progress
 - Clients tab: client management with color coding, project sub-list, archive support

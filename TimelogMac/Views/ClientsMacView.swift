@@ -115,7 +115,7 @@ struct ProjectsMacView: View {
                     }
                     TableColumn("Status") { proj in
                         Text(proj.isArchived ? "Archived" : "Active")
-                            .foregroundStyle(proj.isArchived ? .secondary : .green)
+                            .foregroundStyle(proj.isArchived ? Color.secondary : Color.green)
                     }
                     .width(80)
                     TableColumn("Entries") { proj in
