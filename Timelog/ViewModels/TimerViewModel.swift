@@ -1,5 +1,8 @@
 import Foundation
 import Observation
+#if os(iOS) && !targetEnvironment(macCatalyst)
+import ActivityKit
+#endif
 
 enum PomodoroPhase {
     case work, shortBreak, longBreak
@@ -69,12 +72,18 @@ final class TimerViewModel {
         timer = Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { [weak self] _ in
             MainActor.assumeIsolated { self?.tick() }
         }
+        #if os(iOS) && !targetEnvironment(macCatalyst)
+        startLiveActivity()
+        #endif
     }
 
     func pause() {
         isRunning = false
         timer?.invalidate()
         timer = nil
+        #if os(iOS) && !targetEnvironment(macCatalyst)
+        updateLiveActivity()
+        #endif
     }
 
     func reset() {
@@ -82,10 +91,16 @@ final class TimerViewModel {
         elapsed = 0
         phase = .work
         completedPomodoros = 0
+        #if os(iOS) && !targetEnvironment(macCatalyst)
+        endLiveActivity()
+        #endif
     }
 
     private func tick() {
         elapsed += 1
+        #if os(iOS) && !targetEnvironment(macCatalyst)
+        if Int(elapsed) % 5 == 0 { updateLiveActivity() }
+        #endif
         if pomodoroEnabled, elapsed >= phaseTotal {
             phaseComplete()
         }
@@ -100,7 +115,46 @@ final class TimerViewModel {
         } else {
             phase = .work
         }
+        #if os(iOS) && !targetEnvironment(macCatalyst)
+        updateLiveActivity()
+        #endif
     }
 
     deinit { timer?.invalidate() }
 }
+
+#if os(iOS) && !targetEnvironment(macCatalyst)
+extension TimerViewModel {
+    private var liveActivityState: TimelogActivityAttributes.ContentState {
+        TimelogActivityAttributes.ContentState(
+            displayTime: displayTime,
+            isRunning: isRunning,
+            phase: pomodoroEnabled ? phase.label : "Stopwatch"
+        )
+    }
+
+    private var _liveActivity: Activity<TimelogActivityAttributes>? {
+        Activity<TimelogActivityAttributes>.activities.first
+    }
+
+    func startLiveActivity() {
+        guard ActivityAuthorizationInfo().areActivitiesEnabled else { return }
+        endLiveActivity()
+        let attributes = TimelogActivityAttributes()
+        _ = try? Activity.request(
+            attributes: attributes,
+            content: .init(state: liveActivityState, staleDate: nil)
+        )
+    }
+
+    func updateLiveActivity() {
+        guard let activity = _liveActivity else { return }
+        Task { await activity.update(.init(state: liveActivityState, staleDate: nil)) }
+    }
+
+    func endLiveActivity() {
+        guard let activity = _liveActivity else { return }
+        Task { await activity.end(.init(state: liveActivityState, staleDate: nil), dismissalPolicy: .immediate) }
+    }
+}
+#endif

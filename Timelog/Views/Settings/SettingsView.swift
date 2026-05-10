@@ -6,6 +6,7 @@ struct SettingsView: View {
     @Environment(\.openURL) private var openURL
     @Query(sort: \TimeEntry.date, order: .reverse) private var entries: [TimeEntry]
     @Environment(SettingsStore.self) private var store
+    @AppStorage("onboarding_completed") private var onboardingCompleted = true
     @State private var apiKey = ""
 
     var body: some View {
@@ -32,8 +33,46 @@ struct SettingsView: View {
                         .onChange(of: store.pomodoroLongBreak) { store.save() }
                 }
 
+                Section {
+                    Toggle("Daily reminder", isOn: $store.reminderEnabled)
+                        .onChange(of: store.reminderEnabled) {
+                            store.save()
+                            store.applyReminders()
+                        }
+                    if store.reminderEnabled {
+                        DatePicker("Time", selection: reminderTime, displayedComponents: .hourAndMinute)
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text("Days")
+                                .font(.subheadline)
+                                .foregroundStyle(.secondary)
+                            DayPicker(selectedDays: $store.reminderDays)
+                                .onChange(of: store.reminderDays) {
+                                    store.save()
+                                    store.applyReminders()
+                                }
+                        }
+                    }
+                } header: {
+                    Text("Reminders")
+                }
+
+                Section {
+                    DatePicker("Notify if still open at",
+                               selection: trackingEndTime,
+                               displayedComponents: .hourAndMinute)
+                    .onChange(of: store.trackingEndHour) { store.save() }
+                } header: {
+                    Text("Smart Tracking")
+                } footer: {
+                    Text("You'll receive a notification if a session is still running at this time.")
+                }
+
                 Section("Export") {
                     Button("Export this week via Email") { exportEmail() }
+                }
+
+                Section {
+                    Button("Show guide again") { onboardingCompleted = false }
                 }
 
                 Section("Danger Zone") {
@@ -46,6 +85,41 @@ struct SettingsView: View {
             .navigationTitle("Settings")
             .onAppear { apiKey = store.wethodAPIKey }
         }
+    }
+
+    private var reminderTime: Binding<Date> {
+        Binding(
+            get: {
+                var c = Calendar.current.dateComponents([.year, .month, .day], from: Date())
+                c.hour = store.reminderHour
+                c.minute = store.reminderMinute
+                return Calendar.current.date(from: c) ?? Date()
+            },
+            set: { date in
+                let c = Calendar.current.dateComponents([.hour, .minute], from: date)
+                store.reminderHour = c.hour ?? 17
+                store.reminderMinute = c.minute ?? 0
+                store.save()
+                store.applyReminders()
+            }
+        )
+    }
+
+    private var trackingEndTime: Binding<Date> {
+        Binding(
+            get: {
+                var c = Calendar.current.dateComponents([.year, .month, .day], from: Date())
+                c.hour = store.trackingEndHour
+                c.minute = store.trackingEndMinute
+                return Calendar.current.date(from: c) ?? Date()
+            },
+            set: { date in
+                let c = Calendar.current.dateComponents([.hour, .minute], from: date)
+                store.trackingEndHour = c.hour ?? 18
+                store.trackingEndMinute = c.minute ?? 0
+                store.save()
+            }
+        )
     }
 
     private func exportEmail() {
@@ -70,8 +144,34 @@ struct SettingsView: View {
         let body = lines.joined(separator: "\n")
         let subject = "Timelog Week Export"
         let mailto = "mailto:?subject=\(subject.urlEncoded)&body=\(body.urlEncoded)"
-        if let url = URL(string: mailto) {
-            openURL(url)
+        if let url = URL(string: mailto) { openURL(url) }
+    }
+}
+
+private struct DayPicker: View {
+    @Binding var selectedDays: Set<Int>
+
+    private let days: [(label: String, index: Int)] = [
+        ("M", 2), ("T", 3), ("W", 4), ("T", 5), ("F", 6), ("S", 7), ("S", 1)
+    ]
+
+    var body: some View {
+        HStack(spacing: 8) {
+            ForEach(days, id: \.index) { day in
+                let selected = selectedDays.contains(day.index)
+                Button {
+                    if selected { selectedDays.remove(day.index) }
+                    else { selectedDays.insert(day.index) }
+                } label: {
+                    Text(day.label)
+                        .font(.system(size: 14, weight: .semibold))
+                        .frame(width: 34, height: 34)
+                        .background(selected ? Color.accentColor : Color.secondary.opacity(0.15),
+                                    in: Circle())
+                        .foregroundStyle(selected ? .white : .primary)
+                }
+                .buttonStyle(.plain)
+            }
         }
     }
 }

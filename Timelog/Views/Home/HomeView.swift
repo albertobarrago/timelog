@@ -4,20 +4,23 @@ import SwiftData
 struct HomeView: View {
     @Environment(\.modelContext) private var context
     @Query(sort: \TimeEntry.date, order: .reverse) private var allEntries: [TimeEntry]
+    @Query(sort: \ActiveSession.startDate) private var activeSessions: [ActiveSession]
     @State private var showingQuickLog = false
+    @State private var showingStartTracking = false
     @State private var entryToEdit: TimeEntry?
+    @State private var sessionToStop: ActiveSession?
 
     private var todayEntries: [TimeEntry] {
-        let cal = Calendar.current
-        return allEntries.filter { cal.isDateInToday($0.date) }
+        allEntries.filter { Calendar.current.isDateInToday($0.date) }
     }
 
-    private var totalMinutes: Int { todayEntries.reduce(0) { $0 + $1.durationMinutes } }
+    private var totalMinutes: Int {
+        todayEntries.reduce(0) { $0 + $1.durationMinutes }
+    }
 
     var body: some View {
         NavigationStack {
             VStack(spacing: 0) {
-                // Today total card
                 HStack {
                     VStack(alignment: .leading, spacing: 2) {
                         Text("Today")
@@ -35,14 +38,32 @@ struct HomeView: View {
                 .background(.quinary, in: RoundedRectangle(cornerRadius: 12))
                 .padding()
 
-                if todayEntries.isEmpty {
+                if activeSessions.isEmpty && todayEntries.isEmpty {
                     ContentUnavailableView(
                         "No entries today",
                         systemImage: "clock",
-                        description: Text("Tap + to log your first entry")
+                        description: Text("Tap + to log time or ▶ to start tracking")
                     )
                 } else {
                     List {
+                        if !activeSessions.isEmpty {
+                            Section("Active") {
+                                ForEach(activeSessions) { session in
+                                    ActiveSessionRow(session: session)
+                                        .contentShape(Rectangle())
+                                        .onTapGesture { sessionToStop = session }
+                                        .swipeActions(edge: .trailing) {
+                                            Button(role: .destructive) {
+                                                NotificationManager.shared.cancelSession(id: session.notificationID)
+                                                context.delete(session)
+                                            } label: {
+                                                Label("Discard", systemImage: "trash")
+                                            }
+                                        }
+                                }
+                            }
+                        }
+
                         ForEach(todayEntries) { entry in
                             EntryRow(entry: entry)
                                 .contentShape(Rectangle())
@@ -62,13 +83,55 @@ struct HomeView: View {
             .navigationTitle("Timelog")
             .toolbar {
                 ToolbarItem(placement: .primaryAction) {
+                    Button { showingStartTracking = true } label: {
+                        Image(systemName: "play.circle")
+                    }
+                }
+                ToolbarItem(placement: .primaryAction) {
                     Button { showingQuickLog = true } label: {
                         Image(systemName: "plus")
                     }
                 }
             }
             .sheet(isPresented: $showingQuickLog) { QuickLogSheet() }
+            .sheet(isPresented: $showingStartTracking) { StartTrackingSheet() }
             .sheet(item: $entryToEdit) { QuickLogSheet(entry: $0) }
+            .sheet(item: $sessionToStop) { StopSessionSheet(session: $0) }
+        }
+    }
+}
+
+private struct ActiveSessionRow: View {
+    let session: ActiveSession
+
+    var body: some View {
+        TimelineView(.periodic(from: .now, by: 1)) { _ in
+            HStack(spacing: 12) {
+                RoundedRectangle(cornerRadius: 3)
+                    .fill(session.client?.color ?? .accentColor)
+                    .frame(width: 4, height: 36)
+
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(session.client?.name ?? "No client")
+                        .font(.subheadline.weight(.semibold))
+                    if let proj = session.project {
+                        Text(proj.name)
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
+                }
+
+                Spacer()
+
+                Text(session.elapsedDisplay)
+                    .font(.subheadline.monospacedDigit())
+                    .foregroundStyle(.tint)
+
+                Image(systemName: "stop.circle.fill")
+                    .foregroundStyle(.red)
+                    .font(.title3)
+            }
+            .padding(.vertical, 2)
         }
     }
 }

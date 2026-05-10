@@ -2,9 +2,10 @@ import SwiftUI
 
 struct TimerView: View {
     @Environment(SettingsStore.self) private var settings
-    @State private var vm = TimerViewModel()
+    @Environment(TimerViewModel.self) private var vm
 
     var body: some View {
+        @Bindable var vm = vm
         NavigationStack {
             VStack(spacing: 32) {
                 Spacer()
