@@ -1,6 +1,7 @@
 import SwiftUI
 
 struct TimerView: View {
+    @Environment(SettingsStore.self) private var settings
     @State private var vm = TimerViewModel()
 
     var body: some View {
@@ -69,6 +70,7 @@ struct TimerView: View {
             }
             .padding()
             .navigationTitle("Timer")
+            .onAppear { vm.applySettings(settings) }
         }
     }
 }

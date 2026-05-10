@@ -5,10 +5,11 @@ struct SettingsView: View {
     @Environment(\.modelContext) private var context
     @Environment(\.openURL) private var openURL
     @Query(sort: \TimeEntry.date, order: .reverse) private var entries: [TimeEntry]
-    @State private var store = SettingsStore()
+    @Environment(SettingsStore.self) private var store
     @State private var apiKey = ""
 
     var body: some View {
+        @Bindable var store = store
         NavigationStack {
             Form {
                 Section("Wethod API") {

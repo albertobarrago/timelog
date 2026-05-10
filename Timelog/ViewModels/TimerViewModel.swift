@@ -25,6 +25,12 @@ final class TimerViewModel {
     var longBreakMinutes = 15
     var pomodorosBeforeLong = 4
 
+    func applySettings(_ store: SettingsStore) {
+        workMinutes = store.pomodoroWork
+        shortBreakMinutes = store.pomodoroShortBreak
+        longBreakMinutes = store.pomodoroLongBreak
+    }
+
     private var timer: Timer?
 
     var phaseTotal: TimeInterval {
