@@ -1,3 +1,4 @@
+import TimelogCore
 import SwiftUI
 import SwiftData
 
@@ -77,6 +78,11 @@ struct ClientsView: View {
                               systemImage: showArchived ? "archivebox.fill" : "archivebox")
                     }
                 }
+                #if targetEnvironment(macCatalyst)
+                ToolbarItem(placement: .secondaryAction) {
+                    TimerQuickToggle()
+                }
+                #endif
             }
             .sheet(isPresented: $showingAddClient) { ClientFormView() }
             .sheet(item: $clientToEdit) { ClientFormView(client: $0) }

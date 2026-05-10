@@ -1,3 +1,4 @@
+import TimelogCore
 import SwiftUI
 
 struct TimerRingView: View {

@@ -1,3 +1,4 @@
+import TimelogCore
 import SwiftUI
 
 struct TimerView: View {
@@ -30,12 +31,12 @@ struct TimerView: View {
                 ZStack {
                     if vm.pomodoroEnabled {
                         TimerRingView(progress: vm.progress, phase: vm.phase)
+                            .frame(width: 280, height: 280)
                     }
                     Text(vm.displayTime)
                         .font(.system(size: 64, weight: .thin, design: .monospaced))
                         .contentTransition(.numericText())
                 }
-                .frame(width: 280, height: 280)
 
                 HStack(spacing: 48) {
                     Button {
@@ -55,7 +56,7 @@ struct TimerView: View {
                             .symbolRenderingMode(.hierarchical)
                     }
                     .buttonStyle(.plain)
-                    #if os(macOS)
+                    #if targetEnvironment(macCatalyst)
                     .keyboardShortcut(.space, modifiers: [])
                     #endif
 
@@ -70,6 +71,7 @@ struct TimerView: View {
                 Spacer()
             }
             .padding()
+            .frame(maxWidth: 480)
             .navigationTitle("Timer")
             .onAppear { vm.applySettings(settings) }
         }

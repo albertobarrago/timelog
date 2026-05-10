@@ -1,3 +1,4 @@
+import TimelogCore
 import SwiftUI
 import SwiftData
 
@@ -77,6 +78,13 @@ struct SettingsView: View {
             .formStyle(.grouped)
             .navigationTitle("Settings")
             .onAppear { apiKey = store.wethodAPIKey }
+            #if targetEnvironment(macCatalyst)
+            .toolbar {
+                ToolbarItem(placement: .secondaryAction) {
+                    TimerQuickToggle()
+                }
+            }
+            #endif
         }
     }
 

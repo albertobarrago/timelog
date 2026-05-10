@@ -1,0 +1,16 @@
+import SwiftData
+
+@Model
+public final class Project {
+    public var name: String
+    public var code: String?
+    public var isArchived: Bool
+    public var client: Client?
+    @Relationship(deleteRule: .nullify, inverse: \TimeEntry.project) public var entries: [TimeEntry] = []
+
+    public init(name: String, code: String? = nil, isArchived: Bool = false) {
+        self.name = name
+        self.code = code
+        self.isArchived = isArchived
+    }
+}

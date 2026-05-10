@@ -1,3 +1,4 @@
+import TimelogCore
 import SwiftUI
 import SwiftData
 
@@ -31,7 +32,7 @@ struct HomeView: View {
                         Spacer()
                         Image(systemName: activeSessions.isEmpty ? "clock.fill" : "record.circle.fill")
                             .font(.system(size: 32))
-                            .foregroundStyle(activeSessions.isEmpty ? .secondary.opacity(0.4) : .red.opacity(0.7))
+                            .foregroundStyle(activeSessions.isEmpty ? Color.secondary.opacity(0.4) : Color.red.opacity(0.7))
                     }
                     .padding()
                     .background(.quinary, in: RoundedRectangle(cornerRadius: 12))
@@ -92,6 +93,11 @@ struct HomeView: View {
                         Image(systemName: "plus")
                     }
                 }
+                #if targetEnvironment(macCatalyst)
+                ToolbarItem(placement: .secondaryAction) {
+                    TimerQuickToggle()
+                }
+                #endif
             }
             .sheet(isPresented: $showingQuickLog) { QuickLogSheet() }
             .sheet(isPresented: $showingStartTracking) { StartTrackingSheet() }
