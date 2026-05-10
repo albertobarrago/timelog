@@ -1,0 +1,612 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXContainerItemProxy section */
+		E901B8342FB11F0600EA36A5 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = E901B81C2FB11F0400EA36A5 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = E901B8232FB11F0400EA36A5;
+			remoteInfo = TimelogMac;
+		};
+		E901B83E2FB11F0600EA36A5 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = E901B81C2FB11F0400EA36A5 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = E901B8232FB11F0400EA36A5;
+			remoteInfo = TimelogMac;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		E901B8242FB11F0400EA36A5 /* TimelogMac.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = TimelogMac.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		E901B8332FB11F0600EA36A5 /* TimelogMacTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = TimelogMacTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		E901B83D2FB11F0600EA36A5 /* TimelogMacUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = TimelogMacUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+/* End PBXFileReference section */
+
+/* Begin PBXFileSystemSynchronizedRootGroup section */
+		E901B8262FB11F0400EA36A5 /* TimelogMac */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = TimelogMac;
+			sourceTree = "<group>";
+		};
+		E901B8362FB11F0600EA36A5 /* TimelogMacTests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = TimelogMacTests;
+			sourceTree = "<group>";
+		};
+		E901B8402FB11F0600EA36A5 /* TimelogMacUITests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = TimelogMacUITests;
+			sourceTree = "<group>";
+		};
+/* End PBXFileSystemSynchronizedRootGroup section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		E901B8212FB11F0400EA36A5 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				E602602E372E43C3BE95F7C6 /* TimelogCore in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		E901B8302FB11F0600EA36A5 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		E901B83A2FB11F0600EA36A5 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		E901B81B2FB11F0400EA36A5 = {
+			isa = PBXGroup;
+			children = (
+				E901B8262FB11F0400EA36A5 /* TimelogMac */,
+				E901B8362FB11F0600EA36A5 /* TimelogMacTests */,
+				E901B8402FB11F0600EA36A5 /* TimelogMacUITests */,
+				E901B8252FB11F0400EA36A5 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		E901B8252FB11F0400EA36A5 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				E901B8242FB11F0400EA36A5 /* TimelogMac.app */,
+				E901B8332FB11F0600EA36A5 /* TimelogMacTests.xctest */,
+				E901B83D2FB11F0600EA36A5 /* TimelogMacUITests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		E901B8232FB11F0400EA36A5 /* TimelogMac */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = E901B8472FB11F0600EA36A5 /* Build configuration list for PBXNativeTarget "TimelogMac" */;
+			buildPhases = (
+				E901B8202FB11F0400EA36A5 /* Sources */,
+				E901B8212FB11F0400EA36A5 /* Frameworks */,
+				E901B8222FB11F0400EA36A5 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				E901B8262FB11F0400EA36A5 /* TimelogMac */,
+			);
+			name = TimelogMac;
+			packageProductDependencies = (
+				3A66805AC13445C8AF724195 /* TimelogCore */,
+			);
+			productName = TimelogMac;
+			productReference = E901B8242FB11F0400EA36A5 /* TimelogMac.app */;
+			productType = "com.apple.product-type.application";
+		};
+		E901B8322FB11F0600EA36A5 /* TimelogMacTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = E901B84A2FB11F0600EA36A5 /* Build configuration list for PBXNativeTarget "TimelogMacTests" */;
+			buildPhases = (
+				E901B82F2FB11F0600EA36A5 /* Sources */,
+				E901B8302FB11F0600EA36A5 /* Frameworks */,
+				E901B8312FB11F0600EA36A5 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				E901B8352FB11F0600EA36A5 /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				E901B8362FB11F0600EA36A5 /* TimelogMacTests */,
+			);
+			name = TimelogMacTests;
+			packageProductDependencies = (
+			);
+			productName = TimelogMacTests;
+			productReference = E901B8332FB11F0600EA36A5 /* TimelogMacTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+		E901B83C2FB11F0600EA36A5 /* TimelogMacUITests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = E901B84D2FB11F0600EA36A5 /* Build configuration list for PBXNativeTarget "TimelogMacUITests" */;
+			buildPhases = (
+				E901B8392FB11F0600EA36A5 /* Sources */,
+				E901B83A2FB11F0600EA36A5 /* Frameworks */,
+				E901B83B2FB11F0600EA36A5 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				E901B83F2FB11F0600EA36A5 /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				E901B8402FB11F0600EA36A5 /* TimelogMacUITests */,
+			);
+			name = TimelogMacUITests;
+			packageProductDependencies = (
+			);
+			productName = TimelogMacUITests;
+			productReference = E901B83D2FB11F0600EA36A5 /* TimelogMacUITests.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		E901B81C2FB11F0400EA36A5 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 2640;
+				LastUpgradeCheck = 2640;
+				TargetAttributes = {
+					E901B8232FB11F0400EA36A5 = {
+						CreatedOnToolsVersion = 26.4.1;
+					};
+					E901B8322FB11F0600EA36A5 = {
+						CreatedOnToolsVersion = 26.4.1;
+						TestTargetID = E901B8232FB11F0400EA36A5;
+					};
+					E901B83C2FB11F0600EA36A5 = {
+						CreatedOnToolsVersion = 26.4.1;
+						TestTargetID = E901B8232FB11F0400EA36A5;
+					};
+				};
+			};
+			buildConfigurationList = E901B81F2FB11F0400EA36A5 /* Build configuration list for PBXProject "TimelogMac" */;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = E901B81B2FB11F0400EA36A5;
+			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				E901B8E42FB1224000EA36A5 /* XCLocalSwiftPackageReference "../TimeLog/TimelogCore" */,
+			);
+			localPackages = (
+				507B0891A8D342FFB3760133 /* XCLocalSwiftPackageReference "TimelogCore" */,
+			);
+			preferredProjectObjectVersion = 77;
+			productRefGroup = E901B8252FB11F0400EA36A5 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				E901B8232FB11F0400EA36A5 /* TimelogMac */,
+				E901B8322FB11F0600EA36A5 /* TimelogMacTests */,
+				E901B83C2FB11F0600EA36A5 /* TimelogMacUITests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		E901B8222FB11F0400EA36A5 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		E901B8312FB11F0600EA36A5 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		E901B83B2FB11F0600EA36A5 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		E901B8202FB11F0400EA36A5 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		E901B82F2FB11F0600EA36A5 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		E901B8392FB11F0600EA36A5 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		E901B8352FB11F0600EA36A5 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = E901B8232FB11F0400EA36A5 /* TimelogMac */;
+			targetProxy = E901B8342FB11F0600EA36A5 /* PBXContainerItemProxy */;
+		};
+		E901B83F2FB11F0600EA36A5 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = E901B8232FB11F0400EA36A5 /* TimelogMac */;
+			targetProxy = E901B83E2FB11F0600EA36A5 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		E901B8452FB11F0600EA36A5 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				DEVELOPMENT_TEAM = PW7G4XJ7H7;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MACOSX_DEPLOYMENT_TARGET = 26.4;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = macosx;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		E901B8462FB11F0600EA36A5 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				DEVELOPMENT_TEAM = PW7G4XJ7H7;
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MACOSX_DEPLOYMENT_TARGET = 26.4;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				SDKROOT = macosx;
+				SWIFT_COMPILATION_MODE = wholemodule;
+			};
+			name = Release;
+		};
+		E901B8482FB11F0600EA36A5 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = PW7G4XJ7H7;
+				ENABLE_APP_SANDBOX = YES;
+				ENABLE_HARDENED_RUNTIME = YES;
+				ENABLE_PREVIEWS = YES;
+				ENABLE_USER_SELECTED_FILES = readonly;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = Timelog;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.productivity";
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MARKETING_VERSION = 0.0.1;
+				PRODUCT_BUNDLE_IDENTIFIER = com.albz.TimelogMac;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				REGISTER_APP_GROUPS = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		E901B8492FB11F0600EA36A5 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = PW7G4XJ7H7;
+				ENABLE_APP_SANDBOX = YES;
+				ENABLE_HARDENED_RUNTIME = YES;
+				ENABLE_PREVIEWS = YES;
+				ENABLE_USER_SELECTED_FILES = readonly;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = Timelog;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.productivity";
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MARKETING_VERSION = 0.0.1;
+				PRODUCT_BUNDLE_IDENTIFIER = com.albz.TimelogMac;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				REGISTER_APP_GROUPS = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
+		E901B84B2FB11F0600EA36A5 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = PW7G4XJ7H7;
+				GENERATE_INFOPLIST_FILE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 26.4;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.albz.TimelogMacTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/TimelogMac.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/TimelogMac";
+			};
+			name = Debug;
+		};
+		E901B84C2FB11F0600EA36A5 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = PW7G4XJ7H7;
+				GENERATE_INFOPLIST_FILE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 26.4;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.albz.TimelogMacTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/TimelogMac.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/TimelogMac";
+			};
+			name = Release;
+		};
+		E901B84E2FB11F0600EA36A5 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = PW7G4XJ7H7;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.albz.TimelogMacUITests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TEST_TARGET_NAME = TimelogMac;
+			};
+			name = Debug;
+		};
+		E901B84F2FB11F0600EA36A5 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = PW7G4XJ7H7;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.albz.TimelogMacUITests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TEST_TARGET_NAME = TimelogMac;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		E901B81F2FB11F0400EA36A5 /* Build configuration list for PBXProject "TimelogMac" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				E901B8452FB11F0600EA36A5 /* Debug */,
+				E901B8462FB11F0600EA36A5 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		E901B8472FB11F0600EA36A5 /* Build configuration list for PBXNativeTarget "TimelogMac" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				E901B8482FB11F0600EA36A5 /* Debug */,
+				E901B8492FB11F0600EA36A5 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		E901B84A2FB11F0600EA36A5 /* Build configuration list for PBXNativeTarget "TimelogMacTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				E901B84B2FB11F0600EA36A5 /* Debug */,
+				E901B84C2FB11F0600EA36A5 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		E901B84D2FB11F0600EA36A5 /* Build configuration list for PBXNativeTarget "TimelogMacUITests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				E901B84E2FB11F0600EA36A5 /* Debug */,
+				E901B84F2FB11F0600EA36A5 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+
+/* Begin XCLocalSwiftPackageReference section */
+		E901B8E42FB1224000EA36A5 /* XCLocalSwiftPackageReference "../TimeLog/TimelogCore" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = ../TimeLog/TimelogCore;
+		};
+/* End XCLocalSwiftPackageReference section */
+
+/* Begin XCLocalSwiftPackageReference section */
+		507B0891A8D342FFB3760133 /* XCLocalSwiftPackageReference "TimelogCore" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = TimelogCore;
+		};
+/* End XCLocalSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		3A66805AC13445C8AF724195 /* TimelogCore */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 507B0891A8D342FFB3760133 /* XCLocalSwiftPackageReference "TimelogCore" */;
+			productName = TimelogCore;
+		};
+/* End XCSwiftPackageProductDependency section */
+	};
+	rootObject = E901B81C2FB11F0400EA36A5 /* Project object */;
+}
