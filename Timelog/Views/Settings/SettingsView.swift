@@ -53,6 +53,15 @@ struct SettingsView: View {
                     Button("Show guide again") { onboardingCompleted = false }
                 }
 
+                Section("About") {
+                    LabeledContent("Developer") {
+                        Link("Alberto Barrago", destination: URL(string: "https://github.com/AlbertoBarrago")!)
+                    }
+                    LabeledContent("Version") {
+                        Text(Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "—")
+                    }
+                }
+
                 Section("Danger Zone") {
                     Button("Delete all entries", role: .destructive) {
                         for e in entries { context.delete(e) }

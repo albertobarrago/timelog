@@ -42,6 +42,15 @@ struct MacSettingsView: View {
             } footer: {
                 Text("Sends a notification if a session is still running at this time.")
             }
+
+            Section("About") {
+                LabeledContent("Developer") {
+                    Link("Alberto Barrago", destination: URL(string: "https://github.com/AlbertoBarrago")!)
+                }
+                LabeledContent("Version") {
+                    Text(Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "—")
+                }
+            }
         }
         .formStyle(.grouped)
         .navigationTitle("Settings")
