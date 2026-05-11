@@ -26,6 +26,19 @@ struct TimelogMacApp: App {
         .modelContainer(Self.container)
         .commands {
             CommandGroup(replacing: .newItem) {}
+            CommandGroup(replacing: .appInfo) {
+                Button("About Timelog") {
+                    NSApplication.shared.orderFrontStandardAboutPanel(options: [
+                        .credits: NSAttributedString(
+                            string: "github.com/AlbertoBarrago",
+                            attributes: [
+                                .link: URL(string: "https://github.com/AlbertoBarrago")!,
+                                .font: NSFont.systemFont(ofSize: NSFont.smallSystemFontSize)
+                            ]
+                        )
+                    ])
+                }
+            }
         }
 
         MenuBarExtra {
