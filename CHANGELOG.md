@@ -8,6 +8,8 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ## [Unreleased]
 
 ### Fixed
+- iOS + macOS: project form sheet closing abruptly on save — `dismiss()` now called before `context.insert()` to prevent SwiftData relationship update from resetting the `showingAddProject` state mid-dismissal
+- macOS: duplicate `client.projects.append(p)` in `ProjectMacFormView.save()` removed — SwiftData already handles the inverse relationship when setting `p.client`
 - iOS: second client not saving — consolidated two `.sheet` modifiers into a single `ClientSheet` enum to fix iOS sheet reuse bug
 - macOS: `Fatal error: model instance was invalidated` crash on client delete — selection now uses `PersistentIdentifier` instead of a direct `Client` reference
 - macOS: `client.projects` relationship access replaced with `@Query` in `ProjectsMacView` to avoid accessing invalidated SwiftData backing
@@ -20,6 +22,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Timelog Today home-screen widget (replaces Xcode template): shows logged + active minutes, last client/project, recording indicator
 
 ### Changed
+- iOS + macOS: client color picker replaced with a 12-swatch preset grid; native `ColorPicker` kept as "Custom" fallback — faster to use and works on all screen sizes
 - `HomeView` refactored to a single `activeSheet` enum — replaces four separate `@State` booleans
 - `HomeView` pushes a widget snapshot on appear and on every data change via `widgetSnapshotSignature`
 - `AppTab` enum extracted to `ToolbarOnlyNavigation.swift`

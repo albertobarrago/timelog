@@ -2,6 +2,12 @@ import TimelogCore
 import SwiftUI
 import SwiftData
 
+private let presetColorHexes = [
+    "#FF3B30", "#FF9500", "#FFCC00", "#34C759",
+    "#30B0C7", "#007AFF", "#5856D6", "#AF52DE",
+    "#FF2D55", "#A2845E", "#8E8E93", "#32ADE6"
+]
+
 struct ClientFormView: View {
     @Environment(\.modelContext) private var context
     @Environment(\.dismiss) private var dismiss
@@ -9,14 +15,25 @@ struct ClientFormView: View {
     var client: Client?
 
     @State private var name = ""
-    @State private var color = Color.accentColor
+    @State private var colorHex = "#007AFF"
 
     var body: some View {
         NavigationStack {
             Form {
                 Section {
                     TextField("Client name", text: $name)
-                    ColorPicker("Color", selection: $color, supportsOpacity: false)
+                }
+                Section("Color") {
+                    LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 6), spacing: 12) {
+                        ForEach(presetColorHexes, id: \.self) { hex in
+                            colorSwatch(hex: hex)
+                        }
+                    }
+                    .padding(.vertical, 4)
+                    ColorPicker("Custom", selection: Binding(
+                        get: { Color(hex: colorHex) ?? .accentColor },
+                        set: { colorHex = $0.hex }
+                    ), supportsOpacity: false)
                 }
             }
             .formStyle(.grouped)
@@ -33,22 +50,36 @@ struct ClientFormView: View {
             .onAppear {
                 if let c = client {
                     name = c.name
-                    color = c.color
+                    colorHex = c.colorHex
                 }
             }
         }
-        #if os(macOS)
-        .frame(minWidth: 360, minHeight: 200)
-        #endif
+    }
+
+    @ViewBuilder
+    private func colorSwatch(hex: String) -> some View {
+        let selected = colorHex.uppercased() == hex
+        Circle()
+            .fill(Color(hex: hex) ?? .blue)
+            .frame(width: 36, height: 36)
+            .overlay {
+                if selected {
+                    Image(systemName: "checkmark")
+                        .font(.system(size: 14, weight: .bold))
+                        .foregroundStyle(.white)
+                        .shadow(color: .black.opacity(0.25), radius: 1)
+                }
+            }
+            .onTapGesture { colorHex = hex }
     }
 
     private func save() {
+        dismiss()
         if let c = client {
             c.name = name
-            c.colorHex = color.hex
+            c.colorHex = colorHex
         } else {
-            context.insert(Client(name: name, colorHex: color.hex))
+            context.insert(Client(name: name, colorHex: colorHex))
         }
-        dismiss()
     }
 }

@@ -44,6 +44,7 @@ struct ProjectFormView: View {
     }
 
     private func save() {
+        dismiss()
         if let p = project {
             p.name = name
             p.code = code.isEmpty ? nil : code
@@ -52,6 +53,5 @@ struct ProjectFormView: View {
             p.client = client
             context.insert(p)
         }
-        dismiss()
     }
 }

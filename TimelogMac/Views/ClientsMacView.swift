@@ -207,6 +207,12 @@ private struct ProjectMacRow: View {
     }
 }
 
+private let presetColorHexes = [
+    "#FF3B30", "#FF9500", "#FFCC00", "#34C759",
+    "#30B0C7", "#007AFF", "#5856D6", "#AF52DE",
+    "#FF2D55", "#A2845E", "#8E8E93", "#32ADE6"
+]
+
 struct ClientMacFormView: View {
     @Environment(\.modelContext) private var context
     @Environment(\.dismiss)      private var dismiss
@@ -220,10 +226,21 @@ struct ClientMacFormView: View {
             Text(client == nil ? "New Client" : "Edit Client").font(.headline)
             TextField("Name", text: $name)
                 .textFieldStyle(.roundedBorder)
-            ColorPicker("Colour", selection: Binding(
-                get: { Color(hex: colorHex) ?? .accentColor },
-                set: { colorHex = $0.hex }
-            ))
+            VStack(alignment: .leading, spacing: 8) {
+                Text("Color")
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+                LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 6), spacing: 8) {
+                    ForEach(presetColorHexes, id: \.self) { hex in
+                        colorSwatch(hex: hex)
+                    }
+                }
+                ColorPicker("Custom", selection: Binding(
+                    get: { Color(hex: colorHex) ?? .accentColor },
+                    set: { colorHex = $0.hex }
+                ), supportsOpacity: false)
+                .labelsHidden()
+            }
             HStack {
                 Button("Cancel") { dismiss() }.keyboardShortcut(.escape)
                 Spacer()
@@ -234,14 +251,31 @@ struct ClientMacFormView: View {
             }
         }
         .padding(20)
-        .frame(width: 280)
+        .frame(width: 300)
         .onAppear { name = client?.name ?? ""; colorHex = client?.colorHex ?? "#007AFF" }
     }
 
+    @ViewBuilder
+    private func colorSwatch(hex: String) -> some View {
+        let selected = colorHex.uppercased() == hex
+        Circle()
+            .fill(Color(hex: hex) ?? .blue)
+            .frame(width: 28, height: 28)
+            .overlay {
+                if selected {
+                    Image(systemName: "checkmark")
+                        .font(.system(size: 11, weight: .bold))
+                        .foregroundStyle(.white)
+                        .shadow(color: .black.opacity(0.25), radius: 1)
+                }
+            }
+            .onTapGesture { colorHex = hex }
+    }
+
     private func save() {
+        dismiss()
         if let c = client { c.name = name; c.colorHex = colorHex }
         else { context.insert(Client(name: name, colorHex: colorHex)) }
-        dismiss()
     }
 }
 
@@ -274,13 +308,12 @@ struct ProjectMacFormView: View {
     }
 
     private func save() {
+        dismiss()
         if let p = project { p.name = name; p.code = code.isEmpty ? nil : code }
         else {
             let p = Project(name: name, code: code.isEmpty ? nil : code)
             p.client = client
             context.insert(p)
-            client.projects.append(p)
         }
-        dismiss()
     }
 }
