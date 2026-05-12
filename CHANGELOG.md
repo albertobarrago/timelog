@@ -7,6 +7,12 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+### Fixed
+- iOS: second client not saving — consolidated two `.sheet` modifiers into a single `ClientSheet` enum to fix iOS sheet reuse bug
+- macOS: `Fatal error: model instance was invalidated` crash on client delete — selection now uses `PersistentIdentifier` instead of a direct `Client` reference
+- macOS: `client.projects` relationship access replaced with `@Query` in `ProjectsMacView` to avoid accessing invalidated SwiftData backing
+- macOS: large empty space at top of Projects view — replaced `VStack` root with `List` (same fix applied to History view)
+
 ### Added
 - macOS History sidebar view: weekly bar chart (7-day, proportional bars, click to navigate) + entries grouped by client with subtotals
 - iOS History sheet: date picker, per-day total, swipe-to-delete, tap-to-edit entries
