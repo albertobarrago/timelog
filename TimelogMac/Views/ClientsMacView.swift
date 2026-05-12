@@ -4,31 +4,42 @@ import TimelogCore
 
 struct ClientsMacView: View {
     @Environment(\.modelContext) private var context
-    @Query(sort: \Client.name) private var clients: [Client]
+    @Query(sort: \Client.name) private var allClients: [Client]
+    @Query(filter: #Predicate<Client> { !$0.isArchived }, sort: \Client.name) private var activeClients: [Client]
 
-    @State private var selectedClient: Client?
+    @State private var selectedClientID: PersistentIdentifier?
     @State private var showingAddClient  = false
     @State private var clientToEdit: Client?
     @State private var showArchived      = false
 
     private var visibleClients: [Client] {
-        showArchived ? clients : clients.filter { !$0.isArchived }
+        showArchived ? allClients : activeClients
+    }
+
+    private var selectedClient: Client? {
+        guard let id = selectedClientID else { return nil }
+        return allClients.first { $0.persistentModelID == id }
     }
 
     var body: some View {
         HSplitView {
             // ── Clients list ──────────────────────────────
             VStack(spacing: 0) {
-                List(visibleClients, selection: $selectedClient) { client in
+                List(visibleClients, selection: $selectedClientID) { client in
                     ClientMacRow(client: client)
-                        .tag(client)
+                        .tag(client.persistentModelID)
                         .contextMenu {
                             Button("Edit") { clientToEdit = client }
                             Button(client.isArchived ? "Unarchive" : "Archive") {
                                 client.isArchived.toggle()
                             }
                             Divider()
-                            Button("Delete", role: .destructive) { context.delete(client) }
+                            Button("Delete", role: .destructive) {
+                                if selectedClientID == client.persistentModelID {
+                                    selectedClientID = nil
+                                }
+                                context.delete(client)
+                            }
                         }
                 }
                 .listStyle(.sidebar)
@@ -68,15 +79,8 @@ private struct ClientMacRow: View {
     var body: some View {
         HStack(spacing: 8) {
             Circle().fill(client.color).frame(width: 10, height: 10)
-            VStack(alignment: .leading, spacing: 1) {
-                Text(client.name)
-                    .foregroundStyle(client.isArchived ? .secondary : .primary)
-                Text(client.projects.filter { !$0.isArchived }.count == 1
-                     ? "1 project"
-                     : "\(client.projects.filter { !$0.isArchived }.count) projects")
-                    .font(.caption2)
-                    .foregroundStyle(.secondary)
-            }
+            Text(client.name)
+                .foregroundStyle(client.isArchived ? .secondary : .primary)
             Spacer()
             if client.isArchived {
                 Image(systemName: "archivebox")
@@ -97,58 +101,67 @@ struct ProjectsMacView: View {
     @State private var showArchived      = false
     @State private var selectedProjects  = Set<Project.ID>()
 
+    @Query(sort: \Project.name) private var allProjects: [Project]
+
     private var visibleProjects: [Project] {
-        client.projects
-            .filter { showArchived || !$0.isArchived }
-            .sorted { $0.name < $1.name }
+        allProjects.filter {
+            $0.client?.persistentModelID == client.persistentModelID
+            && (showArchived || !$0.isArchived)
+        }
     }
 
     var body: some View {
-        VStack(spacing: 0) {
-            HStack(spacing: 8) {
-                Circle().fill(client.color).frame(width: 10, height: 10)
-                Text(client.name).font(.headline)
-                Spacer()
+        List {
+            Section {
+                HStack(spacing: 8) {
+                    Circle().fill(client.color).frame(width: 10, height: 10)
+                    Text(client.name).font(.headline)
+                    Spacer()
+                }
+                .padding(.vertical, 4)
             }
-            .padding(.horizontal, 16)
-            .padding(.vertical, 10)
-            .background(.bar)
-
-            Divider()
+            .listRowBackground(Color.clear)
+            .listRowSeparator(.hidden)
 
             if visibleProjects.isEmpty {
-                ContentUnavailableView("No projects", systemImage: "folder")
-            } else {
-                Table(visibleProjects, selection: $selectedProjects) {
-                    TableColumn("Project") { proj in
-                        HStack(spacing: 6) {
-                            Text(proj.name)
-                                .foregroundStyle(proj.isArchived ? .secondary : .primary)
-                            if let code = proj.code {
-                                Text(code)
-                                    .font(.caption)
-                                    .foregroundStyle(.secondary)
-                                    .padding(.horizontal, 5)
-                                    .padding(.vertical, 2)
-                                    .background(.quaternary, in: Capsule())
-                            }
+                Section {
+                    HStack {
+                        Spacer()
+                        VStack(spacing: 8) {
+                            Image(systemName: "folder")
+                                .font(.system(size: 32))
+                                .foregroundStyle(.secondary)
+                            Text("No projects")
+                                .font(.headline)
+                                .foregroundStyle(.secondary)
                         }
+                        .padding(.vertical, 32)
+                        Spacer()
                     }
-                    TableColumn("Entries") { proj in
-                        Text("\(proj.entries.count)")
-                            .foregroundStyle(.secondary)
+                }
+                .listRowBackground(Color.clear)
+                .listRowSeparator(.hidden)
+            } else {
+                Section {
+                    ForEach(visibleProjects) { proj in
+                        ProjectMacRow(project: proj)
+                            .contentShape(Rectangle())
+                            .onTapGesture { projectToEdit = proj }
+                            .contextMenu {
+                                Button("Edit") { projectToEdit = proj }
+                                Button(proj.isArchived ? "Unarchive" : "Archive") {
+                                    proj.isArchived.toggle()
+                                }
+                                Divider()
+                                Button("Delete", role: .destructive) {
+                                    context.delete(proj)
+                                }
+                            }
                     }
-                    .width(60)
-                    TableColumn("Status") { proj in
-                        Text(proj.isArchived ? "Archived" : "Active")
-                            .font(.caption)
-                            .foregroundStyle(proj.isArchived ? Color.secondary : Color.green)
-                    }
-                    .width(70)
                 }
             }
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .listStyle(.inset)
         .toolbar {
             ToolbarItemGroup(placement: .secondaryAction) {
                 Button { showingAddProject = true } label: {
@@ -162,6 +175,35 @@ struct ProjectsMacView: View {
         }
         .sheet(isPresented: $showingAddProject) { ProjectMacFormView(client: client) }
         .sheet(item: $projectToEdit)            { ProjectMacFormView(client: client, project: $0) }
+    }
+}
+
+private struct ProjectMacRow: View {
+    let project: Project
+    var body: some View {
+        HStack(spacing: 8) {
+            VStack(alignment: .leading, spacing: 2) {
+                HStack(spacing: 6) {
+                    Text(project.name)
+                        .foregroundStyle(project.isArchived ? .secondary : .primary)
+                    if let code = project.code {
+                        Text(code)
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                            .padding(.horizontal, 5)
+                            .padding(.vertical, 2)
+                            .background(.quaternary, in: Capsule())
+                    }
+                }
+            }
+            Spacer()
+            if project.isArchived {
+                Text("Archived")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+        }
+        .padding(.vertical, 2)
     }
 }
 

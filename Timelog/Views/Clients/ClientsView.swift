@@ -2,12 +2,22 @@ import TimelogCore
 import SwiftUI
 import SwiftData
 
+private enum ClientSheet: Identifiable {
+    case add
+    case edit(Client)
+    var id: String {
+        switch self {
+        case .add:           return "add"
+        case .edit(let c):   return "edit-\(c.persistentModelID)"
+        }
+    }
+}
+
 struct ClientsView: View {
     @Environment(\.modelContext) private var context
     @Query(sort: \Client.name) private var clients: [Client]
 
-    @State private var showingAddClient = false
-    @State private var clientToEdit: Client?
+    @State private var activeSheet: ClientSheet?
     @State private var showArchived = false
 
     private var visibleClients: [Client] {
@@ -48,7 +58,7 @@ struct ClientsView: View {
                                 Button(role: .destructive) { context.delete(client) } label: {
                                     Label("Delete", systemImage: "trash")
                                 }
-                                Button { clientToEdit = client } label: {
+                                Button { activeSheet = .edit(client) } label: {
                                     Label("Edit", systemImage: "pencil")
                                 }
                             }
@@ -68,7 +78,7 @@ struct ClientsView: View {
             .navigationTitle("Clients")
             .toolbar {
                 ToolbarItem(placement: .primaryAction) {
-                    Button { showingAddClient = true } label: { Image(systemName: "plus") }
+                    Button { activeSheet = .add } label: { Image(systemName: "plus") }
                 }
                 ToolbarItem(placement: .secondaryAction) {
                     Button {
@@ -84,8 +94,12 @@ struct ClientsView: View {
                 }
                 #endif
             }
-            .sheet(isPresented: $showingAddClient) { ClientFormView() }
-            .sheet(item: $clientToEdit) { ClientFormView(client: $0) }
+            .sheet(item: $activeSheet) { sheet in
+                switch sheet {
+                case .add:          ClientFormView()
+                case .edit(let c):  ClientFormView(client: c)
+                }
+            }
         }
     }
 }
