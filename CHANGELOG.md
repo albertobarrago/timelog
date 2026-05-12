@@ -22,6 +22,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Timelog Today home-screen widget (replaces Xcode template): shows logged + active minutes, last client/project, recording indicator
 
 ### Changed
+- macOS: duration input replaced with `DurationPickerMac` — 6 quick-pick buttons (15m, 30m, 45m, 1h, 1h30m, 2h) + direct text input with stepper for fine adjustment; used in QuickLog, StopSession, and History edit sheet
 - iOS + macOS: client color picker replaced with a 12-swatch preset grid; native `ColorPicker` kept as "Custom" fallback — faster to use and works on all screen sizes
 - `HomeView` refactored to a single `activeSheet` enum — replaces four separate `@State` booleans
 - `HomeView` pushes a widget snapshot on appear and on every data change via `widgetSnapshotSignature`

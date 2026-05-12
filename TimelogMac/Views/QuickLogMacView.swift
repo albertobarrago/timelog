@@ -26,10 +26,7 @@ struct QuickLogMacView: View {
 
             DatePicker("Date", selection: $date, in: ...Date(), displayedComponents: .date)
 
-            HStack(spacing: 12) {
-                Stepper("\(hours)h", value: $hours, in: 0...23)
-                Stepper("\(minutes)m", value: $minutes, in: 0...59)
-            }
+            DurationPickerMac(hours: $hours, minutes: $minutes)
 
             Picker("Client", selection: $selectedClient) {
                 Text("None").tag(Optional<Client>.none)

@@ -37,10 +37,7 @@ struct StopSessionMacView: View {
 
             Divider()
 
-            HStack {
-                Stepper("\(hours)h", value: $hours, in: 0...23)
-                Stepper("\(minutes)m", value: $minutes, in: 0...59)
-            }
+            DurationPickerMac(hours: $hours, minutes: $minutes)
 
             TextField("Notes (optional)", text: $notes)
 
@@ -55,7 +52,7 @@ struct StopSessionMacView: View {
             }
         }
         .padding()
-        .frame(width: 280)
+        .frame(width: 320)
     }
 
     private func stop() {
