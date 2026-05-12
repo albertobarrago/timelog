@@ -7,95 +7,181 @@ struct TimerMacView: View {
 
     var body: some View {
         @Bindable var vm = vm
+
         VStack(spacing: 0) {
-            Spacer()
+            header(vm: vm)
 
-            // Phase + dots
-            if vm.pomodoroEnabled {
-                VStack(spacing: 6) {
-                    Text(vm.phase.label)
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
-                    HStack(spacing: 6) {
-                        ForEach(0..<vm.pomodorosBeforeLong, id: \.self) { i in
-                            Circle()
-                                .fill(i < vm.completedPomodoros % vm.pomodorosBeforeLong
-                                      ? Color.accentColor : Color.secondary.opacity(0.3))
-                                .frame(width: 7, height: 7)
-                        }
-                    }
+            Divider()
+
+            HStack(spacing: 28) {
+                timerFace(vm: vm)
+                    .frame(width: 290, height: 290)
+
+                VStack(alignment: .leading, spacing: 18) {
+                    phasePanel(vm: vm)
+                    metricsPanel(vm: vm)
+                    controls(vm: vm)
                 }
-                .padding(.bottom, 20)
+                .frame(width: 260)
             }
-
-            // Ring + time
-            ZStack {
-                if vm.pomodoroEnabled {
-                    Circle()
-                        .stroke(Color.secondary.opacity(0.12), lineWidth: 10)
-                    Circle()
-                        .trim(from: 0, to: vm.progress)
-                        .stroke(ringColor(for: vm.phase),
-                                style: StrokeStyle(lineWidth: 10, lineCap: .round))
-                        .rotationEffect(.degrees(-90))
-                        .animation(.linear(duration: 1), value: vm.progress)
-                }
-                Text(vm.displayTime)
-                    .font(.system(size: 52, weight: .thin, design: .monospaced))
-                    .monospacedDigit()
-                    .contentTransition(.numericText())
-            }
-            .frame(width: 180, height: 180)
-
-            Spacer().frame(height: 32)
-
-            // Controls — single row, visually balanced
-            HStack(spacing: 0) {
-                Spacer()
-
-                // Reset
-                Button { vm.reset() } label: {
-                    Image(systemName: "arrow.counterclockwise")
-                        .font(.system(size: 16, weight: .regular))
-                        .foregroundStyle(.secondary)
-                        .frame(width: 36, height: 36)
-                }
-                .buttonStyle(.plain)
-                .disabled(!vm.isRunning && vm.elapsed == 0)
-
-                Spacer().frame(width: 28)
-
-                // Play / Pause
-                Button { vm.toggle() } label: {
-                    Image(systemName: vm.isRunning ? "pause.fill" : "play.fill")
-                        .font(.system(size: 20, weight: .medium))
-                        .frame(width: 52, height: 52)
-                        .background(Color.accentColor, in: Circle())
-                        .foregroundStyle(.white)
-                }
-                .buttonStyle(.plain)
-                .keyboardShortcut(.space, modifiers: [])
-
-                Spacer().frame(width: 28)
-
-                // Pomodoro toggle
-                Toggle(isOn: $vm.pomodoroEnabled) {
-                    Image(systemName: "timer")
-                        .font(.system(size: 16, weight: .regular))
-                        .frame(width: 36, height: 36)
-                }
-                .toggleStyle(.button)
-                .buttonStyle(.plain)
-                .onChange(of: vm.pomodoroEnabled) { vm.reset() }
-
-                Spacer()
-            }
-
-            Spacer()
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .padding(28)
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
         .navigationTitle("Timer")
         .onAppear { vm.applySettings(settings) }
+    }
+
+    private func header(vm: TimerViewModel) -> some View {
+        @Bindable var vm = vm
+
+        return HStack(spacing: 16) {
+            Picker("Mode", selection: $vm.pomodoroEnabled) {
+                Label("Stopwatch", systemImage: "stopwatch").tag(false)
+                Label("Pomodoro", systemImage: "timer").tag(true)
+            }
+            .pickerStyle(.segmented)
+            .frame(width: 260)
+            .onChange(of: vm.pomodoroEnabled) { vm.reset() }
+
+            Spacer()
+
+            HStack(spacing: 8) {
+                Circle()
+                    .fill(vm.isRunning ? Color.green : Color.secondary.opacity(0.35))
+                    .frame(width: 8, height: 8)
+                Text(vm.isRunning ? "Running" : "Paused")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+        }
+        .padding(.horizontal, 20)
+        .padding(.vertical, 14)
+    }
+
+    private func timerFace(vm: TimerViewModel) -> some View {
+        ZStack {
+            Circle()
+                .fill(.quaternary.opacity(0.55))
+
+            if vm.pomodoroEnabled {
+                Circle()
+                    .stroke(Color.secondary.opacity(0.13), lineWidth: 14)
+                    .padding(12)
+
+                Circle()
+                    .trim(from: 0, to: vm.progress)
+                    .stroke(
+                        ringColor(for: vm.phase),
+                        style: StrokeStyle(lineWidth: 14, lineCap: .round)
+                    )
+                    .rotationEffect(.degrees(-90))
+                    .padding(12)
+                    .animation(.linear(duration: 1), value: vm.progress)
+            } else {
+                Circle()
+                    .stroke(Color.secondary.opacity(0.12), lineWidth: 1)
+                    .padding(12)
+            }
+
+            VStack(spacing: 8) {
+                Image(systemName: vm.pomodoroEnabled ? "timer" : "stopwatch")
+                    .font(.system(size: 24, weight: .medium))
+                    .foregroundStyle(vm.pomodoroEnabled ? ringColor(for: vm.phase) : .secondary)
+
+                Text(vm.displayTime)
+                    .font(.system(size: 56, weight: .thin, design: .monospaced))
+                    .monospacedDigit()
+                    .contentTransition(.numericText())
+
+                Text(vm.pomodoroEnabled ? vm.phase.label : "Stopwatch")
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+            }
+        }
+    }
+
+    private func phasePanel(vm: TimerViewModel) -> some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Label(vm.pomodoroEnabled ? vm.phase.label : "Open session", systemImage: vm.pomodoroEnabled ? "timer" : "clock")
+                .font(.headline)
+
+            Text(vm.pomodoroEnabled ? phaseDescription(for: vm.phase) : "Track elapsed time without a fixed interval.")
+                .font(.caption)
+                .foregroundStyle(.secondary)
+                .fixedSize(horizontal: false, vertical: true)
+
+            if vm.pomodoroEnabled {
+                HStack(spacing: 7) {
+                    ForEach(0..<vm.pomodorosBeforeLong, id: \.self) { index in
+                        Capsule()
+                            .fill(index < vm.completedPomodoros % vm.pomodorosBeforeLong ? Color.accentColor : Color.secondary.opacity(0.22))
+                            .frame(width: 28, height: 6)
+                    }
+                }
+                .padding(.top, 2)
+            }
+        }
+        .padding(14)
+        .background(.quinary, in: RoundedRectangle(cornerRadius: 8))
+    }
+
+    private func metricsPanel(vm: TimerViewModel) -> some View {
+        Grid(alignment: .leading, horizontalSpacing: 14, verticalSpacing: 10) {
+            GridRow {
+                metric("Mode", vm.pomodoroEnabled ? "Pomodoro" : "Free")
+                metric("Done", "\(vm.completedPomodoros)")
+            }
+
+            GridRow {
+                metric("Work", "\(vm.workMinutes)m")
+                metric("Break", "\(vm.shortBreakMinutes)m")
+            }
+        }
+        .padding(14)
+        .background(.quinary, in: RoundedRectangle(cornerRadius: 8))
+    }
+
+    private func controls(vm: TimerViewModel) -> some View {
+        HStack(spacing: 12) {
+            Button {
+                vm.reset()
+            } label: {
+                Label("Reset", systemImage: "arrow.counterclockwise")
+                    .frame(maxWidth: .infinity)
+            }
+            .disabled(!vm.isRunning && vm.elapsed == 0)
+
+            Button {
+                vm.toggle()
+            } label: {
+                Label(vm.isRunning ? "Pause" : "Start", systemImage: vm.isRunning ? "pause.fill" : "play.fill")
+                    .frame(maxWidth: .infinity)
+            }
+            .buttonStyle(.borderedProminent)
+            .keyboardShortcut(.space, modifiers: [])
+        }
+    }
+
+    private func metric(_ label: String, _ value: String) -> some View {
+        VStack(alignment: .leading, spacing: 2) {
+            Text(label)
+                .font(.caption2)
+                .foregroundStyle(.secondary)
+            Text(value)
+                .font(.system(.body, design: .rounded, weight: .semibold))
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
+    private func phaseDescription(for phase: PomodoroPhase) -> String {
+        switch phase {
+        case .work:
+            "Focus interval based on your configured work duration."
+        case .shortBreak:
+            "Short recovery before the next focus interval."
+        case .longBreak:
+            "Longer break after completing the current set."
+        }
     }
 
     private func ringColor(for phase: PomodoroPhase) -> Color {

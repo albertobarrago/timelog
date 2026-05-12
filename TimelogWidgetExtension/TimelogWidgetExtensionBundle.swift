@@ -12,7 +12,6 @@ import SwiftUI
 struct TimelogWidgetExtensionBundle: WidgetBundle {
     var body: some Widget {
         TimelogWidgetExtension()
-        TimelogWidgetExtensionControl()
         TimelogWidgetExtensionLiveActivity()
     }
 }

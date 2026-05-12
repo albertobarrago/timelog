@@ -74,13 +74,13 @@ struct SettingsView: View {
             }
             .formStyle(.grouped)
             .navigationTitle("Settings")
-            #if targetEnvironment(macCatalyst)
             .toolbar {
+                #if targetEnvironment(macCatalyst)
                 ToolbarItem(placement: .secondaryAction) {
                     TimerQuickToggle()
                 }
+                #endif
             }
-            #endif
         }
     }
 

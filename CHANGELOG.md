@@ -7,6 +7,21 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+### Added
+- macOS History sidebar view: weekly bar chart (7-day, proportional bars, click to navigate) + entries grouped by client with subtotals
+- iOS History sheet: date picker, per-day total, swipe-to-delete, tap-to-edit entries
+- `WidgetSnapshotStore` in `TimelogCore` — writes a `TimelogWidgetSnapshot` to an App Group `UserDefaults` so the widget reads live data
+- Timelog Today home-screen widget (replaces Xcode template): shows logged + active minutes, last client/project, recording indicator
+
+### Changed
+- `HomeView` refactored to a single `activeSheet` enum — replaces four separate `@State` booleans
+- `HomeView` pushes a widget snapshot on appear and on every data change via `widgetSnapshotSignature`
+- `AppTab` enum extracted to `ToolbarOnlyNavigation.swift`
+- macOS sidebar now includes History between Today and Clients
+
+### Removed
+- Menu-bar-only mode (hide Dock icon toggle) — removed pending a stable implementation
+
 ---
 
 ## [0.2.0] — 2026-05-10

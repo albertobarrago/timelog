@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		B17066319DDC41458A535522 /* TimelogCore in Frameworks */ = {isa = PBXBuildFile; productRef = CD0C797427FE40D09F52EBAA /* TimelogCore */; };
+		B17066329DDC41458A535522 /* TimelogCore in Frameworks */ = {isa = PBXBuildFile; productRef = CD0C797427FE40D09F52EBAA /* TimelogCore */; };
 		E901B6DF2FB0C3E300EA36A5 /* WidgetKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E901B6DE2FB0C3E300EA36A5 /* WidgetKit.framework */; };
 		E901B6E12FB0C3E300EA36A5 /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E901B6E02FB0C3E300EA36A5 /* SwiftUI.framework */; };
 		E901B6F22FB0C3E400EA36A5 /* TimelogWidgetExtensionExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = E901B6DC2FB0C3E300EA36A5 /* TimelogWidgetExtensionExtension.appex */; platformFilter = ios; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
@@ -111,6 +112,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				B17066329DDC41458A535522 /* TimelogCore in Frameworks */,
 				E901B6E12FB0C3E300EA36A5 /* SwiftUI.framework in Frameworks */,
 				E901B6DF2FB0C3E300EA36A5 /* WidgetKit.framework in Frameworks */,
 			);
@@ -193,6 +195,7 @@
 			);
 			name = TimelogWidgetExtensionExtension;
 			packageProductDependencies = (
+				CD0C797427FE40D09F52EBAA /* TimelogCore */,
 			);
 			productName = TimelogWidgetExtensionExtension;
 			productReference = E901B6DC2FB0C3E300EA36A5 /* TimelogWidgetExtensionExtension.appex */;
@@ -406,6 +409,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
+				CODE_SIGN_ENTITLEMENTS = TimelogWidgetExtension/TimelogWidgetExtension.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 2;
 				DEVELOPMENT_TEAM = PW7G4XJ7H7;
@@ -436,6 +440,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
+				CODE_SIGN_ENTITLEMENTS = TimelogWidgetExtension/TimelogWidgetExtension.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 2;
 				DEVELOPMENT_TEAM = PW7G4XJ7H7;

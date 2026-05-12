@@ -1,88 +1,134 @@
-//
-//  TimelogWidgetExtension.swift
-//  TimelogWidgetExtension
-//
-//  Created by Alberto Barrago on 10/05/2026.
-//
-
-import WidgetKit
 import SwiftUI
+import TimelogCore
+import WidgetKit
 
-struct Provider: AppIntentTimelineProvider {
-    func placeholder(in context: Context) -> SimpleEntry {
-        SimpleEntry(date: Date(), configuration: ConfigurationAppIntent())
+struct TodayProvider: TimelineProvider {
+    func placeholder(in context: Context) -> TodayEntry {
+        TodayEntry(
+            date: .now,
+            snapshot: TimelogWidgetSnapshot(
+                loggedMinutes: 125,
+                activeSessions: [
+                    TimelogWidgetActiveSessionSnapshot(
+                        startDate: Date().addingTimeInterval(-24 * 60),
+                        clientName: "Acme",
+                        projectName: "Mobile app"
+                    )
+                ],
+                lastClientName: "Acme",
+                lastProjectName: "Mobile app"
+            )
+        )
     }
 
-    func snapshot(for configuration: ConfigurationAppIntent, in context: Context) async -> SimpleEntry {
-        SimpleEntry(date: Date(), configuration: configuration)
+    func getSnapshot(in context: Context, completion: @escaping (TodayEntry) -> Void) {
+        completion(TodayEntry(date: .now, snapshot: WidgetSnapshotStore.load()))
     }
-    
-    func timeline(for configuration: ConfigurationAppIntent, in context: Context) async -> Timeline<SimpleEntry> {
-        var entries: [SimpleEntry] = []
 
-        // Generate a timeline consisting of five entries an hour apart, starting from the current date.
-        let currentDate = Date()
-        for hourOffset in 0 ..< 5 {
-            let entryDate = Calendar.current.date(byAdding: .hour, value: hourOffset, to: currentDate)!
-            let entry = SimpleEntry(date: entryDate, configuration: configuration)
-            entries.append(entry)
+    func getTimeline(in context: Context, completion: @escaping (Timeline<TodayEntry>) -> Void) {
+        let now = Date()
+        let snapshot = WidgetSnapshotStore.load()
+        let entries = (0..<8).map { offset in
+            TodayEntry(
+                date: Calendar.current.date(byAdding: .minute, value: offset * 15, to: now) ?? now,
+                snapshot: snapshot
+            )
         }
+        completion(Timeline(entries: entries, policy: .atEnd))
+    }
+}
 
-        return Timeline(entries: entries, policy: .atEnd)
+struct TodayEntry: TimelineEntry {
+    let date: Date
+    let snapshot: TimelogWidgetSnapshot
+}
+
+struct TimelogWidgetExtensionEntryView: View {
+    let entry: TodayEntry
+
+    private var totalMinutes: Int {
+        entry.snapshot.loggedMinutes + activeMinutes
     }
 
-//    func relevances() async -> WidgetRelevances<ConfigurationAppIntent> {
-//        // Generate a list containing the contexts this widget is relevant in.
-//    }
-}
+    private var activeMinutes: Int {
+        entry.snapshot.activeSessions.reduce(0) {
+            $0 + max(0, Int(entry.date.timeIntervalSince($1.startDate) / 60))
+        }
+    }
 
-struct SimpleEntry: TimelineEntry {
-    let date: Date
-    let configuration: ConfigurationAppIntent
-}
-
-struct TimelogWidgetExtensionEntryView : View {
-    var entry: Provider.Entry
+    private var subtitle: String {
+        if let project = entry.snapshot.lastProjectName, !project.isEmpty {
+            return project
+        }
+        if let client = entry.snapshot.lastClientName, !client.isEmpty {
+            return client
+        }
+        return entry.snapshot.activeSessions.isEmpty ? "No entries today" : "Tracking now"
+    }
 
     var body: some View {
-        VStack {
-            Text("Time:")
-            Text(entry.date, style: .time)
+        VStack(alignment: .leading, spacing: 10) {
+            HStack(alignment: .firstTextBaseline) {
+                Text("Today")
+                    .font(.caption.weight(.semibold))
+                    .foregroundStyle(.secondary)
+                Spacer(minLength: 8)
+                if !entry.snapshot.activeSessions.isEmpty {
+                    Image(systemName: "record.circle.fill")
+                        .foregroundStyle(.red)
+                        .imageScale(.small)
+                }
+            }
 
-            Text("Favorite Emoji:")
-            Text(entry.configuration.favoriteEmoji)
+            Text(totalMinutes.formattedDuration)
+                .font(.system(size: 30, weight: .bold, design: .rounded))
+                .minimumScaleFactor(0.75)
+                .lineLimit(1)
+
+            VStack(alignment: .leading, spacing: 3) {
+                Text(subtitle)
+                    .font(.caption)
+                    .lineLimit(1)
+                Text(entry.snapshot.activeSessions.isEmpty ? "Logged" : "\(activeMinutes.formattedDuration) active")
+                    .font(.caption2)
+                    .foregroundStyle(.secondary)
+                    .lineLimit(1)
+            }
+
+            Spacer(minLength: 0)
         }
+        .containerBackground(.fill.tertiary, for: .widget)
     }
 }
 
 struct TimelogWidgetExtension: Widget {
-    let kind: String = "TimelogWidgetExtension"
-
     var body: some WidgetConfiguration {
-        AppIntentConfiguration(kind: kind, intent: ConfigurationAppIntent.self, provider: Provider()) { entry in
+        StaticConfiguration(kind: TimelogWidgetConstants.kind, provider: TodayProvider()) { entry in
             TimelogWidgetExtensionEntryView(entry: entry)
-                .containerBackground(.fill.tertiary, for: .widget)
+                .padding()
         }
-    }
-}
-
-extension ConfigurationAppIntent {
-    fileprivate static var smiley: ConfigurationAppIntent {
-        let intent = ConfigurationAppIntent()
-        intent.favoriteEmoji = "😀"
-        return intent
-    }
-    
-    fileprivate static var starEyes: ConfigurationAppIntent {
-        let intent = ConfigurationAppIntent()
-        intent.favoriteEmoji = "🤩"
-        return intent
+        .configurationDisplayName("Timelog Today")
+        .description("Shows today's logged time and active tracking.")
+        .supportedFamilies([.systemSmall])
     }
 }
 
 #Preview(as: .systemSmall) {
     TimelogWidgetExtension()
 } timeline: {
-    SimpleEntry(date: .now, configuration: .smiley)
-    SimpleEntry(date: .now, configuration: .starEyes)
+    TodayEntry(
+        date: .now,
+        snapshot: TimelogWidgetSnapshot(
+            loggedMinutes: 95,
+            activeSessions: [
+                TimelogWidgetActiveSessionSnapshot(
+                    startDate: Date().addingTimeInterval(-32 * 60),
+                    clientName: "Acme",
+                    projectName: "Mobile app"
+                )
+            ],
+            lastClientName: "Acme",
+            lastProjectName: "Mobile app"
+        )
+    )
 }

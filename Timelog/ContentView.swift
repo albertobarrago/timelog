@@ -3,23 +3,23 @@ import SwiftUI
 
 struct ContentView: View {
     @Environment(TimerViewModel.self) private var timerVM
-    @State private var selectedTab = 0
+    @State private var selectedTab: AppTab = .today
     @AppStorage("onboarding_completed") private var onboardingCompleted = false
 
     var body: some View {
         TabView(selection: $selectedTab) {
             HomeView()
-                .tabItem { Label("Today", systemImage: "clock") }
-                .tag(0)
+                .tabItem { Label(AppTab.today.title, systemImage: AppTab.today.icon) }
+                .tag(AppTab.today)
             ClientsView()
-                .tabItem { Label("Clients", systemImage: "person.2") }
-                .tag(1)
+                .tabItem { Label(AppTab.clients.title, systemImage: AppTab.clients.icon) }
+                .tag(AppTab.clients)
             TimerView()
-                .tabItem { Label("Timer", systemImage: "timer") }
-                .tag(2)
+                .tabItem { Label(AppTab.timer.title, systemImage: AppTab.timer.icon) }
+                .tag(AppTab.timer)
             SettingsView()
-                .tabItem { Label("Settings", systemImage: "gearshape") }
-                .tag(3)
+                .tabItem { Label(AppTab.settings.title, systemImage: AppTab.settings.icon) }
+                .tag(AppTab.settings)
         }
         .fullScreenCover(isPresented: Binding(
             get: { !onboardingCompleted },

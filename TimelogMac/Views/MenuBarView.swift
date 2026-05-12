@@ -1,6 +1,7 @@
 import SwiftUI
 import SwiftData
 import TimelogCore
+import AppKit
 
 struct MenuBarView: View {
     @Environment(TimerViewModel.self) private var timerVM
@@ -70,7 +71,10 @@ struct MenuBarView: View {
                 .buttonStyle(.bordered)
                 .controlSize(.small)
 
-                Button { openWindow(id: "main") } label: {
+                Button {
+                    openWindow(id: "main")
+                    NSApplication.shared.activate(ignoringOtherApps: true)
+                } label: {
                     Image(systemName: "arrow.up.forward.app")
                 }
                 .buttonStyle(.bordered)

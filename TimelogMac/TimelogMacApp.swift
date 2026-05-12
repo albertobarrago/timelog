@@ -1,6 +1,7 @@
 import SwiftUI
 import SwiftData
 import TimelogCore
+import AppKit
 
 @main
 struct TimelogMacApp: App {

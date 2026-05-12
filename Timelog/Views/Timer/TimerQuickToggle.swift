@@ -1,7 +1,7 @@
 import TimelogCore
 import SwiftUI
 
-/// Toolbar button shown on Mac Catalyst — toggles the stopwatch without switching tabs.
+/// Toolbar button that toggles the stopwatch without switching tabs.
 struct TimerQuickToggle: View {
     @Environment(TimerViewModel.self) private var vm
 

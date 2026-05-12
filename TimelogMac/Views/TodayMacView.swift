@@ -11,6 +11,7 @@ struct TodayMacView: View {
 
     @State private var showingQuickLog      = false
     @State private var showingStartTracking = false
+    @State private var showingHistory       = false
     @State private var entryToEdit: TimeEntry?
     @State private var sessionToStop: ActiveSession?
 
@@ -74,6 +75,11 @@ struct TodayMacView: View {
         .navigationSubtitle(todayTotal > 0 ? todayTotal.formattedDuration : "")
         .toolbar {
             ToolbarItemGroup(placement: .primaryAction) {
+                Button { showingHistory = true } label: {
+                    Label("History", systemImage: "calendar")
+                }
+                .help("Open history")
+
                 Button { showingStartTracking = true } label: {
                     Label("Track", systemImage: "play.circle")
                 }
@@ -87,6 +93,7 @@ struct TodayMacView: View {
         }
         .sheet(isPresented: $showingQuickLog)      { QuickLogMacView() }
         .sheet(isPresented: $showingStartTracking)  { StartTrackingMacView(clients: clients).environment(settings) }
+        .sheet(isPresented: $showingHistory)        { HistoryMacView().frame(minWidth: 520, minHeight: 420) }
         .sheet(item: $entryToEdit)                  { QuickLogMacView(entry: $0) }
         .sheet(item: $sessionToStop)                { StopSessionMacView(session: $0) }
     }

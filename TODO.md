@@ -1,5 +1,9 @@
 # TODO — Improvement Backlog
 
+## 🧭 Product / Strategy
+
+- [ ] **Centralized MongoDB sync** — add a backend-backed data layer so iOS and macOS share the same clients, projects, time entries, and active sessions. First target: personal work use across mobile/desktop. Secondary target: showcase a senior-level, production-minded architecture with clean API boundaries, sync/conflict strategy, auth, observability, tests, and deployment discipline.
+
 ## 🔴 Bug / Logic
 
 - [x] **Today total ignores active sessions** — `HomeView` now adds `activeSessions.reduce(0) { $0 + $1.elapsedMinutes }` to the total; card wrapped in `TimelineView(.periodic(by: 60))` so it ticks live. Icon switches to `record.circle.fill` (red) when sessions are active.
@@ -16,9 +20,10 @@
 - [x] **No haptic feedback** — `TimerViewModel`: `.medium` on start, `.light` on pause, `.rigid` on reset. `StopSessionSheet`: `.success` notification haptic on log.
 - [x] **QuickLogSheet allows future dates** — `DatePicker` clamped to `in: ...Date()`.
 - [x] **Archived clients always visible** — `ClientsView` now has a toolbar toggle (archivebox icon) to show/hide archived clients; hidden by default.
-- [ ] **No history view** — past entries not accessible from HomeView. Needs a calendar/date-filter screen.
+- [ ] **Menu-bar-only macOS mode** — hide Dock icon, keep app accessible from menu bar only. Removed pending a stable macOS 26 implementation (window state restoration causes duplicate windows).
+- [x] **No history view** — iOS `HomeView` opens a History sheet; macOS has a sidebar History view. Both provide date picker, per-day total, editable entries, and delete actions.
 - [ ] **No deep link from session overdue notification** — URL scheme + `onOpenURL` handler needed to jump directly to active sessions.
-- [ ] **Widget home-screen widget shows Xcode template** — `TimelogWidgetExtension.swift` still shows emoji + date. Build a real "today's total" widget or remove it from the bundle.
+- [x] **Widget home-screen widget shows Xcode template** — replaced with a real "Timelog Today" widget backed by an App Group snapshot; removed the template control widget from the bundle.
 
 ## 🟢 Code quality
 

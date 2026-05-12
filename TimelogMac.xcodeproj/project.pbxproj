@@ -6,6 +6,10 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		E9210C1F2FB282B900C7B0F4 /* TimelogCore in Frameworks */ = {isa = PBXBuildFile; productRef = 3A66805AC13445C8AF724195 /* TimelogCore */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXContainerItemProxy section */
 		E901B8342FB11F0600EA36A5 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -35,16 +39,6 @@
 			path = TimelogMac;
 			sourceTree = "<group>";
 		};
-		E901B8362FB11F0600EA36A5 /* TimelogMacTests */ = {
-			isa = PBXFileSystemSynchronizedRootGroup;
-			path = TimelogMacTests;
-			sourceTree = "<group>";
-		};
-		E901B8402FB11F0600EA36A5 /* TimelogMacUITests */ = {
-			isa = PBXFileSystemSynchronizedRootGroup;
-			path = TimelogMacUITests;
-			sourceTree = "<group>";
-		};
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -52,7 +46,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				E602602E372E43C3BE95F7C6 /* TimelogCore in Frameworks */,
+				E9210C1F2FB282B900C7B0F4 /* TimelogCore in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -77,8 +71,6 @@
 			isa = PBXGroup;
 			children = (
 				E901B8262FB11F0400EA36A5 /* TimelogMac */,
-				E901B8362FB11F0600EA36A5 /* TimelogMacTests */,
-				E901B8402FB11F0600EA36A5 /* TimelogMacUITests */,
 				E901B8252FB11F0400EA36A5 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -132,9 +124,6 @@
 			dependencies = (
 				E901B8352FB11F0600EA36A5 /* PBXTargetDependency */,
 			);
-			fileSystemSynchronizedGroups = (
-				E901B8362FB11F0600EA36A5 /* TimelogMacTests */,
-			);
 			name = TimelogMacTests;
 			packageProductDependencies = (
 			);
@@ -154,9 +143,6 @@
 			);
 			dependencies = (
 				E901B83F2FB11F0600EA36A5 /* PBXTargetDependency */,
-			);
-			fileSystemSynchronizedGroups = (
-				E901B8402FB11F0600EA36A5 /* TimelogMacUITests */,
 			);
 			name = TimelogMacUITests;
 			packageProductDependencies = (
@@ -199,9 +185,6 @@
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
 				E901B8E42FB1224000EA36A5 /* XCLocalSwiftPackageReference "../TimeLog/TimelogCore" */,
-			);
-			localPackages = (
-				507B0891A8D342FFB3760133 /* XCLocalSwiftPackageReference "TimelogCore" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = E901B8252FB11F0400EA36A5 /* Products */;
@@ -418,7 +401,7 @@
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
-				MARKETING_VERSION = 0.0.1;
+				MARKETING_VERSION = 0.0.2;
 				PRODUCT_BUNDLE_IDENTIFIER = com.albz.TimelogMac;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				REGISTER_APP_GROUPS = YES;
@@ -452,7 +435,7 @@
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
-				MARKETING_VERSION = 0.0.1;
+				MARKETING_VERSION = 0.0.2;
 				PRODUCT_BUNDLE_IDENTIFIER = com.albz.TimelogMac;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				REGISTER_APP_GROUPS = YES;
@@ -587,16 +570,13 @@
 /* End XCConfigurationList section */
 
 /* Begin XCLocalSwiftPackageReference section */
-		E901B8E42FB1224000EA36A5 /* XCLocalSwiftPackageReference "../TimeLog/TimelogCore" */ = {
-			isa = XCLocalSwiftPackageReference;
-			relativePath = ../TimeLog/TimelogCore;
-		};
-/* End XCLocalSwiftPackageReference section */
-
-/* Begin XCLocalSwiftPackageReference section */
 		507B0891A8D342FFB3760133 /* XCLocalSwiftPackageReference "TimelogCore" */ = {
 			isa = XCLocalSwiftPackageReference;
 			relativePath = TimelogCore;
+		};
+		E901B8E42FB1224000EA36A5 /* XCLocalSwiftPackageReference "../TimeLog/TimelogCore" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = ../TimeLog/TimelogCore;
 		};
 /* End XCLocalSwiftPackageReference section */
 
