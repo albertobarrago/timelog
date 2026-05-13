@@ -8,6 +8,8 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ## [Unreleased]
 
 ### Added
+- `MongoSyncService.pullAll(into:)` — pull sync from MongoDB → SwiftData on startup; upserts clients, projects and time entries by `mongoId`; enables multi-device and multi-user support (iOS stub is a no-op)
+- In-app toast banner shown when sync (pull or push) completes successfully
 - `MongoSyncService.loadConnectionStringFromFile()` — reads `~/.config/timelog/mongo.local` at startup and saves to Keychain if empty; file is never committed (outside the repo)
 - `docs/` folder with technical documentation and Mermaid diagrams: architecture, data model, user flows, MongoDB sync flow
 

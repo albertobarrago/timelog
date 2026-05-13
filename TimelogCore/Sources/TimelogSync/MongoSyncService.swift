@@ -1,4 +1,5 @@
 import Foundation
+import SwiftData
 import TimelogCore
 
 public enum MongoSyncError: LocalizedError {
@@ -183,6 +184,104 @@ public final class MongoSyncService {
         }
     }
 
+    // MARK: - Pull (MongoDB → SwiftData)
+
+    public func pullAll(into context: ModelContext) async throws {
+        guard let db else { throw MongoSyncError.notConnected }
+        isSyncing = true
+        lastError = nil
+        defer { isSyncing = false }
+        do {
+            try await pull(clientsInto: context, from: db)
+            try await pull(projectsInto: context, from: db)
+            try await pull(entriesInto: context, from: db)
+            lastSyncDate = .now
+        } catch {
+            lastError = error.localizedDescription
+            throw error
+        }
+    }
+
+    private func pull(clientsInto context: ModelContext, from db: MongoDatabase) async throws {
+        let docs = try await db["clients"].find().decode(ClientDocument.self).drain()
+        for doc in docs {
+            let id = doc._id.hexString
+            let existing = try? context.fetch(FetchDescriptor<Client>(
+                predicate: #Predicate { $0.mongoId == id }
+            )).first
+            if let c = existing {
+                c.name      = doc.name
+                c.colorHex  = doc.colorHex
+                c.isArchived = doc.isArchived
+            } else {
+                let c = Client(name: doc.name, colorHex: doc.colorHex, isArchived: doc.isArchived)
+                c.mongoId = id
+                context.insert(c)
+            }
+        }
+        try context.save()
+    }
+
+    private func pull(projectsInto context: ModelContext, from db: MongoDatabase) async throws {
+        let docs = try await db["projects"].find().decode(ProjectDocument.self).drain()
+        for doc in docs {
+            let id = doc._id.hexString
+            let existing = try? context.fetch(FetchDescriptor<TimelogCore.Project>(
+                predicate: #Predicate { $0.mongoId == id }
+            )).first
+            if let p = existing {
+                p.name       = doc.name
+                p.code       = doc.code
+                p.isArchived = doc.isArchived
+            } else {
+                let p = TimelogCore.Project(name: doc.name, code: doc.code, isArchived: doc.isArchived)
+                p.mongoId = id
+                if let cid = doc.clientMongoId {
+                    p.client = try? context.fetch(FetchDescriptor<Client>(
+                        predicate: #Predicate { $0.mongoId == cid }
+                    )).first
+                }
+                context.insert(p)
+            }
+        }
+        try context.save()
+    }
+
+    private func pull(entriesInto context: ModelContext, from db: MongoDatabase) async throws {
+        let docs = try await db["time_entries"].find().decode(TimeEntryDocument.self).drain()
+        for doc in docs {
+            let id = doc._id.hexString
+            let existing = try? context.fetch(FetchDescriptor<TimeEntry>(
+                predicate: #Predicate { $0.mongoId == id }
+            )).first
+            if let e = existing {
+                e.date            = doc.date
+                e.durationMinutes = doc.durationMinutes
+                e.notes           = doc.notes
+            } else {
+                var client: Client?
+                var project: TimelogCore.Project?
+                if let cid = doc.clientMongoId {
+                    client = try? context.fetch(FetchDescriptor<Client>(
+                        predicate: #Predicate { $0.mongoId == cid }
+                    )).first
+                }
+                if let pid = doc.projectMongoId {
+                    project = try? context.fetch(FetchDescriptor<TimelogCore.Project>(
+                        predicate: #Predicate { $0.mongoId == pid }
+                    )).first
+                }
+                let e = TimeEntry(date: doc.date, durationMinutes: doc.durationMinutes,
+                                  notes: doc.notes, client: client, project: project)
+                e.mongoId = id
+                context.insert(e)
+            }
+        }
+        try context.save()
+    }
+
+    // MARK: - Push (SwiftData → MongoDB)
+
     private func push(clients: [Client], to db: MongoDatabase) async throws {
         let collection = db["clients"]
         for client in clients {
@@ -240,6 +339,7 @@ public final class MongoSyncService {
     public func startAutoSync(dataProvider: @escaping DataProvider) {}
     public func triggerSync() {}
     public func stopAutoSync() {}
+    public func pullAll(into context: ModelContext) async throws {}
     public func syncAll(clients: [Client], projects: [TimelogCore.Project], entries: [TimeEntry]) async throws {}
 }
 

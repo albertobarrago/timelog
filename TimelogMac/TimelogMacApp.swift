@@ -22,6 +22,7 @@ private struct MongoSyncSetup: ViewModifier {
                 }
                 Task {
                     try? await MongoSyncService.shared.connect()
+                    try? await MongoSyncService.shared.pullAll(into: modelContext)
                     MongoSyncService.shared.triggerSync()
                 }
             }
