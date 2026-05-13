@@ -16,7 +16,7 @@ let package = Package(
             name: "TimelogCore",
             dependencies: [],
             path: "Sources/TimelogCore",
-            swiftSettings: [.swiftLanguageVersion(.v5)]
+            swiftSettings: [.swiftLanguageMode(.v5)]
         ),
         .target(
             name: "TimelogSync",
@@ -25,7 +25,7 @@ let package = Package(
                 .product(name: "MongoKitten", package: "MongoKitten", condition: .when(platforms: [.macOS]))
             ],
             path: "Sources/TimelogSync",
-            swiftSettings: [.swiftLanguageVersion(.v5)]
+            swiftSettings: [.swiftLanguageMode(.v5)]
         )
     ]
 )
