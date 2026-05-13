@@ -61,10 +61,34 @@ TimeLog/
 - Nessun `Co-Authored-By` nei commit message
 - I due `.xcodeproj` e `TimelogCore/` sono tutti nello stesso repo e nello stesso commit quando cambiano insieme
 
+## Package TimelogSync
+
+- Contiene `MongoSyncService` — sync bidirezionale SwiftData ↔ MongoDB Atlas
+- `pullAll(into:)` scarica tutto da MongoDB → SwiftData all'avvio (multi-device, multi-utente)
+- Auto-push tramite `NSManagedObjectContextDidSaveNotification` con debounce 2 secondi
+- macOS: implementazione completa con MongoKitten 7.9+
+- iOS: stub no-op (stessa firma pubblica, nessun codice)
+- Connection string: `~/.config/timelog/mongo.local` → Keychain (mai nel repo)
+
+## Qualità da App Store / pubblicazione
+
+Questo progetto è destinato alla pubblicazione. Rispettare sempre:
+
+- **Accessibilità**: ogni elemento interattivo deve avere `.accessibilityLabel` significativo; non usare solo colore per comunicare stato
+- **Localizzazione**: usare `String(localized:)` o `LocalizedStringKey` per tutte le stringhe UI; non stringhe hardcoded in italiano/inglese mescolate
+- **Privacy**: nessun dato utente in log, nessuna analytics senza consenso, connection string mai in chiaro nel codice
+- **Sicurezza**: credenziali solo in Keychain, mai in `UserDefaults` o `@AppStorage`
+- **Performance**: nessun fetch SwiftData nel `body` delle view — usare `@Query`; operazioni pesanti in `Task` asincrono
+- **Crash safety**: `try!` e `fatalError` solo per errori di programmazione (es. ModelContainer init); mai per dati utente o network
+- **UI nativa macOS**: usare `LabeledContent`, `Form.grouped`, toolbar items, `NavigationSplitView` — non portare pattern iOS su macOS
+- **UI nativa iOS**: usare sheet, swipe actions, `TabView` — non portare pattern macOS su iOS
+- **Versioning**: `CFBundleShortVersionString` (marketing) e `CFBundleVersion` (build) devono essere consistenti tra app e widget extension
+
 ## Stack tecnico
 
 - SwiftUI + SwiftData + `@Observable`
-- Keychain per API key Wethod
+- Keychain per API key Wethod e MongoDB connection string
 - `UNUserNotificationCenter` per reminder giornalieri, alert sessioni aperte, fine fase Pomodoro
 - `ActivityKit` per Live Activity iOS
 - `MenuBarExtra` per status bar macOS
+- `MongoKitten` per sync MongoDB Atlas (macOS only)
