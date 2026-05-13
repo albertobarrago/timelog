@@ -44,26 +44,25 @@ struct MainMacView: View {
                 Button {
                     selection = .settings
                 } label: {
-                    Label(SidebarItem.settings.rawValue, systemImage: SidebarItem.settings.icon)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .padding(.horizontal, 12)
-                        .padding(.vertical, 7)
-                        .background {
-                            if selection == .settings {
-                                RoundedRectangle(cornerRadius: 6)
-                                    .fill(Color.accentColor.opacity(0.16))
-                            }
+                    HStack(spacing: 0) {
+                        Label(SidebarItem.settings.rawValue, systemImage: SidebarItem.settings.icon)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                        SyncStatusDot()
+                    }
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 7)
+                    .background {
+                        if selection == .settings {
+                            RoundedRectangle(cornerRadius: 6)
+                                .fill(Color.accentColor.opacity(0.16))
                         }
-                        .contentShape(Rectangle())
+                    }
+                    .contentShape(Rectangle())
                 }
                 .buttonStyle(.plain)
                 .foregroundStyle(selection == .settings ? .primary : .secondary)
                 .padding(.horizontal, 8)
                 .padding(.vertical, 8)
-
-                MongoStatusDot()
-                    .padding(.horizontal, 16)
-                    .padding(.bottom, 10)
             }
             .navigationSplitViewColumnWidth(min: 160, ideal: 180, max: 220)
         } detail: {
@@ -72,8 +71,7 @@ struct MainMacView: View {
         .frame(minWidth: 700, minHeight: 460)
     }
 
-    @ViewBuilder
-    private var detailView: some View {
+    @ViewBuilder private var detailView: some View {
         switch selection {
         case .today:    TodayMacView()
         case .history:  HistoryMacView()
@@ -84,29 +82,23 @@ struct MainMacView: View {
     }
 }
 
-private struct MongoStatusDot: View {
+private struct SyncStatusDot: View {
     private var sync: MongoSyncService { MongoSyncService.shared }
     @State private var pulse = false
 
     var body: some View {
-        HStack(spacing: 6) {
-            ZStack {
-                if sync.isSyncing {
-                    Circle()
-                        .fill(Color.yellow.opacity(0.25))
-                        .frame(width: 14, height: 14)
-                        .scaleEffect(pulse ? 1.6 : 1.0)
-                        .opacity(pulse ? 0 : 1)
-                        .animation(.easeOut(duration: 1.1).repeatForever(autoreverses: false), value: pulse)
-                }
+        ZStack {
+            if sync.isSyncing {
                 Circle()
-                    .fill(dotColor)
-                    .frame(width: 8, height: 8)
+                    .fill(Color.yellow.opacity(0.3))
+                    .frame(width: 12, height: 12)
+                    .scaleEffect(pulse ? 1.8 : 1.0)
+                    .opacity(pulse ? 0 : 1)
+                    .animation(.easeOut(duration: 1.1).repeatForever(autoreverses: false), value: pulse)
             }
-            Text(statusText)
-                .font(.caption2)
-                .foregroundStyle(.secondary)
-                .lineLimit(1)
+            Circle()
+                .fill(dotColor)
+                .frame(width: 7, height: 7)
         }
         .onAppear { pulse = true }
     }
@@ -115,15 +107,7 @@ private struct MongoStatusDot: View {
         if sync.isSyncing           { return .yellow }
         if sync.lastError != nil    { return .red }
         if sync.lastSyncDate != nil { return .green }
-        return Color.secondary.opacity(0.4)
-    }
-
-    private var statusText: String {
-        if sync.isSyncing        { return "Syncing…" }
-        if sync.lastError != nil { return "Sync error" }
-        if let d = sync.lastSyncDate {
-            return "Synced \(d.formatted(.relative(presentation: .named)))"
-        }
-        return "Not connected"
+        return .clear
     }
 }
+

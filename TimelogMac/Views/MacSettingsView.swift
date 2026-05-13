@@ -47,22 +47,8 @@ struct MacSettingsView: View {
             }
 
             Section {
-                LabeledContent("Connection") {
-                    HStack(spacing: 6) {
-                        Image(systemName: "circle.fill")
-                            .font(.system(size: 8))
-                            .foregroundStyle(
-                                MongoSyncService.shared.readConnectionString() != nil ? .green : .secondary
-                            )
-                        Text(MongoSyncService.shared.readConnectionString() != nil
-                             ? "Configured" : "Not configured")
-                            .foregroundStyle(
-                                MongoSyncService.shared.readConnectionString() != nil ? .primary : .secondary
-                            )
-                    }
-                }
-                LabeledContent("Last sync") {
-                    MongoSyncStatusRowMac()
+                LabeledContent("Status") {
+                    MongoStatusDot()
                 }
                 LabeledContent("") {
                     Button("Sync Now") {
@@ -73,7 +59,7 @@ struct MacSettingsView: View {
             } header: {
                 Text("MongoDB Sync")
             } footer: {
-                Text("Configure via ~/.config/timelog/mongo.local — stored securely in Keychain.")
+                Text("Configure via ~/.config/timelog/mongo.local — stored in Keychain.")
             }
 
             Section("Export") {
@@ -159,21 +145,50 @@ private extension String {
     }
 }
 
-private struct MongoSyncStatusRowMac: View {
-    private var mongo: MongoSyncService { MongoSyncService.shared }
+private struct MongoStatusDot: View {
+    private var sync: MongoSyncService { MongoSyncService.shared }
+    @State private var pulse = false
 
     var body: some View {
-        if mongo.isSyncing {
-            Label("Syncing…", systemImage: "arrow.triangle.2.circlepath")
-                .font(.caption).foregroundStyle(.secondary)
-        } else if let error = mongo.lastError {
-            Label(error, systemImage: "exclamationmark.triangle")
-                .font(.caption).foregroundStyle(.red)
-        } else if let date = mongo.lastSyncDate {
-            Label("Last sync: \(date.formatted(date: .omitted, time: .shortened))",
-                  systemImage: "checkmark.circle")
-                .font(.caption).foregroundStyle(.green)
+        HStack(spacing: 8) {
+            ZStack {
+                if sync.isSyncing {
+                    Circle()
+                        .fill(Color.yellow.opacity(0.25))
+                        .frame(width: 14, height: 14)
+                        .scaleEffect(pulse ? 1.6 : 1.0)
+                        .opacity(pulse ? 0 : 1)
+                        .animation(.easeOut(duration: 1.1).repeatForever(autoreverses: false), value: pulse)
+                }
+                Circle()
+                    .fill(dotColor)
+                    .frame(width: 8, height: 8)
+            }
+            Text(statusText)
+                .foregroundStyle(textColor)
         }
+        .onAppear { pulse = true }
+    }
+
+    private var dotColor: Color {
+        if sync.isSyncing           { return .yellow }
+        if sync.lastError != nil    { return .red }
+        if sync.lastSyncDate != nil { return .green }
+        return Color.secondary.opacity(0.5)
+    }
+
+    private var textColor: Color {
+        if sync.lastError != nil { return .red }
+        return .secondary
+    }
+
+    private var statusText: String {
+        if sync.isSyncing        { return "Syncing…" }
+        if let e = sync.lastError { return e }
+        if let d = sync.lastSyncDate {
+            return "Last sync \(d.formatted(.relative(presentation: .named)))"
+        }
+        return "Not connected"
     }
 }
 
