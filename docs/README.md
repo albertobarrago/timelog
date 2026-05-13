@@ -1,6 +1,6 @@
 # Timelog — Documentazione Tecnica
 
-App di time tracking per iOS e macOS con sincronizzazione MongoDB Atlase e note di sviluppo.
+App di time tracking per iOS e macOS con sincronizzazione MongoDB Atlase.
 
 ## Indice
 
@@ -10,7 +10,6 @@ App di time tracking per iOS e macOS con sincronizzazione MongoDB Atlase e note 
 | [02-modello-dati.md](02-modello-dati.md) | Entità SwiftData, relazioni, persistenza |
 | [03-flussi.md](03-flussi.md) | Tracking, Pomodoro, Notifiche, Live Activity |
 | [04-sync-mongodb.md](04-sync-mongodb.md) | Architettura sync, connessione, upsert |
-| notes/ | Note di sviluppo |
 
 ## Stack
 
