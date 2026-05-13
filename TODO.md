@@ -2,7 +2,7 @@
 
 ## 🧭 Product / Strategy
 
-- [ ] **Centralized MongoDB sync** — add a backend-backed data layer so iOS and macOS share the same clients, projects, time entries, and active sessions. First target: personal work use across mobile/desktop. Secondary target: showcase a senior-level, production-minded architecture with clean API boundaries, sync/conflict strategy, auth, observability, tests, and deployment discipline.
+- [x] **Centralized MongoDB sync** — add a backend-backed data layer so iOS and macOS share the same clients, projects, time entries, and active sessions. First target: personal work use across mobile/desktop. Secondary target: showcase a senior-level, production-minded architecture with clean API boundaries, sync/conflict strategy, auth, observability, tests, and deployment discipline.
 
 ## 🔴 Bug / Logic
 
@@ -20,7 +20,6 @@
 - [x] **No haptic feedback** — `TimerViewModel`: `.medium` on start, `.light` on pause, `.rigid` on reset. `StopSessionSheet`: `.success` notification haptic on log.
 - [x] **QuickLogSheet allows future dates** — `DatePicker` clamped to `in: ...Date()`.
 - [x] **Archived clients always visible** — `ClientsView` now has a toolbar toggle (archivebox icon) to show/hide archived clients; hidden by default.
-- [ ] **Menu-bar-only macOS mode** — hide Dock icon, keep app accessible from menu bar only. Removed pending a stable macOS 26 implementation (window state restoration causes duplicate windows).
 - [x] **No history view** — iOS `HomeView` opens a History sheet; macOS has a sidebar History view. Both provide date picker, per-day total, editable entries, and delete actions.
 - [ ] **No deep link from session overdue notification** — URL scheme + `onOpenURL` handler needed to jump directly to active sessions.
 - [x] **Widget home-screen widget shows Xcode template** — replaced with a real "Timelog Today" widget backed by an App Group snapshot; removed the template control widget from the bundle.
@@ -32,5 +31,6 @@
 - [x] **ActiveSession.elapsedMinutes min cap of 1** — changed to `max(0, ...)`.
 - [x] **KeychainHelper errors silently discarded** — `save()` and `delete()` now return `@discardableResult Bool`.
 - [x] **SettingsStore: too many individual save() calls** — auto-save via `didSet`, no explicit `save()` calls needed.
+- [ ] **CloudKit sync iOS** — migrare iOS da MongoDB no-op stub a SwiftData + CloudKit (piano in `docs/PLAN_CLOUDKIT_IOS.md`)
 - [ ] **Missing unit tests** — `TimerViewModel`, `NotificationManager` scheduling math, `Int.formattedDuration`.
 - [ ] **Missing iPad layout** — scale-up iPhone layout; could use `NavigationSplitView`.

@@ -14,6 +14,7 @@ public enum MongoSyncError: LocalizedError {
     }
 }
 
+#if os(macOS)
 import MongoKitten
 
 // MARK: - BSON DTOs
@@ -98,7 +99,6 @@ public final class MongoSyncService {
         KeychainHelper.read(key: Self.connectionStringKey)
     }
 
-    /// Reads ~/.config/timelog/mongo.local and saves to Keychain if not already set.
     public func loadConnectionStringFromFile() {
         guard readConnectionString() == nil else { return }
         let url = FileManager.default.homeDirectoryForCurrentUser
@@ -124,8 +124,6 @@ public final class MongoSyncService {
         return components.string ?? raw
     }
 
-    /// Registers the data provider used by triggerSync/syncAll.
-    /// Triggering is handled by the view layer via @Query onChange.
     public func setDataProvider(_ dataProvider: @escaping DataProvider) {
         self.dataProvider = dataProvider
     }
@@ -182,7 +180,7 @@ public final class MongoSyncService {
         defer { isSyncing = false }
         do {
             NotificationCenter.default.post(name: MongoSyncService.willWipeDataNotification, object: nil)
-            try await Task.sleep(for: .milliseconds(150))   // let views process notification and clear selections
+            try await Task.sleep(for: .milliseconds(150))
             try context.delete(model: TimeEntry.self)
             try context.delete(model: TimelogCore.Project.self)
             try context.delete(model: Client.self)
@@ -197,8 +195,6 @@ public final class MongoSyncService {
             throw error
         }
     }
-
-
 
     private func pull(clientsInto context: ModelContext, from db: MongoDatabase) async throws {
         let docs = try await db["clients"].find().decode(ClientDocument.self).drain()
@@ -220,7 +216,6 @@ public final class MongoSyncService {
             }
         }
 
-        // Delete local orphans (not present in MongoDB)
         for local in (try? context.fetch(FetchDescriptor<Client>())) ?? [] {
             if let mid = local.mongoId, !remoteIds.contains(mid) {
                 context.delete(local)
@@ -254,7 +249,6 @@ public final class MongoSyncService {
             }
         }
 
-        // Delete local orphans
         for local in (try? context.fetch(FetchDescriptor<TimelogCore.Project>())) ?? [] {
             if let mid = local.mongoId, !remoteIds.contains(mid) {
                 context.delete(local)
@@ -322,3 +316,49 @@ public final class MongoSyncService {
         }
     }
 }
+
+#else
+
+// MARK: - iOS no-op stub
+
+@Observable
+@MainActor
+public final class MongoSyncService {
+    public static let shared = MongoSyncService()
+
+    public typealias DataProvider = () -> (clients: [Client], projects: [TimelogCore.Project], entries: [TimeEntry])
+
+    public private(set) var isSyncing = false
+    public private(set) var lastSyncDate: Date?
+    public private(set) var lastError: String?
+
+    public static let willWipeDataNotification = Notification.Name("MongoSyncServiceWillWipeData")
+
+    private static let connectionStringKey = "mongo_connection_string"
+
+    private init() {}
+
+    public func saveConnectionString(_ connectionString: String) {
+        KeychainHelper.save(key: Self.connectionStringKey, value: connectionString)
+    }
+
+    public func readConnectionString() -> String? {
+        KeychainHelper.read(key: Self.connectionStringKey)
+    }
+
+    public func loadConnectionStringFromFile() {}
+
+    public func connect() async throws {}
+
+    public func setDataProvider(_ dataProvider: @escaping DataProvider) {}
+
+    public func triggerSync() {}
+
+    public func stopAutoSync() {}
+
+    public func syncAll(clients: [Client], projects: [TimelogCore.Project], entries: [TimeEntry]) async throws {}
+
+    public func pullAll(into context: ModelContext) async throws {}
+}
+
+#endif

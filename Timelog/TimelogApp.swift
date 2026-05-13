@@ -1,7 +1,7 @@
-import TimelogCore
-import TimelogSync
 import SwiftUI
 import SwiftData
+import TimelogCore
+import TimelogSync
 
 private struct MongoSyncSetup: ViewModifier {
     @Environment(\.modelContext) private var modelContext
@@ -12,24 +12,43 @@ private struct MongoSyncSetup: ViewModifier {
     func body(content: Content) -> some View {
         content
             .onAppear {
-                let container = modelContext.container
-                MongoSyncService.shared.loadConnectionStringFromFile()
-                MongoSyncService.shared.setDataProvider { [container] in
-                    let ctx = container.mainContext
-                    let clients  = (try? ctx.fetch(FetchDescriptor<Client>()))  ?? []
-                    let projects = (try? ctx.fetch(FetchDescriptor<Project>())) ?? []
-                    let entries  = (try? ctx.fetch(FetchDescriptor<TimeEntry>())) ?? []
-                    return (clients, projects, entries)
-                }
-                Task {
-                    try? await MongoSyncService.shared.connect()
-                    try? await MongoSyncService.shared.pullAll(into: modelContext)
-                    MongoSyncService.shared.triggerSync()
-                }
+                setupMongoSync()
             }
-            .onChange(of: clients.count)  { _, _ in MongoSyncService.shared.triggerSync() }
-            .onChange(of: projects.count) { _, _ in MongoSyncService.shared.triggerSync() }
-            .onChange(of: entries.count)  { _, _ in MongoSyncService.shared.triggerSync() }
+            // Modern iOS 17+ onChange syntax
+            .onChange(of: clients.count)  { _, _ in triggerSync() }
+            .onChange(of: projects.count) { _, _ in triggerSync() }
+            .onChange(of: entries.count)  { _, _ in triggerSync() }
+    }
+
+    private func setupMongoSync() {
+        let container = modelContext.container
+        let service = MongoSyncService.shared
+        
+        service.loadConnectionStringFromFile()
+        
+        // Provide the data to the sync service
+        service.setDataProvider { [container] in
+            let ctx = container.mainContext
+            let clients = (try? ctx.fetch(FetchDescriptor<Client>())) ?? []
+            let projects = (try? ctx.fetch(FetchDescriptor<Project>())) ?? []
+            let entries = (try? ctx.fetch(FetchDescriptor<TimeEntry>())) ?? []
+            return (clients, projects, entries)
+        }
+
+        // Perform initial connection and pull
+        Task {
+            do {
+                try await service.connect()
+                try await service.pullAll(into: modelContext)
+                service.triggerSync()
+            } catch {
+                print("MongoDB Sync Error: \(error.localizedDescription)")
+            }
+        }
+    }
+
+    private func triggerSync() {
+        MongoSyncService.shared.triggerSync()
     }
 }
 

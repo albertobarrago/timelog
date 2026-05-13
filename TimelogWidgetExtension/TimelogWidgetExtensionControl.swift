@@ -1,14 +1,8 @@
-//
-//  TimelogWidgetExtensionControl.swift
-//  TimelogWidgetExtension
-//
-//  Created by Alberto Barrago on 10/05/2026.
-//
-
 import AppIntents
 import SwiftUI
 import WidgetKit
 
+@available(iOS 18.0, *)
 struct TimelogWidgetExtensionControl: ControlWidget {
     static let kind: String = "me.albz.timelog.TimelogWidgetExtension"
 
@@ -30,6 +24,7 @@ struct TimelogWidgetExtensionControl: ControlWidget {
     }
 }
 
+@available(iOS 18.0, *)
 extension TimelogWidgetExtensionControl {
     struct Value {
         var isRunning: Bool
@@ -42,12 +37,13 @@ extension TimelogWidgetExtensionControl {
         }
 
         func currentValue(configuration: TimerConfiguration) async throws -> Value {
-            let isRunning = true // Check if the timer is running
+            let isRunning = true
             return TimelogWidgetExtensionControl.Value(isRunning: isRunning, name: configuration.timerName)
         }
     }
 }
 
+@available(iOS 18.0, *)
 struct TimerConfiguration: ControlConfigurationIntent {
     static let title: LocalizedStringResource = "Timer Name Configuration"
 
@@ -55,6 +51,7 @@ struct TimerConfiguration: ControlConfigurationIntent {
     var timerName: String
 }
 
+@available(iOS 18.0, *)
 struct StartTimerIntent: SetValueIntent {
     static let title: LocalizedStringResource = "Start a timer"
 
@@ -71,7 +68,6 @@ struct StartTimerIntent: SetValueIntent {
     }
 
     func perform() async throws -> some IntentResult {
-        // Start the timer…
         return .result()
     }
 }
