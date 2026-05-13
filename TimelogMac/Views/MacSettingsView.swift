@@ -7,6 +7,7 @@ struct MacSettingsView: View {
     @Environment(SettingsStore.self) private var store
     @Environment(TimerViewModel.self) private var timerVM
     @Environment(\.openURL) private var openURL
+    @Environment(\.modelContext) private var modelContext
     @Query(sort: \TimeEntry.date, order: .reverse) private var entries: [TimeEntry]
     var body: some View {
         @Bindable var store = store
