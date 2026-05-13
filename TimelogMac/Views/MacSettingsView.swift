@@ -47,18 +47,33 @@ struct MacSettingsView: View {
             }
 
             Section {
-                HStack {
+                LabeledContent("Connection") {
+                    HStack(spacing: 6) {
+                        Image(systemName: "circle.fill")
+                            .font(.system(size: 8))
+                            .foregroundStyle(
+                                MongoSyncService.shared.readConnectionString() != nil ? .green : .secondary
+                            )
+                        Text(MongoSyncService.shared.readConnectionString() != nil
+                             ? "Configured" : "Not configured")
+                            .foregroundStyle(
+                                MongoSyncService.shared.readConnectionString() != nil ? .primary : .secondary
+                            )
+                    }
+                }
+                LabeledContent("Last sync") {
+                    MongoSyncStatusRowMac()
+                }
+                LabeledContent("") {
                     Button("Sync Now") {
                         MongoSyncService.shared.triggerSync()
                     }
                     .disabled(MongoSyncService.shared.readConnectionString() == nil)
-                    Spacer()
-                    MongoSyncStatusRowMac()
                 }
             } header: {
                 Text("MongoDB Sync")
             } footer: {
-                Text("Connection string is loaded automatically from ~/.config/timelog/mongo.local on first launch.")
+                Text("Configure via ~/.config/timelog/mongo.local — stored securely in Keychain.")
             }
 
             Section("Export") {

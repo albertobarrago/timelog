@@ -6,20 +6,51 @@ import AppKit
 
 private struct MongoSyncSetup: ViewModifier {
     @Environment(\.modelContext) private var modelContext
+    @State private var showBanner = false
 
     func body(content: Content) -> some View {
-        content.onAppear {
-            let container = modelContext.container
-            MongoSyncService.shared.loadConnectionStringFromFile()
-            Task { try? await MongoSyncService.shared.connect() }
-            MongoSyncService.shared.startAutoSync { [container] in
-                let ctx = container.mainContext
-                let clients  = (try? ctx.fetch(FetchDescriptor<Client>()))  ?? []
-                let projects = (try? ctx.fetch(FetchDescriptor<Project>())) ?? []
-                let entries  = (try? ctx.fetch(FetchDescriptor<TimeEntry>())) ?? []
-                return (clients, projects, entries)
+        content
+            .onAppear {
+                let container = modelContext.container
+                MongoSyncService.shared.loadConnectionStringFromFile()
+                MongoSyncService.shared.startAutoSync { [container] in
+                    let ctx = container.mainContext
+                    let clients  = (try? ctx.fetch(FetchDescriptor<Client>()))  ?? []
+                    let projects = (try? ctx.fetch(FetchDescriptor<Project>())) ?? []
+                    let entries  = (try? ctx.fetch(FetchDescriptor<TimeEntry>())) ?? []
+                    return (clients, projects, entries)
+                }
+                Task {
+                    try? await MongoSyncService.shared.connect()
+                    MongoSyncService.shared.triggerSync()
+                }
             }
-        }
+            .onChange(of: MongoSyncService.shared.lastSyncDate) { _, _ in
+                withAnimation(.easeInOut) { showBanner = true }
+                Task {
+                    try? await Task.sleep(for: .seconds(3))
+                    withAnimation(.easeInOut) { showBanner = false }
+                }
+            }
+            .overlay(alignment: .top) {
+                if showBanner {
+                    SyncSuccessBanner()
+                        .transition(.move(edge: .top).combined(with: .opacity))
+                        .padding(.top, 8)
+                }
+            }
+    }
+}
+
+private struct SyncSuccessBanner: View {
+    var body: some View {
+        Label("Sync completed", systemImage: "checkmark.circle.fill")
+            .font(.subheadline.weight(.medium))
+            .foregroundStyle(.white)
+            .padding(.horizontal, 16)
+            .padding(.vertical, 10)
+            .background(.green.gradient, in: Capsule())
+            .shadow(color: .black.opacity(0.15), radius: 6, y: 3)
     }
 }
 
