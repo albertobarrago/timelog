@@ -1,7 +1,23 @@
 import SwiftUI
 import SwiftData
 import TimelogCore
+import TimelogSync
 import AppKit
+
+private struct MongoSyncSetup: ViewModifier {
+    @Environment(\.modelContext) private var modelContext
+
+    func body(content: Content) -> some View {
+        content.onAppear {
+            MongoSyncService.shared.startAutoSync {
+                let clients  = (try? modelContext.fetch(FetchDescriptor<Client>()))  ?? []
+                let projects = (try? modelContext.fetch(FetchDescriptor<Project>())) ?? []
+                let entries  = (try? modelContext.fetch(FetchDescriptor<TimeEntry>())) ?? []
+                return (clients, projects, entries)
+            }
+        }
+    }
+}
 
 @main
 struct TimelogMacApp: App {
@@ -23,6 +39,7 @@ struct TimelogMacApp: App {
                     NotificationManager.shared.requestPermission()
                     settings.applyReminders()
                 }
+                .modifier(MongoSyncSetup())
         }
         .modelContainer(Self.container)
         .commands {
@@ -57,6 +74,7 @@ struct TimelogMacApp: App {
                 .environment(settings)
                 .environment(timerVM)
         }
+        .modelContainer(Self.container)
     }
 }
 

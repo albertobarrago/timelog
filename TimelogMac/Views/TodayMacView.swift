@@ -7,7 +7,6 @@ struct TodayMacView: View {
     @Environment(SettingsStore.self) private var settings
     @Query(sort: \TimeEntry.date, order: .reverse) private var allEntries: [TimeEntry]
     @Query(sort: \ActiveSession.startDate) private var activeSessions: [ActiveSession]
-    @Query(filter: #Predicate<Client> { !$0.isArchived }, sort: \Client.name) private var clients: [Client]
 
     @State private var showingQuickLog      = false
     @State private var showingStartTracking = false
@@ -92,7 +91,7 @@ struct TodayMacView: View {
             }
         }
         .sheet(isPresented: $showingQuickLog)      { QuickLogMacView() }
-        .sheet(isPresented: $showingStartTracking)  { StartTrackingMacView(clients: clients).environment(settings) }
+        .sheet(isPresented: $showingStartTracking)  { StartTrackingMacView().environment(settings) }
         .sheet(isPresented: $showingHistory)        { HistoryMacView().frame(minWidth: 520, minHeight: 420) }
         .sheet(item: $entryToEdit)                  { QuickLogMacView(entry: $0) }
         .sheet(item: $sessionToStop)                { StopSessionMacView(session: $0) }

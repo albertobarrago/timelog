@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		B17066319DDC41458A535522 /* TimelogCore in Frameworks */ = {isa = PBXBuildFile; productRef = CD0C797427FE40D09F52EBAA /* TimelogCore */; };
 		B17066329DDC41458A535522 /* TimelogCore in Frameworks */ = {isa = PBXBuildFile; productRef = CD0C797427FE40D09F52EBAA /* TimelogCore */; };
+		AA110011AA110011AA110011 /* TimelogSync in Frameworks */ = {isa = PBXBuildFile; productRef = AA110012AA110012AA110012 /* TimelogSync */; };
 		E901B6DF2FB0C3E300EA36A5 /* WidgetKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E901B6DE2FB0C3E300EA36A5 /* WidgetKit.framework */; };
 		E901B6E12FB0C3E300EA36A5 /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E901B6E02FB0C3E300EA36A5 /* SwiftUI.framework */; };
 		E901B6F22FB0C3E400EA36A5 /* TimelogWidgetExtensionExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = E901B6DC2FB0C3E300EA36A5 /* TimelogWidgetExtensionExtension.appex */; platformFilter = ios; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
@@ -123,6 +124,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				B17066319DDC41458A535522 /* TimelogCore in Frameworks */,
+				AA110011AA110011AA110011 /* TimelogSync in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -221,6 +223,7 @@
 			name = Timelog;
 			packageProductDependencies = (
 				CD0C797427FE40D09F52EBAA /* TimelogCore */,
+				AA110012AA110012AA110012 /* TimelogSync */,
 			);
 			productName = Timelog;
 			productReference = E97A4C712FAFE9D100C528C1 /* Timelog.app */;
@@ -280,7 +283,7 @@
 			attributes = {
 				BuildIndependentTargetsInParallel = 1;
 				LastSwiftUpdateCheck = 2640;
-				LastUpgradeCheck = 2640;
+				LastUpgradeCheck = 2650;
 				TargetAttributes = {
 					E901B6DB2FB0C3E300EA36A5 = {
 						CreatedOnToolsVersion = 26.4.1;
@@ -496,13 +499,14 @@
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
 				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
 				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
+				TARGETED_DEVICE_FAMILY = 1;
 			};
 			name = Debug;
 		};
@@ -536,13 +540,14 @@
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
 				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
 				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
+				TARGETED_DEVICE_FAMILY = 1;
 			};
 			name = Release;
 		};
@@ -605,6 +610,7 @@
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = iphoneos;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 			};
@@ -662,6 +668,7 @@
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				SDKROOT = iphoneos;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_COMPILATION_MODE = wholemodule;
 				VALIDATE_PRODUCT = YES;
 			};
@@ -813,6 +820,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = E901B81A2FB11ED500EA36A5 /* XCLocalSwiftPackageReference "TimelogCore" */;
 			productName = TimelogCore;
+		};
+		AA110012AA110012AA110012 /* TimelogSync */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = E901B81A2FB11ED500EA36A5 /* XCLocalSwiftPackageReference "TimelogCore" */;
+			productName = TimelogSync;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

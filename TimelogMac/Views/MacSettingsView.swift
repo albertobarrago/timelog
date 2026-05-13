@@ -1,9 +1,14 @@
 import SwiftUI
+import SwiftData
 import TimelogCore
+import TimelogSync
 
 struct MacSettingsView: View {
     @Environment(SettingsStore.self) private var store
     @Environment(TimerViewModel.self) private var timerVM
+    @Environment(\.openURL) private var openURL
+    @Query(sort: \TimeEntry.date, order: .reverse) private var entries: [TimeEntry]
+    @State private var mongoConnectionString = ""
 
     var body: some View {
         @Bindable var store = store
@@ -43,6 +48,38 @@ struct MacSettingsView: View {
                 Text("Sends a notification if a session is still running at this time.")
             }
 
+            Section {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("es. mongodb+srv://user:pass@host/")
+                        .font(.caption2)
+                        .foregroundStyle(.tertiary)
+                        .monospaced()
+                    TextField("Connection string", text: $mongoConnectionString)
+                }
+                HStack {
+                    Button("Save & Sync") {
+                        MongoSyncService.shared.saveConnectionString(mongoConnectionString)
+                        MongoSyncService.shared.triggerSync()
+                    }
+                    .disabled(mongoConnectionString.trimmingCharacters(in: .whitespaces).isEmpty)
+                    Spacer()
+                    Button("Sync Now") {
+                        MongoSyncService.shared.triggerSync()
+                    }
+                    .disabled(MongoSyncService.shared.readConnectionString() == nil)
+                }
+                MongoSyncStatusRowMac()
+            } header: {
+                Text("MongoDB Sync")
+            } footer: {
+                Text("Connection string is stored securely in the Keychain.")
+            }
+            .onAppear { mongoConnectionString = MongoSyncService.shared.readConnectionString() ?? "" }
+
+            Section("Export") {
+                Button("Export this week via Email") { exportEmail() }
+            }
+
             Section("About") {
                 LabeledContent("Developer") {
                     Link("Alberto Barrago", destination: URL(string: "https://github.com/AlbertoBarrago")!)
@@ -55,6 +92,32 @@ struct MacSettingsView: View {
         .formStyle(.grouped)
         .navigationTitle("Settings")
         .frame(maxWidth: 520)
+    }
+
+    // MARK: - Actions
+
+    private func exportEmail() {
+        let cal = Calendar.current
+        let now = Date()
+        let weekStart = cal.date(from: cal.dateComponents([.yearForWeekOfYear, .weekOfYear], from: now))!
+        let weekEntries = entries.filter { $0.date >= weekStart }
+
+        var lines = ["Timelog — Week of \(weekStart.formatted(date: .abbreviated, time: .omitted))", ""]
+        for entry in weekEntries.sorted(by: { $0.date < $1.date }) {
+            let dateStr = entry.date.formatted(date: .abbreviated, time: .omitted)
+            let dur = entry.durationMinutes.formattedDuration
+            let client = entry.client?.name ?? "—"
+            let project = entry.project?.name ?? "—"
+            let notes = entry.notes.map { " — \($0)" } ?? ""
+            lines.append("[\(dateStr)] \(client) / \(project): \(dur)\(notes)")
+        }
+        let total = weekEntries.reduce(0) { $0 + $1.durationMinutes }
+        lines += ["", "Total: \(total.formattedDuration)"]
+
+        let body = lines.joined(separator: "\n")
+        let subject = "Timelog Week Export"
+        let mailto = "mailto:?subject=\(subject.urlEncoded)&body=\(body.urlEncoded)"
+        if let url = URL(string: mailto) { openURL(url) }
     }
 
     // MARK: - Bindings
@@ -87,6 +150,30 @@ struct MacSettingsView: View {
                 store.trackingEndMinute = c.minute ?? 0
             }
         )
+    }
+}
+
+private extension String {
+    var urlEncoded: String {
+        addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? self
+    }
+}
+
+private struct MongoSyncStatusRowMac: View {
+    private var mongo: MongoSyncService { MongoSyncService.shared }
+
+    var body: some View {
+        if mongo.isSyncing {
+            Label("Syncing…", systemImage: "arrow.triangle.2.circlepath")
+                .font(.caption).foregroundStyle(.secondary)
+        } else if let error = mongo.lastError {
+            Label(error, systemImage: "exclamationmark.triangle")
+                .font(.caption).foregroundStyle(.red)
+        } else if let date = mongo.lastSyncDate {
+            Label("Last sync: \(date.formatted(date: .omitted, time: .shortened))",
+                  systemImage: "checkmark.circle")
+                .font(.caption).foregroundStyle(.green)
+        }
     }
 }
 

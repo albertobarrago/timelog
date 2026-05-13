@@ -7,7 +7,8 @@ struct StartTrackingMacView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(SettingsStore.self) private var settings
 
-    let clients: [Client]
+    @Query(filter: #Predicate<Client> { !$0.isArchived }, sort: \Client.name)
+    private var clients: [Client]
 
     @State private var selectedClient: Client?
     @State private var selectedProject: Project?

@@ -86,7 +86,7 @@ struct MenuBarView: View {
         }
         .frame(width: 300)
         .sheet(isPresented: $showingStartTracking) {
-            StartTrackingMacView(clients: clients).environment(settings)
+            StartTrackingMacView().environment(settings)
         }
         .sheet(item: $sessionToStop) { StopSessionMacView(session: $0) }
     }

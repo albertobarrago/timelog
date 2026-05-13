@@ -9,6 +9,7 @@ struct HomeView: View {
     @Environment(\.modelContext) private var context
     @Query(sort: \TimeEntry.date, order: .reverse) private var allEntries: [TimeEntry]
     @Query(sort: \ActiveSession.startDate) private var activeSessions: [ActiveSession]
+    @Query(filter: #Predicate<Client> { !$0.isArchived }, sort: \Client.name) private var clients: [Client]
     @State private var activeSheet: HomeSheet?
 
     private var todayEntries: [TimeEntry] {
@@ -119,7 +120,7 @@ struct HomeView: View {
                 case .quickLog:
                     QuickLogSheet()
                 case .startTracking:
-                    StartTrackingSheet()
+                    StartTrackingSheet(clients: clients)
                 case .history:
                     HistoryView()
                 case .editEntry(let entry):

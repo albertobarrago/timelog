@@ -6,8 +6,8 @@ struct StartTrackingSheet: View {
     @Environment(\.modelContext) private var context
     @Environment(\.dismiss) private var dismiss
     @Environment(SettingsStore.self) private var settings
-    @Query(filter: #Predicate<Client> { !$0.isArchived }, sort: \Client.name)
-    private var clients: [Client]
+
+    let clients: [Client]
 
     @State private var selectedClient: Client?
     @State private var selectedProject: Project?
