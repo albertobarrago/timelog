@@ -79,7 +79,6 @@ public final class MongoSyncService {
     private var db: MongoDatabase?
     private var dataProvider: DataProvider?
     private var debounceTask: Task<Void, Never>?
-    private var observerToken: NSObjectProtocol?
 
     public private(set) var isSyncing = false
     public private(set) var lastSyncDate: Date?
@@ -124,17 +123,10 @@ public final class MongoSyncService {
         return components.string ?? raw
     }
 
-    public func startAutoSync(dataProvider: @escaping DataProvider) {
+    /// Registers the data provider used by triggerSync/syncAll.
+    /// Triggering is handled by the view layer via @Query onChange.
+    public func setDataProvider(_ dataProvider: @escaping DataProvider) {
         self.dataProvider = dataProvider
-        observerToken = NotificationCenter.default.addObserver(
-            forName: Notification.Name("NSManagedObjectContextDidSaveNotification"),
-            object: nil,
-            queue: .main
-        ) { [weak self] _ in
-            Task { @MainActor [weak self] in
-                self?.scheduleDebounced()
-            }
-        }
     }
 
     public func triggerSync() {
@@ -142,10 +134,6 @@ public final class MongoSyncService {
     }
 
     public func stopAutoSync() {
-        if let token = observerToken {
-            NotificationCenter.default.removeObserver(token)
-            observerToken = nil
-        }
         debounceTask?.cancel()
         dataProvider = nil
     }
@@ -343,7 +331,7 @@ public final class MongoSyncService {
     public func loadConnectionStringFromFile() {}
 
     public func connect() async throws {}
-    public func startAutoSync(dataProvider: @escaping DataProvider) {}
+    public func setDataProvider(_ dataProvider: @escaping DataProvider) {}
     public func triggerSync() {}
     public func stopAutoSync() {}
     public func pullAll(into context: ModelContext) async throws {}

@@ -8,12 +8,17 @@ private struct MongoSyncSetup: ViewModifier {
     @Environment(\.modelContext) private var modelContext
     @State private var showBanner = false
 
+    // @Query is the reliable SwiftData-native way to detect any data change
+    @Query private var clients: [Client]
+    @Query private var projects: [Project]
+    @Query private var entries: [TimeEntry]
+
     func body(content: Content) -> some View {
         content
             .onAppear {
                 let container = modelContext.container
                 MongoSyncService.shared.loadConnectionStringFromFile()
-                MongoSyncService.shared.startAutoSync { [container] in
+                MongoSyncService.shared.setDataProvider { [container] in
                     let ctx = container.mainContext
                     let clients  = (try? ctx.fetch(FetchDescriptor<Client>()))  ?? []
                     let projects = (try? ctx.fetch(FetchDescriptor<Project>())) ?? []
@@ -26,6 +31,10 @@ private struct MongoSyncSetup: ViewModifier {
                     MongoSyncService.shared.triggerSync()
                 }
             }
+            // Fire push on any insert/delete/update in each collection
+            .onChange(of: clients.count)  { _, _ in MongoSyncService.shared.triggerSync() }
+            .onChange(of: projects.count) { _, _ in MongoSyncService.shared.triggerSync() }
+            .onChange(of: entries.count)  { _, _ in MongoSyncService.shared.triggerSync() }
             .onChange(of: MongoSyncService.shared.lastSyncDate) { _, _ in
                 withAnimation(.easeInOut) { showBanner = true }
                 Task {
