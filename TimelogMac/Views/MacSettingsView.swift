@@ -8,8 +8,6 @@ struct MacSettingsView: View {
     @Environment(TimerViewModel.self) private var timerVM
     @Environment(\.openURL) private var openURL
     @Query(sort: \TimeEntry.date, order: .reverse) private var entries: [TimeEntry]
-    @State private var mongoConnectionString = ""
-
     var body: some View {
         @Bindable var store = store
         Form {
@@ -49,32 +47,19 @@ struct MacSettingsView: View {
             }
 
             Section {
-                VStack(alignment: .leading, spacing: 4) {
-                    Text("es. mongodb+srv://user:pass@host/")
-                        .font(.caption2)
-                        .foregroundStyle(.tertiary)
-                        .monospaced()
-                    TextField("Connection string", text: $mongoConnectionString)
-                }
                 HStack {
-                    Button("Save & Sync") {
-                        MongoSyncService.shared.saveConnectionString(mongoConnectionString)
-                        MongoSyncService.shared.triggerSync()
-                    }
-                    .disabled(mongoConnectionString.trimmingCharacters(in: .whitespaces).isEmpty)
-                    Spacer()
                     Button("Sync Now") {
                         MongoSyncService.shared.triggerSync()
                     }
                     .disabled(MongoSyncService.shared.readConnectionString() == nil)
+                    Spacer()
+                    MongoSyncStatusRowMac()
                 }
-                MongoSyncStatusRowMac()
             } header: {
                 Text("MongoDB Sync")
             } footer: {
-                Text("Connection string is stored securely in the Keychain.")
+                Text("Connection string is loaded automatically from ~/.config/timelog/mongo.local on first launch.")
             }
-            .onAppear { mongoConnectionString = MongoSyncService.shared.readConnectionString() ?? "" }
 
             Section("Export") {
                 Button("Export this week via Email") { exportEmail() }

@@ -5,14 +5,17 @@ import TimelogSync
 import AppKit
 
 private struct MongoSyncSetup: ViewModifier {
-    @Environment(\.modelContext) private var modelContext
+    @Environment(\.modelContainer) private var modelContainer
 
     func body(content: Content) -> some View {
         content.onAppear {
-            MongoSyncService.shared.startAutoSync {
-                let clients  = (try? modelContext.fetch(FetchDescriptor<Client>()))  ?? []
-                let projects = (try? modelContext.fetch(FetchDescriptor<Project>())) ?? []
-                let entries  = (try? modelContext.fetch(FetchDescriptor<TimeEntry>())) ?? []
+            MongoSyncService.shared.loadConnectionStringFromFile()
+            Task { try? await MongoSyncService.shared.connect() }
+            MongoSyncService.shared.startAutoSync { [modelContainer] in
+                let ctx = modelContainer.mainContext
+                let clients  = (try? ctx.fetch(FetchDescriptor<Client>()))  ?? []
+                let projects = (try? ctx.fetch(FetchDescriptor<Project>())) ?? []
+                let entries  = (try? ctx.fetch(FetchDescriptor<TimeEntry>())) ?? []
                 return (clients, projects, entries)
             }
         }

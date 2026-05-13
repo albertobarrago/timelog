@@ -7,6 +7,19 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+### Added
+- `MongoSyncService.loadConnectionStringFromFile()` — reads `~/.config/timelog/mongo.local` at startup and saves to Keychain if empty; file is never committed (outside the repo)
+- `docs/` folder with technical documentation and Mermaid diagrams: architecture, data model, user flows, MongoDB sync flow
+
+### Fixed
+- `MongoSyncService`: `'Project'` type ambiguity resolved by qualifying as `TimelogCore.Project` — MongoKitten exports its own `Project` type for aggregation pipeline stages, causing the collision after Xcode 26 upgrade
+- MongoDB sync now captures `modelContainer` (via `@Environment(\.modelContainer)`) instead of `modelContext` in the `dataProvider` closure — prevents stale context from returning empty fetch results
+
+### Changed
+- macOS Settings: removed MongoDB connection string text field and "Save & Sync" button — connection string is now managed exclusively via `~/.config/timelog/mongo.local` + Keychain; a "Sync Now" button and sync status remain
+
+---
+
 ### Fixed
 - iOS + macOS: project form sheet closing abruptly on save — `dismiss()` now called before `context.insert()` to prevent SwiftData relationship update from resetting the `showingAddProject` state mid-dismissal
 - macOS: duplicate `client.projects.append(p)` in `ProjectMacFormView.save()` removed — SwiftData already handles the inverse relationship when setting `p.client`

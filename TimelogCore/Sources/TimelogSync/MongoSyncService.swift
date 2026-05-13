@@ -39,7 +39,7 @@ private struct ProjectDocument: Codable {
     var isArchived: Bool
     var clientMongoId: String?
 
-    init(from project: Project) {
+    init(from project: TimelogCore.Project) {
         _id = project.mongoId.flatMap { ObjectId($0) } ?? ObjectId()
         name = project.name
         code = project.code
@@ -73,7 +73,7 @@ private struct TimeEntryDocument: Codable {
 public final class MongoSyncService {
     public static let shared = MongoSyncService()
 
-    public typealias DataProvider = () -> (clients: [Client], projects: [Project], entries: [TimeEntry])
+    public typealias DataProvider = () -> (clients: [Client], projects: [TimelogCore.Project], entries: [TimeEntry])
 
     private var db: MongoDatabase?
     private var dataProvider: DataProvider?
@@ -95,6 +95,17 @@ public final class MongoSyncService {
 
     public func readConnectionString() -> String? {
         KeychainHelper.read(key: Self.connectionStringKey)
+    }
+
+    /// Reads ~/.config/timelog/mongo.local and saves to Keychain if not already set.
+    public func loadConnectionStringFromFile() {
+        guard readConnectionString() == nil else { return }
+        let url = FileManager.default.homeDirectoryForCurrentUser
+            .appending(path: ".config/timelog/mongo.local")
+        guard let raw = try? String(contentsOf: url, encoding: .utf8) else { return }
+        let trimmed = raw.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else { return }
+        saveConnectionString(trimmed)
     }
 
     public func connect() async throws {
@@ -156,7 +167,7 @@ public final class MongoSyncService {
         }
     }
 
-    public func syncAll(clients: [Client], projects: [Project], entries: [TimeEntry]) async throws {
+    public func syncAll(clients: [Client], projects: [TimelogCore.Project], entries: [TimeEntry]) async throws {
         guard let db else { throw MongoSyncError.notConnected }
         isSyncing = true
         lastError = nil
@@ -180,7 +191,7 @@ public final class MongoSyncService {
         }
     }
 
-    private func push(projects: [Project], to db: MongoDatabase) async throws {
+    private func push(projects: [TimelogCore.Project], to db: MongoDatabase) async throws {
         let collection = db["projects"]
         for project in projects {
             let doc = ProjectDocument(from: project)
@@ -205,7 +216,7 @@ public final class MongoSyncService {
 @MainActor
 public final class MongoSyncService {
     public static let shared = MongoSyncService()
-    public typealias DataProvider = () -> (clients: [Client], projects: [Project], entries: [TimeEntry])
+    public typealias DataProvider = () -> (clients: [Client], projects: [TimelogCore.Project], entries: [TimeEntry])
 
     public private(set) var isSyncing = false
     public private(set) var lastSyncDate: Date?
@@ -223,11 +234,13 @@ public final class MongoSyncService {
         KeychainHelper.read(key: Self.connectionStringKey)
     }
 
+    public func loadConnectionStringFromFile() {}
+
     public func connect() async throws {}
     public func startAutoSync(dataProvider: @escaping DataProvider) {}
     public func triggerSync() {}
     public func stopAutoSync() {}
-    public func syncAll(clients: [Client], projects: [Project], entries: [TimeEntry]) async throws {}
+    public func syncAll(clients: [Client], projects: [TimelogCore.Project], entries: [TimeEntry]) async throws {}
 }
 
 #endif
