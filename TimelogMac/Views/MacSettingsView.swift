@@ -51,15 +51,26 @@ struct MacSettingsView: View {
                     MongoStatusDot()
                 }
                 LabeledContent("") {
-                    Button("Sync Now") {
-                        MongoSyncService.shared.triggerSync()
+                    HStack(spacing: 12) {
+                        Button("Sync Now") {
+                            MongoSyncService.shared.triggerSync()
+                        }
+                        .disabled(MongoSyncService.shared.readConnectionString() == nil)
+
+                        Button("Reset & Pull") {
+                            Task {
+                                try? await MongoSyncService.shared.connect()
+                                try? await MongoSyncService.shared.pullAll(into: modelContext)
+                                MongoSyncService.shared.triggerSync()
+                            }
+                        }
+                        .disabled(MongoSyncService.shared.readConnectionString() == nil)
                     }
-                    .disabled(MongoSyncService.shared.readConnectionString() == nil)
                 }
             } header: {
                 Text("MongoDB Sync")
             } footer: {
-                Text("Configure via ~/.config/timelog/mongo.local — stored in Keychain.")
+                Text("Reset & Pull wipes local data and re-downloads everything from MongoDB.")
             }
 
             Section("Export") {

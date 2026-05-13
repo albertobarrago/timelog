@@ -202,14 +202,16 @@ public final class MongoSyncService {
 
     private func pull(clientsInto context: ModelContext, from db: MongoDatabase) async throws {
         let docs = try await db["clients"].find().decode(ClientDocument.self).drain()
+        let remoteIds = Set(docs.map { $0._id.hexString })
+
         for doc in docs {
             let id = doc._id.hexString
             let existing = try? context.fetch(FetchDescriptor<Client>(
                 predicate: #Predicate { $0.mongoId == id }
             )).first
             if let c = existing {
-                c.name      = doc.name
-                c.colorHex  = doc.colorHex
+                c.name       = doc.name
+                c.colorHex   = doc.colorHex
                 c.isArchived = doc.isArchived
             } else {
                 let c = Client(name: doc.name, colorHex: doc.colorHex, isArchived: doc.isArchived)
@@ -217,11 +219,20 @@ public final class MongoSyncService {
                 context.insert(c)
             }
         }
+
+        // Delete local orphans (not present in MongoDB)
+        for local in (try? context.fetch(FetchDescriptor<Client>())) ?? [] {
+            if let mid = local.mongoId, !remoteIds.contains(mid) {
+                context.delete(local)
+            }
+        }
         try context.save()
     }
 
     private func pull(projectsInto context: ModelContext, from db: MongoDatabase) async throws {
         let docs = try await db["projects"].find().decode(ProjectDocument.self).drain()
+        let remoteIds = Set(docs.map { $0._id.hexString })
+
         for doc in docs {
             let id = doc._id.hexString
             let existing = try? context.fetch(FetchDescriptor<TimelogCore.Project>(
@@ -240,6 +251,13 @@ public final class MongoSyncService {
                     )).first
                 }
                 context.insert(p)
+            }
+        }
+
+        // Delete local orphans
+        for local in (try? context.fetch(FetchDescriptor<TimelogCore.Project>())) ?? [] {
+            if let mid = local.mongoId, !remoteIds.contains(mid) {
+                context.delete(local)
             }
         }
         try context.save()
