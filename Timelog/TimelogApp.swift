@@ -5,16 +5,31 @@ import SwiftData
 
 private struct MongoSyncSetup: ViewModifier {
     @Environment(\.modelContext) private var modelContext
+    @Query private var clients: [Client]
+    @Query private var projects: [Project]
+    @Query private var entries: [TimeEntry]
 
     func body(content: Content) -> some View {
-        content.onAppear {
-            MongoSyncService.shared.startAutoSync {
-                let clients  = (try? modelContext.fetch(FetchDescriptor<Client>()))  ?? []
-                let projects = (try? modelContext.fetch(FetchDescriptor<Project>())) ?? []
-                let entries  = (try? modelContext.fetch(FetchDescriptor<TimeEntry>())) ?? []
-                return (clients, projects, entries)
+        content
+            .onAppear {
+                let container = modelContext.container
+                MongoSyncService.shared.loadConnectionStringFromFile()
+                MongoSyncService.shared.setDataProvider { [container] in
+                    let ctx = container.mainContext
+                    let clients  = (try? ctx.fetch(FetchDescriptor<Client>()))  ?? []
+                    let projects = (try? ctx.fetch(FetchDescriptor<Project>())) ?? []
+                    let entries  = (try? ctx.fetch(FetchDescriptor<TimeEntry>())) ?? []
+                    return (clients, projects, entries)
+                }
+                Task {
+                    try? await MongoSyncService.shared.connect()
+                    try? await MongoSyncService.shared.pullAll(into: modelContext)
+                    MongoSyncService.shared.triggerSync()
+                }
             }
-        }
+            .onChange(of: clients.count)  { _, _ in MongoSyncService.shared.triggerSync() }
+            .onChange(of: projects.count) { _, _ in MongoSyncService.shared.triggerSync() }
+            .onChange(of: entries.count)  { _, _ in MongoSyncService.shared.triggerSync() }
     }
 }
 

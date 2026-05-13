@@ -14,7 +14,6 @@ public enum MongoSyncError: LocalizedError {
     }
 }
 
-#if os(macOS)
 import MongoKitten
 
 // MARK: - BSON DTOs
@@ -305,41 +304,3 @@ public final class MongoSyncService {
         }
     }
 }
-
-#else
-
-// MARK: - iOS stub (MongoDB sync not available on iOS)
-
-@Observable
-@MainActor
-public final class MongoSyncService {
-    public static let shared = MongoSyncService()
-    public typealias DataProvider = () -> (clients: [Client], projects: [TimelogCore.Project], entries: [TimeEntry])
-
-    public private(set) var isSyncing = false
-    public private(set) var lastSyncDate: Date?
-    public private(set) var lastError: String?
-
-    private static let connectionStringKey = "mongo_connection_string"
-
-    private init() {}
-
-    public func saveConnectionString(_ connectionString: String) {
-        KeychainHelper.save(key: Self.connectionStringKey, value: connectionString)
-    }
-
-    public func readConnectionString() -> String? {
-        KeychainHelper.read(key: Self.connectionStringKey)
-    }
-
-    public func loadConnectionStringFromFile() {}
-
-    public func connect() async throws {}
-    public func setDataProvider(_ dataProvider: @escaping DataProvider) {}
-    public func triggerSync() {}
-    public func stopAutoSync() {}
-    public func pullAll(into context: ModelContext) async throws {}
-    public func syncAll(clients: [Client], projects: [TimelogCore.Project], entries: [TimeEntry]) async throws {}
-}
-
-#endif

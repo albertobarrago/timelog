@@ -1,5 +1,6 @@
 import SwiftUI
 import TimelogCore
+import TimelogSync
 
 enum SidebarItem: String, CaseIterable, Identifiable {
     case today    = "Today"
@@ -59,6 +60,10 @@ struct MainMacView: View {
                 .foregroundStyle(selection == .settings ? .primary : .secondary)
                 .padding(.horizontal, 8)
                 .padding(.vertical, 8)
+
+                MongoStatusDot()
+                    .padding(.horizontal, 16)
+                    .padding(.bottom, 10)
             }
             .navigationSplitViewColumnWidth(min: 160, ideal: 180, max: 220)
         } detail: {
@@ -77,5 +82,48 @@ struct MainMacView: View {
         case .settings: MacSettingsView()
         }
     }
+}
 
+private struct MongoStatusDot: View {
+    private var sync: MongoSyncService { MongoSyncService.shared }
+    @State private var pulse = false
+
+    var body: some View {
+        HStack(spacing: 6) {
+            ZStack {
+                if sync.isSyncing {
+                    Circle()
+                        .fill(Color.yellow.opacity(0.25))
+                        .frame(width: 14, height: 14)
+                        .scaleEffect(pulse ? 1.6 : 1.0)
+                        .opacity(pulse ? 0 : 1)
+                        .animation(.easeOut(duration: 1.1).repeatForever(autoreverses: false), value: pulse)
+                }
+                Circle()
+                    .fill(dotColor)
+                    .frame(width: 8, height: 8)
+            }
+            Text(statusText)
+                .font(.caption2)
+                .foregroundStyle(.secondary)
+                .lineLimit(1)
+        }
+        .onAppear { pulse = true }
+    }
+
+    private var dotColor: Color {
+        if sync.isSyncing           { return .yellow }
+        if sync.lastError != nil    { return .red }
+        if sync.lastSyncDate != nil { return .green }
+        return Color.secondary.opacity(0.4)
+    }
+
+    private var statusText: String {
+        if sync.isSyncing        { return "Syncing…" }
+        if sync.lastError != nil { return "Sync error" }
+        if let d = sync.lastSyncDate {
+            return "Synced \(d.formatted(.relative(presentation: .named)))"
+        }
+        return "Not connected"
+    }
 }

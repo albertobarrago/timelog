@@ -6,9 +6,6 @@ import AppKit
 
 private struct MongoSyncSetup: ViewModifier {
     @Environment(\.modelContext) private var modelContext
-    @State private var showBanner = false
-
-    // @Query is the reliable SwiftData-native way to detect any data change
     @Query private var clients: [Client]
     @Query private var projects: [Project]
     @Query private var entries: [TimeEntry]
@@ -31,38 +28,10 @@ private struct MongoSyncSetup: ViewModifier {
                     MongoSyncService.shared.triggerSync()
                 }
             }
-            // Fire push on any insert/delete/update in each collection
             .onChange(of: clients.count)  { _, _ in MongoSyncService.shared.triggerSync() }
             .onChange(of: projects.count) { _, _ in MongoSyncService.shared.triggerSync() }
             .onChange(of: entries.count)  { _, _ in MongoSyncService.shared.triggerSync() }
-            .onChange(of: MongoSyncService.shared.lastSyncDate) { _, _ in
-                withAnimation(.easeInOut) { showBanner = true }
-                Task {
-                    try? await Task.sleep(for: .seconds(3))
-                    withAnimation(.easeInOut) { showBanner = false }
-                }
-            }
-            .overlay(alignment: .top) {
-                if showBanner {
-                    SyncSuccessBanner()
-                        .transition(.move(edge: .top).combined(with: .opacity))
-                        .padding(.top, 8)
-                }
-            }
     }
-}
-
-private struct SyncSuccessBanner: View {
-    var body: some View {
-        Label("Sync completed", systemImage: "checkmark.circle.fill")
-            .font(.subheadline.weight(.medium))
-            .foregroundStyle(.white)
-            .padding(.horizontal, 16)
-            .padding(.vertical, 10)
-            .background(.green.gradient, in: Capsule())
-            .shadow(color: .black.opacity(0.15), radius: 6, y: 3)
-    }
-}
 
 @main
 struct TimelogMacApp: App {
