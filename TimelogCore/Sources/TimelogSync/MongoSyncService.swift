@@ -192,6 +192,7 @@ public final class MongoSyncService {
         lastError = nil
         defer { isSyncing = false }
         do {
+            try wipeLocalData(context)
             try await pull(clientsInto: context, from: db)
             try await pull(projectsInto: context, from: db)
             try await pull(entriesInto: context, from: db)
@@ -200,6 +201,12 @@ public final class MongoSyncService {
             lastError = error.localizedDescription
             throw error
         }
+    }
+
+    private func wipeLocalData(_ context: ModelContext) throws {
+        for e in try context.fetch(FetchDescriptor<TimeEntry>())            { context.delete(e) }
+        for c in try context.fetch(FetchDescriptor<Client>())               { context.delete(c) }
+        try context.save()
     }
 
     private func pull(clientsInto context: ModelContext, from db: MongoDatabase) async throws {
