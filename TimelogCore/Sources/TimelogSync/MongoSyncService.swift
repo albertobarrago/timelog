@@ -84,6 +84,8 @@ public final class MongoSyncService {
     public private(set) var lastSyncDate: Date?
     public private(set) var lastError: String?
 
+    public static let willWipeDataNotification = Notification.Name("MongoSyncServiceWillWipeData")
+
     private static let connectionStringKey = "mongo_connection_string"
     private static let debounceSeconds: Double = 2
 
@@ -180,7 +182,13 @@ public final class MongoSyncService {
         lastError = nil
         defer { isSyncing = false }
         do {
-            try wipeLocalData(context)
+            NotificationCenter.default.post(name: MongoSyncService.willWipeDataNotification, object: nil)
+            try await Task.sleep(for: .milliseconds(150))   // let views process notification and clear selections
+            try context.delete(model: TimeEntry.self)
+            try context.delete(model: TimelogCore.Project.self)
+            try context.delete(model: Client.self)
+            try context.save()
+
             try await pull(clientsInto: context, from: db)
             try await pull(projectsInto: context, from: db)
             try await pull(entriesInto: context, from: db)
@@ -191,11 +199,7 @@ public final class MongoSyncService {
         }
     }
 
-    private func wipeLocalData(_ context: ModelContext) throws {
-        for e in try context.fetch(FetchDescriptor<TimeEntry>())            { context.delete(e) }
-        for c in try context.fetch(FetchDescriptor<Client>())               { context.delete(c) }
-        try context.save()
-    }
+
 
     private func pull(clientsInto context: ModelContext, from db: MongoDatabase) async throws {
         let docs = try await db["clients"].find().decode(ClientDocument.self).drain()

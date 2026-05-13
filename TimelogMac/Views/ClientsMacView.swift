@@ -1,6 +1,7 @@
 import SwiftUI
 import SwiftData
 import TimelogCore
+import TimelogSync
 
 struct ClientsMacView: View {
     @Environment(\.modelContext) private var context
@@ -71,6 +72,10 @@ struct ClientsMacView: View {
         }
         .sheet(isPresented: $showingAddClient)  { ClientMacFormView() }
         .sheet(item: $clientToEdit)             { ClientMacFormView(client: $0) }
+        .onReceive(NotificationCenter.default.publisher(for: MongoSyncService.willWipeDataNotification)) { _ in
+            selectedClientID = nil
+            clientToEdit     = nil
+        }
     }
 }
 
@@ -175,6 +180,10 @@ struct ProjectsMacView: View {
         }
         .sheet(isPresented: $showingAddProject) { ProjectMacFormView(client: client) }
         .sheet(item: $projectToEdit)            { ProjectMacFormView(client: client, project: $0) }
+        .onReceive(NotificationCenter.default.publisher(for: MongoSyncService.willWipeDataNotification)) { _ in
+            projectToEdit    = nil
+            selectedProjects = []
+        }
     }
 }
 
