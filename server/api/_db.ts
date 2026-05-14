@@ -7,7 +7,7 @@ export async function getDb(): Promise<Db> {
     client = new MongoClient(process.env.MONGODB_URI!)
     await client.connect()
   }
-  return client.db()
+  return client.db('timelog')
 }
 
 export function checkApiKey(req: { headers: { [key: string]: string | string[] | undefined } }): boolean {
