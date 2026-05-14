@@ -24,7 +24,12 @@ private struct MongoSyncSetup: ViewModifier {
                 }
                 Task {
                     try? await MongoSyncService.shared.connect()
-                    try? await MongoSyncService.shared.pullAll(into: modelContext)
+                    // Pull solo se SwiftData è vuoto (primo avvio / dopo reset manuale).
+                    // Se i dati ci sono già, salta il pull per evitare il flash di empty state.
+                    let hasData = ((try? container.mainContext.fetch(FetchDescriptor<Client>())) ?? []).count > 0
+                    if !hasData {
+                        try? await MongoSyncService.shared.pullAll(into: modelContext)
+                    }
                     MongoSyncService.shared.triggerSync()
                 }
             }
