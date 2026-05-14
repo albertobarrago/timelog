@@ -9,6 +9,7 @@ struct MacSettingsView: View {
     @Environment(\.openURL) private var openURL
     @Environment(\.modelContext) private var modelContext
     @Query(sort: \TimeEntry.date, order: .reverse) private var entries: [TimeEntry]
+
     var body: some View {
         @Bindable var store = store
         Form {
@@ -92,8 +93,6 @@ struct MacSettingsView: View {
         .frame(maxWidth: 520)
     }
 
-    // MARK: - Actions
-
     private func exportEmail() {
         let cal = Calendar.current
         let now = Date()
@@ -117,8 +116,6 @@ struct MacSettingsView: View {
         let mailto = "mailto:?subject=\(subject.urlEncoded)&body=\(body.urlEncoded)"
         if let url = URL(string: mailto) { openURL(url) }
     }
-
-    // MARK: - Bindings
 
     private var reminderTime: Binding<Date> {
         Binding(
@@ -176,8 +173,7 @@ private struct MongoStatusDot: View {
                     .fill(dotColor)
                     .frame(width: 8, height: 8)
             }
-            Text(statusText)
-                .foregroundStyle(textColor)
+            Text(statusText).foregroundStyle(textColor)
         }
         .onAppear { pulse = true }
     }
@@ -190,12 +186,11 @@ private struct MongoStatusDot: View {
     }
 
     private var textColor: Color {
-        if sync.lastError != nil { return .red }
-        return .secondary
+        sync.lastError != nil ? .red : .secondary
     }
 
     private var statusText: String {
-        if sync.isSyncing        { return "Syncing…" }
+        if sync.isSyncing         { return "Syncing…" }
         if let e = sync.lastError { return e }
         if let d = sync.lastSyncDate {
             return "Last sync \(d.formatted(.relative(presentation: .named)))"

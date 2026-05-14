@@ -1,6 +1,7 @@
 import Foundation
 import SwiftData
 import TimelogCore
+import MongoKitten
 
 public enum MongoSyncError: LocalizedError {
     case noCredentials
@@ -13,9 +14,6 @@ public enum MongoSyncError: LocalizedError {
         }
     }
 }
-
-#if os(macOS)
-import MongoKitten
 
 // MARK: - BSON DTOs
 
@@ -185,7 +183,6 @@ public final class MongoSyncService {
             try context.delete(model: TimelogCore.Project.self)
             try context.delete(model: Client.self)
             try context.save()
-
             try await pull(clientsInto: context, from: db)
             try await pull(projectsInto: context, from: db)
             try await pull(entriesInto: context, from: db)
@@ -199,27 +196,21 @@ public final class MongoSyncService {
     private func pull(clientsInto context: ModelContext, from db: MongoDatabase) async throws {
         let docs = try await db["clients"].find().decode(ClientDocument.self).drain()
         let remoteIds = Set(docs.map { $0._id.hexString })
-
         for doc in docs {
             let id = doc._id.hexString
             let existing = try? context.fetch(FetchDescriptor<Client>(
                 predicate: #Predicate { $0.mongoId == id }
             )).first
             if let c = existing {
-                c.name       = doc.name
-                c.colorHex   = doc.colorHex
-                c.isArchived = doc.isArchived
+                c.name = doc.name; c.colorHex = doc.colorHex; c.isArchived = doc.isArchived
             } else {
                 let c = Client(name: doc.name, colorHex: doc.colorHex, isArchived: doc.isArchived)
                 c.mongoId = id
                 context.insert(c)
             }
         }
-
         for local in (try? context.fetch(FetchDescriptor<Client>())) ?? [] {
-            if let mid = local.mongoId, !remoteIds.contains(mid) {
-                context.delete(local)
-            }
+            if let mid = local.mongoId, !remoteIds.contains(mid) { context.delete(local) }
         }
         try context.save()
     }
@@ -227,16 +218,13 @@ public final class MongoSyncService {
     private func pull(projectsInto context: ModelContext, from db: MongoDatabase) async throws {
         let docs = try await db["projects"].find().decode(ProjectDocument.self).drain()
         let remoteIds = Set(docs.map { $0._id.hexString })
-
         for doc in docs {
             let id = doc._id.hexString
             let existing = try? context.fetch(FetchDescriptor<TimelogCore.Project>(
                 predicate: #Predicate { $0.mongoId == id }
             )).first
             if let p = existing {
-                p.name       = doc.name
-                p.code       = doc.code
-                p.isArchived = doc.isArchived
+                p.name = doc.name; p.code = doc.code; p.isArchived = doc.isArchived
             } else {
                 let p = TimelogCore.Project(name: doc.name, code: doc.code, isArchived: doc.isArchived)
                 p.mongoId = id
@@ -248,11 +236,8 @@ public final class MongoSyncService {
                 context.insert(p)
             }
         }
-
         for local in (try? context.fetch(FetchDescriptor<TimelogCore.Project>())) ?? [] {
-            if let mid = local.mongoId, !remoteIds.contains(mid) {
-                context.delete(local)
-            }
+            if let mid = local.mongoId, !remoteIds.contains(mid) { context.delete(local) }
         }
         try context.save()
     }
@@ -265,9 +250,7 @@ public final class MongoSyncService {
                 predicate: #Predicate { $0.mongoId == id }
             )).first
             if let e = existing {
-                e.date            = doc.date
-                e.durationMinutes = doc.durationMinutes
-                e.notes           = doc.notes
+                e.date = doc.date; e.durationMinutes = doc.durationMinutes; e.notes = doc.notes
             } else {
                 var client: Client?
                 var project: TimelogCore.Project?
@@ -316,49 +299,3 @@ public final class MongoSyncService {
         }
     }
 }
-
-#else
-
-// MARK: - iOS no-op stub
-
-@Observable
-@MainActor
-public final class MongoSyncService {
-    public static let shared = MongoSyncService()
-
-    public typealias DataProvider = () -> (clients: [Client], projects: [TimelogCore.Project], entries: [TimeEntry])
-
-    public private(set) var isSyncing = false
-    public private(set) var lastSyncDate: Date?
-    public private(set) var lastError: String?
-
-    public static let willWipeDataNotification = Notification.Name("MongoSyncServiceWillWipeData")
-
-    private static let connectionStringKey = "mongo_connection_string"
-
-    private init() {}
-
-    public func saveConnectionString(_ connectionString: String) {
-        KeychainHelper.save(key: Self.connectionStringKey, value: connectionString)
-    }
-
-    public func readConnectionString() -> String? {
-        KeychainHelper.read(key: Self.connectionStringKey)
-    }
-
-    public func loadConnectionStringFromFile() {}
-
-    public func connect() async throws {}
-
-    public func setDataProvider(_ dataProvider: @escaping DataProvider) {}
-
-    public func triggerSync() {}
-
-    public func stopAutoSync() {}
-
-    public func syncAll(clients: [Client], projects: [TimelogCore.Project], entries: [TimeEntry]) async throws {}
-
-    public func pullAll(into context: ModelContext) async throws {}
-}
-
-#endif
