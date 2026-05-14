@@ -102,7 +102,6 @@ public final class RestSyncService {
     /// iOS:   legge SyncConfig.local dal bundle (gitignored, mai pushato)
     /// In entrambi i casi salva in Keychain e non sovrascrive se già configurato.
     public func loadConfigFromFile() {
-        guard !isConfigured else { return }
         #if os(macOS)
         let fileURL = FileManager.default.homeDirectoryForCurrentUser
             .appending(path: ".config/timelog/sync.local")
