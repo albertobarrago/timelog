@@ -142,9 +142,11 @@ public final class RestSyncService {
 
         NotificationCenter.default.post(name: Self.willWipeDataNotification, object: nil)
         try await Task.sleep(for: .milliseconds(150))
-        try context.delete(model: TimeEntry.self)
-        try context.delete(model: TimelogCore.Project.self)
-        try context.delete(model: Client.self)
+
+        // Batch delete bypassa SwiftData observation — delete one by one
+        for e in (try? context.fetch(FetchDescriptor<TimeEntry>())) ?? []          { context.delete(e) }
+        for p in (try? context.fetch(FetchDescriptor<TimelogCore.Project>())) ?? [] { context.delete(p) }
+        for c in (try? context.fetch(FetchDescriptor<Client>())) ?? []              { context.delete(c) }
         try context.save()
 
         for dto in response.clients {
