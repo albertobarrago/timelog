@@ -86,11 +86,6 @@ struct MacSettingsView: View {
                 LabeledContent("Version") {
                     Text(Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "—")
                 }
-                LabeledContent("") {
-                    Text("fatto da un nerd per nerd, il vostro alBz 🤓")
-                        .foregroundStyle(.secondary)
-                        .font(.caption)
-                }
             }
         }
         .formStyle(.grouped)

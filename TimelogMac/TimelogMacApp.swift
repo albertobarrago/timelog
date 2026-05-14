@@ -62,10 +62,10 @@ struct TimelogMacApp: App {
                 Button("About Timelog") {
                     NSApplication.shared.orderFrontStandardAboutPanel(options: [
                         .credits: NSAttributedString(
-                            string: "github.com/AlbertoBarrago",
+                            string: "fatto da un nerd per nerd, il vostro alBz\ngithub.com/AlbertoBarrago",
                             attributes: [
-                                .link: URL(string: "https://github.com/AlbertoBarrago")!,
-                                .font: NSFont.systemFont(ofSize: NSFont.smallSystemFontSize)
+                                .font: NSFont.systemFont(ofSize: NSFont.smallSystemFontSize),
+                                .foregroundColor: NSColor.secondaryLabelColor
                             ]
                         )
                     ])
