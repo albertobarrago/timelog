@@ -178,8 +178,11 @@ public final class RestSyncService {
         for dto in response.projects {
             let p = TimelogCore.Project(name: dto.name, code: dto.code, isArchived: dto.isArchived ?? false)
             p.mongoId = dto._id
-            p.client = dto.clientMongoId.flatMap { clientMap[$0] }
             context.insert(p)
+            if let cid = dto.clientMongoId, let client = clientMap[cid] {
+                p.client = client
+                client.projects.append(p)
+            }
             projectMap[dto._id] = p
         }
         try context.save()
