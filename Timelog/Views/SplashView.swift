@@ -16,7 +16,7 @@ struct SplashView: View {
                     .resizable()
                     .scaledToFit()
                     .frame(width: 72, height: 72)
-                    .foregroundStyle(.accent)
+                    .foregroundStyle(Color.accentColor)
 
                 VStack(spacing: 4) {
                     Text("Timelog")
