@@ -41,3 +41,5 @@ Icon?
 *.p12
 *.mobileprovision
 *.provisionprofile
+server/node_modules
+Timelog/SyncConfig.local
