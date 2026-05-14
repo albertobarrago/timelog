@@ -5,7 +5,16 @@
 <h1 align="center">Timelog</h1>
 
 <p align="center">
-  A lightweight time-tracking app for iOS and native macOS, built with SwiftUI and SwiftData.
+  A lightweight time-tracking app for iOS and native macOS, built with SwiftUI and SwiftData.<br/>
+  Sync across devices via a self-hosted middleware on Vercel — zero cloud lock-in, zero subscription.
+</p>
+
+<p align="center">
+  <img src="https://img.shields.io/badge/iOS-17%2B-black?style=flat-square&logo=apple" />
+  <img src="https://img.shields.io/badge/macOS-14%2B-black?style=flat-square&logo=apple" />
+  <img src="https://img.shields.io/badge/Swift-5.10-orange?style=flat-square&logo=swift" />
+  <img src="https://img.shields.io/badge/SwiftData-✓-blue?style=flat-square" />
+  <img src="https://img.shields.io/badge/Vercel-middleware-black?style=flat-square&logo=vercel" />
 </p>
 
 ---
@@ -14,8 +23,8 @@
 
 | App | Platform | Description |
 |-----|----------|-------------|
-| **Timelog** (iOS) | iPhone / iPad | Full-featured mobile app with Live Activity on lock screen |
-| **TimelogMac** (macOS) | macOS 14+ | Native menu bar app with full window management |
+| **Timelog** (iOS) | iPhone / iPad | Full-featured mobile app with Live Activity, splash screen, auto-sync |
+| **TimelogMac** (macOS) | macOS 14+ | Native menu bar app with full window management and MongoDB sync |
 
 Both apps share business logic via **TimelogCore**, a local Swift Package in the same repo.
 
@@ -28,13 +37,13 @@ Both apps share business logic via **TimelogCore**, a local Swift Package in the
 | **Today** | Log time manually or start real-time sessions; live daily total |
 | **Clients** | Manage clients (color coded) and their projects; archive when done |
 | **Timer** | Stopwatch or Pomodoro with ring progress and lock-screen notification |
-| **Settings** | Pomodoro intervals, daily reminders, smart tracking config |
+| **Settings** | Pomodoro intervals, daily reminders, smart tracking config, sync status |
 
 ### Smart Tracking
 Tap ▶ to start a session when you begin working. Stop it when done — duration is logged automatically. Multiple sessions can run simultaneously. Forgot to stop? You get a notification at your configured end-of-day time.
 
-### Reminders
-Set a daily nudge at a chosen time on chosen days so nobody on your team forgets to fill in their timesheet.
+### Sync (iOS ↔ macOS)
+Data entered on Mac is available on iPhone automatically. The iOS app pulls from a lightweight Node.js middleware on Vercel at every launch and pushes changes with a 2-second debounce. The connection string never leaves the server.
 
 ### Live Activity (iOS)
 Active sessions and the running timer appear on the lock screen and in the Dynamic Island — no need to open the app.
@@ -47,7 +56,27 @@ Active sessions and the running timer appear on the lock screen and in the Dynam
 - **Today view** — active sessions with live ticker, today's entries, context menus
 - **Clients & Projects** — `NavigationSplitView` with macOS `Table`, inline create/edit forms
 - **Timer** — full Pomodoro / stopwatch window, Space to start/pause
+- **MongoDB sync** — push/pull via MongoKitten to your Atlas cluster; connection string stored in Keychain
 - **Settings window** — Pomodoro config, smart tracking end-of-day threshold (`⌘,`)
+
+---
+
+## Sync Architecture
+
+```
+iPhone ──► GET /api/pull  ──► Vercel (Node.js) ──► MongoDB Atlas
+        ◄── JSON ──────────────────────────────────────────────
+
+iPhone ──► POST /api/sync ──► Vercel ──► MongoDB upsert
+
+Mac    ──► MongoKitten ──────────────────────────────────────►
+        ◄───────────────────────────────────── MongoDB Atlas ◄──
+```
+
+- **iOS**: `RestSyncService` — pure `URLSession`, zero external dependencies, credentials auto-loaded from a gitignored bundle file
+- **macOS**: `MongoSyncService` — direct MongoDB wire protocol via MongoKitten
+- **Server**: two Vercel serverless functions (`GET /api/pull`, `POST /api/sync`), auth via `X-API-Key`
+- **API docs**: live Swagger UI at your Vercel deployment URL
 
 ---
 
@@ -55,31 +84,22 @@ Active sessions and the running timer appear on the lock screen and in the Dynam
 
 ```
 TimeLog/
-├── Timelog.xcodeproj          # iOS app project
-├── TimelogMac.xcodeproj       # macOS app project
-├── TimelogCore/               # Shared Swift Package (models, stores, VM, helpers)
-│   └── Sources/TimelogCore/
-│       ├── Models/            # Client, Project, TimeEntry, ActiveSession
-│       ├── ViewModels/        # TimerViewModel
-│       ├── Stores/            # SettingsStore
-│       ├── Helpers/           # KeychainHelper, NotificationManager
-│       └── Extensions/        # Color+Hex, Int+Duration
-├── Timelog/                   # iOS app sources
-│   └── Views/
-│       ├── Home/              # Today log, QuickLogSheet, StartTracking, StopSession
-│       ├── Timer/             # Stopwatch / Pomodoro + ring
-│       ├── Clients/           # Client & project management
-│       ├── Settings/          # Config, reminders, export
-│       └── Onboarding/        # First-run guide
-├── TimelogMac/                # macOS app sources
-│   └── Views/
-│       ├── MainMacView        # NavigationSplitView root
-│       ├── TodayMacView       # Sessions + entries
-│       ├── ClientsMacView     # Clients → Projects table
-│       ├── TimerMacView       # Full timer window
-│       ├── MenuBarView        # Menu bar popover
-│       └── ...
-└── TimelogWidgetExtension/    # iOS Live Activity widget
+├── Timelog.xcodeproj           # iOS app project
+├── TimelogMac.xcodeproj        # macOS app project
+├── TimelogCore/                # Shared Swift Package
+│   └── Sources/
+│       ├── TimelogCore/        # Models, VM, Stores, Helpers, Extensions
+│       └── TimelogSync/        # MongoSyncService (macOS) + RestSyncService (iOS)
+├── Timelog/                    # iOS app sources (Views only)
+├── TimelogMac/                 # macOS app sources (Views only)
+├── TimelogWidgetExtension/     # iOS Live Activity widget
+├── server/                     # Vercel middleware (Node.js + TypeScript)
+│   └── api/
+│       ├── pull.ts             # GET  /api/pull
+│       └── sync.ts             # POST /api/sync
+└── docs/
+    ├── SETUP_SYNC_SERVER.md    # How to configure sync on a new machine
+    └── PLAN_CLOUDKIT_IOS.md    # CloudKit migration notes (future)
 ```
 
 ---
@@ -90,8 +110,7 @@ TimeLog/
 |-----|-------------|
 | iOS | Xcode 16+, iOS 17+, physical device for Live Activity |
 | macOS | Xcode 16+, macOS 14+ |
-
-No external dependencies — pure Swift ecosystem (SwiftData, Keychain, ActivityKit, UserNotifications).
+| Sync server | Node.js 18+, Vercel account (free), MongoDB Atlas (free M0) |
 
 ---
 
@@ -106,18 +125,34 @@ cd Timelog
 
 **macOS:** open `TimelogMac.xcodeproj`, select the `TimelogMac` scheme, run.
 
-> Both projects reference `TimelogCore` as a local package — no extra setup needed.
+### Sync setup
 
-**Live Activity**: requires iPhone 14 Pro or later for Dynamic Island; any iPhone for lock screen banner.
+See [`docs/SETUP_SYNC_SERVER.md`](docs/SETUP_SYNC_SERVER.md) for full instructions. Quick version:
+
+```bash
+# 1. Deploy the middleware
+cd server && vercel --prod
+
+# 2. Set env vars on Vercel
+vercel env add MONGODB_URI
+vercel env add API_KEY
+
+# 3. Configure iOS credentials (gitignored, auto-loaded at launch)
+echo "URL=https://your-app.vercel.app"  > Timelog/SyncConfig.local
+echo "API_KEY=your-secret-key"         >> Timelog/SyncConfig.local
+
+# 4. Configure macOS credentials
+echo "mongodb+srv://..." > ~/.config/timelog/mongo.local
+```
 
 ---
 
 ## Architecture
 
-- **TimelogCore** — shared `@Observable` models and business logic, public API, iOS + macOS 14+
+- **TimelogCore** — shared `@Observable` models and business logic, public API, iOS 17+ / macOS 14+
 - **MVVM** — `TimerViewModel` lives at app level, injected via SwiftUI environment
-- **SwiftData** — single `ModelContainer` shared across all scenes (window + menu bar)
-- **Keychain** — sensitive credentials stored via `KeychainHelper`, ready for external API integration
+- **SwiftData** — single `ModelContainer` shared across all scenes
+- **Keychain** — all credentials stored via `KeychainHelper`, never in code or UserDefaults
 - **ActivityKit** — Live Activities managed by `TimerViewModel` (iOS only, compile-guarded)
 - **UserNotifications** — daily reminders, session overdue alerts, Pomodoro phase-end
 
