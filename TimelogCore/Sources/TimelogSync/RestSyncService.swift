@@ -171,21 +171,24 @@ public final class RestSyncService {
         }
         try context.save()
 
+        let allClients  = (try? context.fetch(FetchDescriptor<Client>())) ?? []
+        let allProjects = (try? context.fetch(FetchDescriptor<TimelogCore.Project>())) ?? []
+
         for dto in response.projects {
             let p = TimelogCore.Project(name: dto.name, code: dto.code, isArchived: dto.isArchived ?? false)
             p.mongoId = dto._id
-            if let cid = dto.clientMongoId {
-                p.client = try? context.fetch(FetchDescriptor<Client>(predicate: #Predicate { $0.mongoId == cid })).first
-            }
+            p.client = allClients.first { $0.mongoId == dto.clientMongoId }
             context.insert(p)
         }
         try context.save()
 
+        let allProjectsUpdated = (try? context.fetch(FetchDescriptor<TimelogCore.Project>())) ?? []
+
         for dto in response.entries {
             let dateStr = dto.date ?? ""
             let date = Self.iso8601.date(from: dateStr) ?? Self.iso8601NoFrac.date(from: dateStr) ?? Date()
-            let client  = dto.clientMongoId.flatMap  { cid in try? context.fetch(FetchDescriptor<Client>(predicate: #Predicate { $0.mongoId == cid })).first }
-            let project = dto.projectMongoId.flatMap { pid in try? context.fetch(FetchDescriptor<TimelogCore.Project>(predicate: #Predicate { $0.mongoId == pid })).first }
+            let client  = allClients.first { $0.mongoId == dto.clientMongoId }
+            let project = allProjectsUpdated.first { $0.mongoId == dto.projectMongoId }
             let e = TimeEntry(date: date, durationMinutes: dto.durationMinutes ?? 0, notes: dto.notes, client: client, project: project)
             e.mongoId = dto._id
             context.insert(e)
