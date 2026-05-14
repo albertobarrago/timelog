@@ -13,22 +13,22 @@ private struct PullResponse: Decodable {
 private struct ClientDTO: Codable {
     var _id: String
     var name: String
-    var colorHex: String
-    var isArchived: Bool
+    var colorHex: String?
+    var isArchived: Bool?
 }
 
 private struct ProjectDTO: Codable {
     var _id: String
     var name: String
     var code: String?
-    var isArchived: Bool
+    var isArchived: Bool?
     var clientMongoId: String?
 }
 
 private struct EntryDTO: Codable {
     var _id: String
-    var date: String
-    var durationMinutes: Int
+    var date: String?
+    var durationMinutes: Int?
     var notes: String?
     var clientMongoId: String?
     var projectMongoId: String?
@@ -65,6 +65,12 @@ public final class RestSyncService {
     private static let iso8601: ISO8601DateFormatter = {
         let f = ISO8601DateFormatter()
         f.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+        return f
+    }()
+
+    private static let iso8601NoFrac: ISO8601DateFormatter = {
+        let f = ISO8601DateFormatter()
+        f.formatOptions = [.withInternetDateTime]
         return f
     }()
 
@@ -150,14 +156,14 @@ public final class RestSyncService {
         try context.save()
 
         for dto in response.clients {
-            let c = Client(name: dto.name, colorHex: dto.colorHex, isArchived: dto.isArchived)
+            let c = Client(name: dto.name, colorHex: dto.colorHex ?? "#007AFF", isArchived: dto.isArchived ?? false)
             c.mongoId = dto._id
             context.insert(c)
         }
         try context.save()
 
         for dto in response.projects {
-            let p = TimelogCore.Project(name: dto.name, code: dto.code, isArchived: dto.isArchived)
+            let p = TimelogCore.Project(name: dto.name, code: dto.code, isArchived: dto.isArchived ?? false)
             p.mongoId = dto._id
             if let cid = dto.clientMongoId {
                 p.client = try? context.fetch(FetchDescriptor<Client>(predicate: #Predicate { $0.mongoId == cid })).first
@@ -167,10 +173,11 @@ public final class RestSyncService {
         try context.save()
 
         for dto in response.entries {
-            let date = Self.iso8601.date(from: dto.date) ?? Date()
+            let dateStr = dto.date ?? ""
+            let date = Self.iso8601.date(from: dateStr) ?? Self.iso8601NoFrac.date(from: dateStr) ?? Date()
             let client  = dto.clientMongoId.flatMap  { cid in try? context.fetch(FetchDescriptor<Client>(predicate: #Predicate { $0.mongoId == cid })).first }
             let project = dto.projectMongoId.flatMap { pid in try? context.fetch(FetchDescriptor<TimelogCore.Project>(predicate: #Predicate { $0.mongoId == pid })).first }
-            let e = TimeEntry(date: date, durationMinutes: dto.durationMinutes, notes: dto.notes, client: client, project: project)
+            let e = TimeEntry(date: date, durationMinutes: dto.durationMinutes ?? 0, notes: dto.notes, client: client, project: project)
             e.mongoId = dto._id
             context.insert(e)
         }
