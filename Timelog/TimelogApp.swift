@@ -18,6 +18,7 @@ private struct RestSyncSetup: ViewModifier {
     }
 
     private func setup() {
+        RestSyncService.shared.loadConfigFromFile()
         let container = modelContext.container
         RestSyncService.shared.setDataProvider { [container] in
             let ctx = container.mainContext
