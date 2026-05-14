@@ -1,4 +1,5 @@
 import TimelogCore
+import TimelogSync
 import SwiftUI
 import SwiftData
 
@@ -10,6 +11,8 @@ struct SettingsView: View {
     @Query(sort: \TimeEntry.date, order: .reverse) private var entries: [TimeEntry]
     @Query private var activeSessions: [ActiveSession]
     @AppStorage("onboarding_completed") private var onboardingCompleted = true
+    @State private var serverURL = ""
+    @State private var apiKey    = ""
 
     var body: some View {
         @Bindable var store = store
@@ -43,6 +46,34 @@ struct SettingsView: View {
                     Text("Smart Tracking")
                 } footer: {
                     Text("You'll receive a notification if a session is still running at this time.")
+                }
+
+                Section {
+                    TextField("https://my-app.vercel.app", text: $serverURL)
+                        .autocorrectionDisabled()
+                        .textInputAutocapitalization(.never)
+                    SecureField("API Key", text: $apiKey)
+                    HStack {
+                        Button("Save & Sync") {
+                            RestSyncService.shared.saveConfig(serverURL: serverURL, apiKey: apiKey)
+                            RestSyncService.shared.triggerSync()
+                        }
+                        .disabled(serverURL.isEmpty || apiKey.isEmpty)
+                        Spacer()
+                        Button("Pull Now") {
+                            Task { try? await RestSyncService.shared.pullAll(into: context) }
+                        }
+                        .disabled(!RestSyncService.shared.isConfigured)
+                    }
+                    RestSyncStatusRow()
+                } header: {
+                    Text("Sync Server")
+                } footer: {
+                    Text("URL and API key are stored securely in the Keychain.")
+                }
+                .onAppear {
+                    serverURL = RestSyncService.shared.readServerURL() ?? ""
+                    apiKey    = RestSyncService.shared.readApiKey() ?? ""
                 }
 
                 Section("Export") {
@@ -136,6 +167,24 @@ struct SettingsView: View {
         let subject = "Timelog Week Export"
         let mailto = "mailto:?subject=\(subject.urlEncoded)&body=\(body.urlEncoded)"
         if let url = URL(string: mailto) { openURL(url) }
+    }
+}
+
+private struct RestSyncStatusRow: View {
+    private var sync: RestSyncService { RestSyncService.shared }
+
+    var body: some View {
+        if sync.isSyncing {
+            Label("Syncing…", systemImage: "arrow.triangle.2.circlepath")
+                .font(.caption).foregroundStyle(.secondary)
+        } else if let error = sync.lastError {
+            Label(error, systemImage: "exclamationmark.triangle")
+                .font(.caption).foregroundStyle(.red)
+        } else if let date = sync.lastSyncDate {
+            Label("Last sync: \(date.formatted(date: .omitted, time: .shortened))",
+                  systemImage: "checkmark.circle")
+                .font(.caption).foregroundStyle(.green)
+        }
     }
 }
 
