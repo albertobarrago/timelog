@@ -1,5 +1,19 @@
 # Timelog — Project Context for Claude
 
+## Project Context
+- Primary projects are native SwiftUI apps (Timelog for iOS/macOS) and a custom statusbar script — NOT Flutter, NOT the Markasso project unless explicitly named
+- When user says 'status bar', they mean their custom shell script statusline, not Claude Code's built-in one or any project's UI
+
+## Git & Commits
+- **Mai aggiungere Claude come co-autore**, contributor, o credito in commit, README, o sezioni About — salvo esplicita richiesta
+- **Commit locali OK** — chiedere sempre conferma prima di `git push` verso il remote
+
+## SwiftUI/Swift Conventions
+- Per ternary expressions che ritornano `ButtonStyle` diversi, usare `@ViewBuilder` per evitare errori di type inference
+- Quando si aggiungono feature di sync/data, implementare **sempre sia push che pull**
+- Referenziare sempre `modelContext` via `@Environment` — non assumere che sia in scope
+- Verificare il targeting multipiattaforma (iOS + macOS) quando si creano nuovi target o file Xcode
+
 ## Struttura monorepo
 
 Questo repo contiene **due app** e **un package condiviso**. Vanno sempre tenuti di pari passo.
