@@ -44,18 +44,25 @@ private struct RestSyncSetup: ViewModifier {
 struct TimelogApp: App {
     @State private var settings = SettingsStore()
     @State private var timerVM  = TimerViewModel()
+    @State private var showSplash = true
 
     var body: some Scene {
         WindowGroup {
-            ContentView()
-                .environment(settings)
-                .environment(timerVM)
-                .onAppear {
-                    timerVM.applySettings(settings)
-                    NotificationManager.shared.requestPermission()
-                    settings.applyReminders()
+            ZStack {
+                ContentView()
+                    .environment(settings)
+                    .environment(timerVM)
+                    .onAppear {
+                        timerVM.applySettings(settings)
+                        NotificationManager.shared.requestPermission()
+                        settings.applyReminders()
+                    }
+                    .modifier(RestSyncSetup())
+
+                if showSplash {
+                    SplashView(isShowing: $showSplash)
                 }
-                .modifier(RestSyncSetup())
+            }
         }
         .modelContainer(for: [Client.self, Project.self, TimeEntry.self, ActiveSession.self])
     }
