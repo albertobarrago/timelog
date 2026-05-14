@@ -5,6 +5,28 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
 
+## [1.1.0] — 2026-05-14 (Beta)
+
+### Added
+- **iOS sync via middleware** — `RestSyncService` su `URLSession` puro (zero dipendenze SPM): pull all'avvio, push debounced su ogni modifica. Credenziali caricate automaticamente da `SyncConfig.local` nel bundle (gitignored).
+- **Server middleware** (`server/`) — due endpoint Vercel TypeScript: `GET /api/pull` e `POST /api/sync`, auth via `X-API-Key`, home con Swagger UI dark su `https://timelog-server.vercel.app`.
+- **Splash screen iOS** — schermata di avvio minimal dark, orologio + "Timelog" + "Track your time.", animazione fade+scale in 1.5s.
+- `docs/SETUP_SYNC_SERVER.md` — guida per configurare il sync su un nuovo Mac o device.
+
+### Fixed
+- Widget extension deployment target: 16.6 → 17.0 (allineato a `TimelogCore` iOS 17+).
+- `ControlWidget` marcato `@available(iOS 18.0, *)` — compila su iOS 17.
+- `@main struct TimelogApp` ripristinato dopo rimozione accidentale.
+- `pullAll` usa delete per-oggetto invece di batch delete — `@Query` SwiftData ora si aggiorna correttamente dopo il pull.
+- Relazioni `Project.client` e `client.projects` settate da entrambi i lati — i progetti appaiono correttamente sotto il loro cliente.
+- `DNSClient` / MongoKitten escluso dal target iOS (`condition: .when(platforms: [.macOS])`) — fix build iOS.
+
+### Changed
+- iOS Settings: rimossi campi URL e API Key — un solo tasto **Sync Now** + status row.
+- `MongoSyncService` rimane macOS-only; iOS usa `RestSyncService` via middleware.
+
+---
+
 ## [Unreleased]
 
 ### Added
