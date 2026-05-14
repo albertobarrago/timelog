@@ -93,7 +93,7 @@ const spec = {
     version: "1.0.0",
     description: "Middleware that exposes MongoDB Atlas data to Timelog iOS & macOS apps via simple HTTP endpoints. All requests require the `X-API-Key` header."
   },
-  servers: [{ url: "" }],
+  servers: [{ url: window.location.origin, description: "Current server" }],
   components: {
     securitySchemes: {
       ApiKey: { type: "apiKey", in: "header", name: "X-API-Key" }
