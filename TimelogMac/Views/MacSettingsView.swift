@@ -9,10 +9,12 @@ struct MacSettingsView: View {
     @Environment(\.openURL) private var openURL
     @Environment(\.modelContext) private var modelContext
     @Query(sort: \TimeEntry.date, order: .reverse) private var entries: [TimeEntry]
+    @Query private var activeSessions: [ActiveSession]
 
     var body: some View {
         @Bindable var store = store
         Form {
+            // MARK: Pomodoro
             Section("Pomodoro") {
                 Stepper("Focus: \(store.pomodoroWork) min",
                         value: $store.pomodoroWork, in: 1...90)
@@ -25,6 +27,7 @@ struct MacSettingsView: View {
                     .onChange(of: store.pomodoroLongBreak) { timerVM.applySettings(store) }
             }
 
+            // MARK: Reminders
             Section {
                 Toggle("Daily reminder", isOn: $store.reminderEnabled)
                 if store.reminderEnabled {
@@ -34,10 +37,9 @@ struct MacSettingsView: View {
                         DayPickerMac(selectedDays: $store.reminderDays)
                     }
                 }
-            } header: {
-                Text("Reminders")
-            }
+            } header: { Text("Reminders") }
 
+            // MARK: Smart Tracking
             Section {
                 DatePicker("Notify if still open at",
                            selection: trackingEndTime,
@@ -48,26 +50,29 @@ struct MacSettingsView: View {
                 Text("Sends a notification if a session is still running at this time.")
             }
 
+            // MARK: MongoDB Sync — native macOS layout
             Section {
-                LabeledContent("Status") {
+                HStack(spacing: 10) {
                     MongoStatusDot()
-                }
-                LabeledContent("") {
-                    HStack(spacing: 12) {
-                        Button("Sync Now") {
+                    Spacer()
+                    Button("Sync Now") {
+                        MongoSyncService.shared.triggerSync()
+                    }
+                    .controlSize(.small)
+                    .disabled(MongoSyncService.shared.readConnectionString() == nil)
+
+                    Divider().frame(height: 16)
+
+                    Button("Reset & Pull") {
+                        Task {
+                            try? await MongoSyncService.shared.connect()
+                            try? await MongoSyncService.shared.pullAll(into: modelContext)
                             MongoSyncService.shared.triggerSync()
                         }
-                        .disabled(MongoSyncService.shared.readConnectionString() == nil)
-
-                        Button("Reset & Pull") {
-                            Task {
-                                try? await MongoSyncService.shared.connect()
-                                try? await MongoSyncService.shared.pullAll(into: modelContext)
-                                MongoSyncService.shared.triggerSync()
-                            }
-                        }
-                        .disabled(MongoSyncService.shared.readConnectionString() == nil)
                     }
+                    .controlSize(.small)
+                    .foregroundStyle(.orange)
+                    .disabled(MongoSyncService.shared.readConnectionString() == nil)
                 }
             } header: {
                 Text("MongoDB Sync")
@@ -75,10 +80,13 @@ struct MacSettingsView: View {
                 Text("Reset & Pull wipes local data and re-downloads everything from MongoDB.")
             }
 
+            // MARK: Export
             Section("Export") {
                 Button("Export this week via Email") { exportEmail() }
+                    .buttonStyle(.link)
             }
 
+            // MARK: About
             Section("About") {
                 LabeledContent("Developer") {
                     Link("Alberto Barrago", destination: URL(string: "https://github.com/AlbertoBarrago")!)
@@ -87,11 +95,26 @@ struct MacSettingsView: View {
                     Text(Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "—")
                 }
             }
+
+            // MARK: Danger Zone
+            Section {
+                Button("Delete all entries", role: .destructive) {
+                    for e in entries { modelContext.delete(e) }
+                    for s in activeSessions {
+                        NotificationManager.shared.cancelSession(id: s.notificationID)
+                        modelContext.delete(s)
+                    }
+                }
+            } header: {
+                Text("Danger Zone")
+            }
         }
         .formStyle(.grouped)
         .navigationTitle("Settings")
-        .frame(maxWidth: 520)
+        .frame(minWidth: 400, maxWidth: 520)
     }
+
+    // MARK: - Helpers
 
     private func exportEmail() {
         let cal = Calendar.current
@@ -102,18 +125,18 @@ struct MacSettingsView: View {
         var lines = ["Timelog — Week of \(weekStart.formatted(date: .abbreviated, time: .omitted))", ""]
         for entry in weekEntries.sorted(by: { $0.date < $1.date }) {
             let dateStr = entry.date.formatted(date: .abbreviated, time: .omitted)
-            let dur = entry.durationMinutes.formattedDuration
-            let client = entry.client?.name ?? "—"
+            let dur     = entry.durationMinutes.formattedDuration
+            let client  = entry.client?.name ?? "—"
             let project = entry.project?.name ?? "—"
-            let notes = entry.notes.map { " — \($0)" } ?? ""
+            let notes   = entry.notes.map { " — \($0)" } ?? ""
             lines.append("[\(dateStr)] \(client) / \(project): \(dur)\(notes)")
         }
         let total = weekEntries.reduce(0) { $0 + $1.durationMinutes }
         lines += ["", "Total: \(total.formattedDuration)"]
 
-        let body = lines.joined(separator: "\n")
+        let body    = lines.joined(separator: "\n")
         let subject = "Timelog Week Export"
-        let mailto = "mailto:?subject=\(subject.urlEncoded)&body=\(body.urlEncoded)"
+        let mailto  = "mailto:?subject=\(subject.urlEncoded)&body=\(body.urlEncoded)"
         if let url = URL(string: mailto) { openURL(url) }
     }
 
@@ -124,9 +147,9 @@ struct MacSettingsView: View {
                 c.hour = store.reminderHour; c.minute = store.reminderMinute
                 return Calendar.current.date(from: c) ?? .now
             },
-            set: { date in
-                let c = Calendar.current.dateComponents([.hour, .minute], from: date)
-                store.reminderHour = c.hour ?? 17
+            set: {
+                let c = Calendar.current.dateComponents([.hour, .minute], from: $0)
+                store.reminderHour   = c.hour   ?? 17
                 store.reminderMinute = c.minute ?? 0
             }
         )
@@ -139,14 +162,16 @@ struct MacSettingsView: View {
                 c.hour = store.trackingEndHour; c.minute = store.trackingEndMinute
                 return Calendar.current.date(from: c) ?? .now
             },
-            set: { date in
-                let c = Calendar.current.dateComponents([.hour, .minute], from: date)
-                store.trackingEndHour = c.hour ?? 18
+            set: {
+                let c = Calendar.current.dateComponents([.hour, .minute], from: $0)
+                store.trackingEndHour   = c.hour   ?? 18
                 store.trackingEndMinute = c.minute ?? 0
             }
         )
     }
 }
+
+// MARK: - Private helpers
 
 private extension String {
     var urlEncoded: String {
@@ -159,7 +184,7 @@ private struct MongoStatusDot: View {
     @State private var pulse = false
 
     var body: some View {
-        HStack(spacing: 8) {
+        HStack(spacing: 6) {
             ZStack {
                 if sync.isSyncing {
                     Circle()
@@ -173,7 +198,9 @@ private struct MongoStatusDot: View {
                     .fill(dotColor)
                     .frame(width: 8, height: 8)
             }
-            Text(statusText).foregroundStyle(textColor)
+            Text(statusText)
+                .font(.callout)
+                .foregroundStyle(textColor)
         }
         .onAppear { pulse = true }
     }
@@ -182,16 +209,14 @@ private struct MongoStatusDot: View {
         if sync.isSyncing           { return .yellow }
         if sync.lastError != nil    { return .red }
         if sync.lastSyncDate != nil { return .green }
-        return Color.secondary.opacity(0.5)
+        return Color.secondary.opacity(0.4)
     }
 
-    private var textColor: Color {
-        sync.lastError != nil ? .red : .secondary
-    }
+    private var textColor: Color { sync.lastError != nil ? .red : .secondary }
 
     private var statusText: String {
-        if sync.isSyncing         { return "Syncing…" }
-        if let e = sync.lastError { return e }
+        if sync.isSyncing           { return "Syncing…" }
+        if let e = sync.lastError   { return e }
         if let d = sync.lastSyncDate {
             return "Last sync \(d.formatted(.relative(presentation: .named)))"
         }
@@ -216,9 +241,8 @@ private struct DayPickerMac: View {
                 } label: {
                     Text(day.label)
                         .font(.system(size: 12, weight: .semibold))
-                        .frame(width: 30, height: 30)
-                        .background(on ? Color.accentColor : Color.secondary.opacity(0.15),
-                                    in: Circle())
+                        .frame(width: 28, height: 28)
+                        .background(on ? Color.accentColor : Color.secondary.opacity(0.12), in: Circle())
                         .foregroundStyle(on ? .white : .primary)
                 }
                 .buttonStyle(.plain)
