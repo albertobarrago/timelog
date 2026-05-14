@@ -9,13 +9,14 @@ private struct RestSyncSetup: ViewModifier {
     @Query private var clients:  [Client]
     @Query private var projects: [Project]
     @Query private var entries:  [TimeEntry]
+    @State private var isPulling = false
 
     func body(content: Content) -> some View {
         content
             .onAppear { setup() }
-            .onChange(of: clients.count)  { _, _ in RestSyncService.shared.triggerSync() }
-            .onChange(of: projects.count) { _, _ in RestSyncService.shared.triggerSync() }
-            .onChange(of: entries.count)  { _, _ in RestSyncService.shared.triggerSync() }
+            .onChange(of: clients.count)  { _, _ in if !isPulling { RestSyncService.shared.triggerSync() } }
+            .onChange(of: projects.count) { _, _ in if !isPulling { RestSyncService.shared.triggerSync() } }
+            .onChange(of: entries.count)  { _, _ in if !isPulling { RestSyncService.shared.triggerSync() } }
     }
 
     private func setup() {
@@ -31,12 +32,13 @@ private struct RestSyncSetup: ViewModifier {
         }
         guard RestSyncService.shared.isConfigured else { return }
         Task {
+            isPulling = true
             do {
                 try await RestSyncService.shared.pullAll(into: modelContext)
-                RestSyncService.shared.triggerSync()
             } catch {
                 print("RestSync error: \(error.localizedDescription)")
             }
+            isPulling = false
         }
     }
 }
