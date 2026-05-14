@@ -83,8 +83,9 @@ public final class RestSyncService {
     public var isConfigured: Bool { readServerURL() != nil && readApiKey() != nil }
 
     /// Legge ~/.config/timelog/sync.local (URL=... / API_KEY=...) e salva in Keychain.
-    /// Non sovrascrive se già configurato.
+    /// Solo macOS — su iOS le credenziali si inseriscono via Settings.
     public func loadConfigFromFile() {
+        #if os(macOS)
         guard !isConfigured else { return }
         let url = FileManager.default.homeDirectoryForCurrentUser
             .appending(path: ".config/timelog/sync.local")
@@ -103,6 +104,7 @@ public final class RestSyncService {
         if let u = serverURL, let k = apiKey, !u.isEmpty, !k.isEmpty {
             saveConfig(serverURL: u, apiKey: k)
         }
+        #endif
     }
 
     // MARK: - Sync control
