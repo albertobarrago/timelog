@@ -67,12 +67,27 @@ Sessione di tracking in corso. Può esisterne al massimo una per client/progetto
 
 ```mermaid
 flowchart LR
-    App["App\n(iOS / macOS)"] -->|"read/write"| SD[("SwiftData\nSQLite locale")]
-    SD -->|"NSManagedObjectContextDidSave"| Sync["MongoSyncService\n(macOS)"]
-    Sync -->|"upsert"| MDB[("MongoDB Atlas")]
+    subgraph iOS
+        iApp["App iOS"] -->|"read/write"| SD_iOS[("SwiftData\nSQLite locale")]
+        SD_iOS -->|"onChange + debounce 2s"| RSS["RestSyncService"]
+        RSS -->|"POST /api/sync"| VCL["Vercel Functions"]
+        VCL -->|"upsert"| MDB[("MongoDB Atlas")]
+        MDB -->|"GET /api/pull\n(avvio)"| RSS
+        RSS -->|"delete-all + re-insert"| SD_iOS
+    end
 
-    Widget["Widget Extension"] -->|"read"| AppGroup[("App Group\nUserDefaults\nWidgetSnapshotStore")]
-    App -->|"write snapshot"| AppGroup
+    subgraph macOS
+        mApp["App macOS"] -->|"read/write"| SD_MAC[("SwiftData\nSQLite locale")]
+        SD_MAC -->|"NSManagedObjectContextDidSave\n+ debounce 2s"| MSS["MongoSyncService"]
+        MSS -->|"upsert"| MDB
+        MDB -->|"pullAll (avvio se vuoto)"| MSS
+        MSS -->|"upsert"| SD_MAC
+    end
+
+    subgraph Widget
+        wWidget["Widget Extension"] -->|"read"| AppGroup[("App Group\nUserDefaults\nWidgetSnapshotStore")]
+        iApp -->|"write snapshot"| AppGroup
+    end
 ```
 
 ### WidgetSnapshotStore
@@ -89,9 +104,20 @@ TimelogWidgetSnapshot
 
 ## MongoId e strategia di upsert
 
-Ogni entità ha un campo `mongoId: String?` che viene popolato al primo sync su MongoDB. La logica è:
+Ogni entità ha un campo `mongoId: String?` condiviso sia da `RestSyncService` che da `MongoSyncService`.
 
-1. Se `mongoId == nil` → crea un nuovo `ObjectId` e assegna
-2. Se `mongoId != nil` → usa l'`ObjectId` esistente per l'upsert (`where: "_id" == doc._id`)
+### Pull iOS (RestSyncService)
+Il pull cancella **tutti** i dati locali e reinserisce da zero quanto arriva dal server. Non è un upsert incrementale — è un rimpiazzo completo. La notifica `willWipeDataNotification` viene postata prima della cancellazione per permettere alle view di silenziare animazioni durante il wipe.
 
-Questo permette di usare SwiftData come source of truth locale e MongoDB come replica cloud, senza conflitti di ID.
+| Fase | Azione |
+|------|--------|
+| 1. Wipe | Delete di tutte le TimeEntry, poi Project, poi Client da SwiftData |
+| 2. Insert clients | Crea ogni `Client` con `mongoId = dto._id`, salva il contesto |
+| 3. Insert projects | Crea ogni `Project`, linka il `Client` via `clientMongoId`, salva |
+| 4. Insert entries | Crea ogni `TimeEntry`, linka Client e Project via mongoId, salva |
+
+### Pull macOS (MongoSyncService)
+Usa upsert incrementale: cerca ogni documento per `mongoId` in SwiftData e aggiorna se trovato, crea se assente.
+
+### Push (entrambe le piattaforme)
+Ogni entità viene serializzata con il proprio `mongoId` e inviata al server (Vercel per iOS, MongoKitten per macOS) tramite upsert su `_id`.

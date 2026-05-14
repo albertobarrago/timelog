@@ -12,10 +12,14 @@ TimeLog/
 ├── TimelogCore/                 ← Swift Package condiviso
 │   └── Sources/
 │       ├── TimelogCore/         ← modelli, VM, stores, helpers
-│       └── TimelogSync/         ← integrazione MongoDB (macOS)
+│       └── TimelogSync/         ← MongoSyncService (macOS) + RestSyncService (iOS)
 ├── Timelog/                     ← Views iOS
 ├── TimelogMac/                  ← Views macOS
-└── TimelogWidgetExtension/      ← Widget + Live Activity (iOS)
+├── TimelogWidgetExtension/      ← Widget + Live Activity (iOS)
+└── server/                      ← Vercel middleware (Node.js/TypeScript)
+    └── api/
+        ├── pull.ts              ← GET  /api/pull
+        └── sync.ts              ← POST /api/sync
 ```
 
 ## Layer dell'applicazione
@@ -23,36 +27,39 @@ TimeLog/
 ```mermaid
 graph TD
     subgraph iOS["App iOS (Timelog)"]
-        iViews["Views iOS<br/>SwiftUI"]
+        iViews["Views iOS\nSwiftUI"]
+        iSplash["SplashView"]
     end
 
     subgraph macOS["App macOS (TimelogMac)"]
-        mViews["Views macOS<br/>SwiftUI"]
+        mViews["Views macOS\nSwiftUI"]
         mMenu["MenuBarExtra"]
     end
 
     subgraph Widget["Widget Extension"]
-        wWidget["Widget Today<br/>Live Activity"]
+        wWidget["Widget Today\nLive Activity"]
     end
 
     subgraph Core["TimelogCore (Swift Package)"]
-        Models["Models<br/>Client · Project<br/>TimeEntry · ActiveSession"]
+        Models["Models\nClient · Project\nTimeEntry · ActiveSession"]
         VM["TimerViewModel"]
-        Store["SettingsStore<br/>WidgetSnapshotStore"]
-        Helpers["KeychainHelper<br/>NotificationManager"]
-        Ext["Extensions<br/>Color+Hex · Int+Duration"]
+        Store["SettingsStore\nWidgetSnapshotStore"]
+        Helpers["KeychainHelper\nNotificationManager"]
+        Ext["Extensions\nColor+Hex · Int+Duration"]
     end
 
     subgraph Sync["TimelogSync (Swift Package)"]
-        MongoSvc["MongoSyncService<br/>(macOS full · iOS stub)"]
+        RestSvc["RestSyncService\n(iOS — URLSession → Vercel)"]
+        MongoSvc["MongoSyncService\n(macOS — MongoKitten → Atlas)"]
     end
 
     subgraph Infra["Infrastruttura"]
-        SD[("SwiftData<br/>SQLite locale")]
+        SD[("SwiftData\nSQLite locale")]
         KCH[("Keychain")]
         UNS["UNUserNotificationCenter"]
         MDB[("MongoDB Atlas")]
-        AG["App Group<br/>group.me.albz.timelog"]
+        VCL["Vercel Functions\nGET /api/pull · POST /api/sync"]
+        AG["App Group\ngroup.me.albz.timelog"]
     end
 
     iViews --> Core
@@ -70,6 +77,10 @@ graph TD
     Store --> AG
     Widget --> AG
 
+    RestSvc --> KCH
+    RestSvc -->|"iOS only"| VCL
+    VCL -->|"upsert"| MDB
+
     MongoSvc --> KCH
     MongoSvc -->|"macOS only"| MDB
 ```
@@ -81,7 +92,7 @@ graph TD
 | Business logic solo in `TimelogCore` | Le app contengono esclusivamente Views |
 | Tutto `public` in TimelogCore | Visibile da entrambe le app e dalla widget |
 | Un solo `ModelContainer` per app | Evita conflitti SwiftData; in macOS è `static let` condiviso tra WindowGroup e MenuBarExtra |
-| `TimelogSync` dipende da MongoKitten **solo su macOS** | Riduce il binary size iOS; su iOS MongoSyncService è uno stub no-op |
+| iOS usa `RestSyncService`, macOS usa `MongoSyncService` | iOS non può usare MongoKitten (binario ARM-only, dipendenze pesanti); la stessa firma pubblica separa le implementazioni |
 | `#if os(iOS)` per ActivityKit e UIKit haptics | Non usare `#if targetEnvironment(macCatalyst)` — il progetto non usa Catalyst |
 
 ## Dipendenze Package
@@ -90,7 +101,7 @@ graph TD
 graph LR
     TimelogCore["TimelogCore"]
     TimelogSync["TimelogSync"]
-    MongoKitten["MongoKitten 7.9.0+<br/>(solo macOS)"]
+    MongoKitten["MongoKitten 7.9.0+\n(solo macOS)"]
 
     TimelogSync --> TimelogCore
     TimelogSync -->|"#if os(macOS)"| MongoKitten
@@ -102,9 +113,12 @@ graph LR
 ```
 App
  └─ ModelContainer (Client, Project, TimeEntry, ActiveSession)
-     └─ ContentView
-         ├─ TabBar: Today · Clients · Timer · Settings
-         └─ MongoSyncSetup (modifier — stub)
+     └─ ZStack
+         ├─ ContentView
+         │   ├─ TabBar: Today · Clients · Timer · Settings
+         │   ├─ RestSyncSetup (modifier — pull all'avvio, push debounced 2s)
+         │   └─ SyncFlashOverlay (modifier — flash verde + haptic al sync)
+         └─ SplashView (scompare dopo l'animazione iniziale)
 ```
 
 ### macOS — `TimelogMacApp.swift`
@@ -117,6 +131,7 @@ App
  │       └─ MongoSyncSetup (modifier — connette e avvia auto-sync)
  ├─ MenuBarExtra
  │   └─ MenuBarView (window style)
+ │       └─ MenuBarStatusLabel (mostra timer se in running)
  └─ Settings (⌘,)
      └─ MacSettingsView
 ```

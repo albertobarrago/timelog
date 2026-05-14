@@ -1,0 +1,941 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Timelog — Track time. Natively.</title>
+  <meta name="description" content="A lightweight time-tracking app for iOS and macOS. Built with SwiftUI, SwiftData, and a self-hosted sync layer. No subscriptions." />
+  <link rel="icon" type="image/png" href="../Timelog/Assets.xcassets/AppIcon.appiconset/AppIcon.png" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #000;
+      --bg2: #0a0a0a;
+      --bg3: #111;
+      --surface: #1a1a1a;
+      --border: rgba(255,255,255,0.08);
+      --text: #f5f5f7;
+      --muted: #6e6e73;
+      --accent: #0071e3;
+      --accent2: #30d158;
+      --accent3: #ff375f;
+      --accent4: #bf5af2;
+      --radius: 20px;
+      --font: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Helvetica Neue", sans-serif;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font);
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+    }
+
+    /* ── NAV ── */
+    nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 100;
+      backdrop-filter: saturate(180%) blur(20px);
+      -webkit-backdrop-filter: saturate(180%) blur(20px);
+      background: rgba(0,0,0,0.72);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 5%;
+      height: 48px;
+    }
+
+    nav .logo {
+      font-size: 17px;
+      font-weight: 600;
+      letter-spacing: -0.3px;
+      color: var(--text);
+      text-decoration: none;
+    }
+
+    nav .nav-links {
+      display: flex;
+      gap: 28px;
+      list-style: none;
+    }
+
+    nav .nav-links a {
+      color: var(--muted);
+      text-decoration: none;
+      font-size: 13px;
+      transition: color .2s;
+    }
+    nav .nav-links a:hover { color: var(--text); }
+
+    nav .gh-btn {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      color: var(--text);
+      text-decoration: none;
+      padding: 6px 14px;
+      border-radius: 980px;
+      font-size: 12px;
+      font-weight: 500;
+      transition: background .2s;
+    }
+    nav .gh-btn:hover { background: #2a2a2a; }
+
+    /* ── HERO ── */
+    .hero {
+      min-height: 100svh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 80px 5% 60px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero::before {
+      content: '';
+      position: absolute;
+      top: -200px; left: 50%;
+      transform: translateX(-50%);
+      width: 800px; height: 800px;
+      background: radial-gradient(circle, rgba(0,113,227,0.18) 0%, transparent 65%);
+      pointer-events: none;
+    }
+
+    .hero::after {
+      content: '';
+      position: absolute;
+      bottom: -100px; right: 10%;
+      width: 400px; height: 400px;
+      background: radial-gradient(circle, rgba(48,209,88,0.12) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .app-icon {
+      width: 120px;
+      height: 120px;
+      border-radius: 28px;
+      box-shadow: 0 40px 80px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.06);
+      margin-bottom: 32px;
+      background: linear-gradient(135deg, #1c1c2e 0%, #2d2d44 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 56px;
+    }
+
+    .eyebrow {
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 16px;
+    }
+
+    .hero h1 {
+      font-size: clamp(48px, 8vw, 96px);
+      font-weight: 700;
+      letter-spacing: -3px;
+      line-height: 1.0;
+      background: linear-gradient(180deg, #f5f5f7 0%, #86868b 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 20px;
+    }
+
+    .hero .sub {
+      font-size: clamp(17px, 2.5vw, 22px);
+      font-weight: 400;
+      color: var(--muted);
+      max-width: 580px;
+      line-height: 1.55;
+      margin-bottom: 40px;
+    }
+
+    .badges {
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin-bottom: 48px;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      padding: 6px 14px;
+      border-radius: 980px;
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--muted);
+    }
+    .badge svg { opacity: 0.7; }
+
+    .cta-group {
+      display: flex;
+      gap: 14px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    .btn-primary {
+      background: var(--accent);
+      color: #fff;
+      text-decoration: none;
+      padding: 14px 28px;
+      border-radius: 980px;
+      font-size: 15px;
+      font-weight: 500;
+      transition: background .2s, transform .15s;
+    }
+    .btn-primary:hover { background: #0077ed; transform: scale(1.02); }
+
+    .btn-secondary {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      color: var(--text);
+      text-decoration: none;
+      padding: 14px 28px;
+      border-radius: 980px;
+      font-size: 15px;
+      font-weight: 500;
+      transition: background .2s, transform .15s;
+    }
+    .btn-secondary:hover { background: #2a2a2a; transform: scale(1.02); }
+
+    /* ── SCROLL INDICATOR ── */
+    .scroll-hint {
+      position: absolute;
+      bottom: 32px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      color: var(--muted);
+      font-size: 11px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      animation: fadeInUp 1.5s ease 1s both;
+    }
+    .scroll-hint .chevron {
+      width: 20px;
+      height: 20px;
+      border-right: 2px solid var(--muted);
+      border-bottom: 2px solid var(--muted);
+      transform: rotate(45deg);
+      animation: bounce 2s infinite;
+    }
+
+    @keyframes bounce {
+      0%, 100% { transform: rotate(45deg) translateY(0); }
+      50% { transform: rotate(45deg) translateY(4px); }
+    }
+
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateX(-50%) translateY(10px); }
+      to   { opacity: 1; transform: translateX(-50%) translateY(0); }
+    }
+
+    /* ── SECTIONS ── */
+    section { padding: 100px 5%; }
+
+    .section-eyebrow {
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 12px;
+      text-align: center;
+    }
+
+    .section-title {
+      font-size: clamp(36px, 5vw, 56px);
+      font-weight: 700;
+      letter-spacing: -1.5px;
+      text-align: center;
+      margin-bottom: 16px;
+      background: linear-gradient(180deg, #f5f5f7 0%, #86868b 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .section-sub {
+      text-align: center;
+      color: var(--muted);
+      font-size: 17px;
+      max-width: 600px;
+      margin: 0 auto 64px;
+      line-height: 1.6;
+    }
+
+    /* ── PLATFORMS SPLIT ── */
+    .platforms {
+      background: var(--bg2);
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .platform-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 2px;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .platform-card {
+      background: var(--bg3);
+      padding: 60px 48px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .platform-card:first-child {
+      border-right: 1px solid var(--border);
+      border-radius: var(--radius) 0 0 var(--radius);
+    }
+    .platform-card:last-child {
+      border-radius: 0 var(--radius) var(--radius) 0;
+    }
+
+    .platform-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+    }
+
+    .platform-icon {
+      font-size: 48px;
+      margin-bottom: 20px;
+    }
+
+    .platform-label {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 8px;
+    }
+
+    .platform-card h3 {
+      font-size: 28px;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+      margin-bottom: 12px;
+    }
+
+    .platform-card p {
+      color: var(--muted);
+      font-size: 15px;
+      line-height: 1.6;
+      margin-bottom: 28px;
+    }
+
+    .feature-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .feature-list li {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      font-size: 14px;
+      color: #c8c8cc;
+      line-height: 1.5;
+    }
+
+    .feature-list li::before {
+      content: '';
+      width: 18px;
+      height: 18px;
+      min-width: 18px;
+      border-radius: 50%;
+      background: var(--accent2);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      margin-top: 1px;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath d='M2.5 6l2.5 2.5 4.5-5' stroke='white' stroke-width='1.5' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: center;
+      background-size: 12px;
+    }
+
+    /* ── FEATURES GRID ── */
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 2px;
+      max-width: 1200px;
+      margin: 0 auto;
+      border-radius: var(--radius);
+      overflow: hidden;
+      border: 1px solid var(--border);
+    }
+
+    .feature-cell {
+      background: var(--surface);
+      padding: 40px 36px;
+      position: relative;
+      overflow: hidden;
+      transition: background .2s;
+    }
+    .feature-cell:hover { background: #202020; }
+
+    .feature-cell::after {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.06), transparent);
+    }
+
+    .feature-emoji {
+      font-size: 36px;
+      margin-bottom: 16px;
+      display: block;
+    }
+
+    .feature-cell h4 {
+      font-size: 19px;
+      font-weight: 600;
+      letter-spacing: -0.3px;
+      margin-bottom: 8px;
+    }
+
+    .feature-cell p {
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.6;
+    }
+
+    /* ── SYNC SECTION ── */
+    .sync-section {
+      background: var(--bg2);
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .sync-diagram {
+      max-width: 860px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+
+    .sync-row {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .sync-node {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 20px 28px;
+      flex: 1;
+      text-align: center;
+      position: relative;
+    }
+
+    .sync-node .node-icon { font-size: 28px; margin-bottom: 6px; display: block; }
+    .sync-node .node-label { font-size: 13px; font-weight: 600; color: var(--text); }
+    .sync-node .node-sub { font-size: 11px; color: var(--muted); margin-top: 2px; }
+
+    .sync-arrow {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      min-width: 80px;
+    }
+
+    .sync-arrow .arrow-label {
+      font-size: 10px;
+      color: var(--muted);
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+
+    .sync-arrow .arrow-line {
+      width: 60px;
+      height: 2px;
+      background: linear-gradient(90deg, var(--accent), var(--accent2));
+      border-radius: 1px;
+      position: relative;
+    }
+
+    .sync-arrow .arrow-line::after {
+      content: '';
+      position: absolute;
+      right: -4px; top: -4px;
+      width: 0; height: 0;
+      border-top: 5px solid transparent;
+      border-bottom: 5px solid transparent;
+      border-left: 8px solid var(--accent2);
+    }
+
+    .sync-cards {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+      max-width: 860px;
+      margin: 48px auto 0;
+    }
+
+    .sync-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 28px 24px;
+    }
+
+    .sync-card .tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(0,113,227,0.15);
+      border: 1px solid rgba(0,113,227,0.3);
+      color: var(--accent);
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      padding: 4px 10px;
+      border-radius: 980px;
+      margin-bottom: 14px;
+    }
+
+    .sync-card h4 {
+      font-size: 16px;
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+
+    .sync-card p {
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.6;
+    }
+
+    /* ── TECH SECTION ── */
+    .tech-pills {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      justify-content: center;
+      max-width: 800px;
+      margin: 0 auto;
+    }
+
+    .tech-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      padding: 10px 18px;
+      border-radius: 980px;
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text);
+      transition: border-color .2s, background .2s;
+    }
+    .tech-pill:hover {
+      background: #222;
+      border-color: rgba(255,255,255,0.15);
+    }
+
+    .tech-pill .dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+    }
+
+    /* ── OPEN SOURCE BANNER ── */
+    .oss-banner {
+      background: linear-gradient(135deg, rgba(0,113,227,0.12) 0%, rgba(48,209,88,0.08) 100%);
+      border: 1px solid rgba(0,113,227,0.2);
+      border-radius: var(--radius);
+      padding: 60px 48px;
+      text-align: center;
+      max-width: 800px;
+      margin: 0 auto;
+    }
+
+    .oss-banner .big-icon { font-size: 56px; margin-bottom: 20px; display: block; }
+
+    .oss-banner h2 {
+      font-size: 36px;
+      font-weight: 700;
+      letter-spacing: -1px;
+      margin-bottom: 14px;
+    }
+
+    .oss-banner p {
+      color: var(--muted);
+      font-size: 16px;
+      line-height: 1.6;
+      margin-bottom: 32px;
+      max-width: 500px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    /* ── FOOTER ── */
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 40px 5%;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+
+    footer .footer-brand {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    footer p {
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    footer .footer-links {
+      display: flex;
+      gap: 20px;
+      list-style: none;
+    }
+
+    footer .footer-links a {
+      font-size: 12px;
+      color: var(--muted);
+      text-decoration: none;
+      transition: color .2s;
+    }
+    footer .footer-links a:hover { color: var(--text); }
+
+    /* ── ANIMATIONS ── */
+    .fade-in {
+      opacity: 0;
+      transform: translateY(24px);
+      transition: opacity .7s ease, transform .7s ease;
+    }
+    .fade-in.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 768px) {
+      .platform-grid { grid-template-columns: 1fr; }
+      .platform-card:first-child { border-right: none; border-bottom: 1px solid var(--border); border-radius: var(--radius) var(--radius) 0 0; }
+      .platform-card:last-child { border-radius: 0 0 var(--radius) var(--radius); }
+      .sync-cards { grid-template-columns: 1fr; }
+      nav .nav-links { display: none; }
+      .sync-row { flex-direction: column; }
+      .sync-arrow { transform: rotate(90deg); }
+      footer { flex-direction: column; align-items: flex-start; }
+    }
+
+    @media (max-width: 480px) {
+      section { padding: 70px 5%; }
+      .oss-banner { padding: 40px 24px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- NAV -->
+  <nav>
+    <a href="#" class="logo">Timelog</a>
+    <ul class="nav-links">
+      <li><a href="#features">Features</a></li>
+      <li><a href="#platforms">Platforms</a></li>
+      <li><a href="#sync">Sync</a></li>
+      <li><a href="#tech">Tech</a></li>
+    </ul>
+    <a href="https://github.com/AlbertoBarrago/Timelog" class="gh-btn" target="_blank" rel="noopener">
+      <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor">
+        <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/>
+      </svg>
+      GitHub
+    </a>
+  </nav>
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="app-icon">⏱</div>
+    <p class="eyebrow">iOS &amp; macOS</p>
+    <h1>Track time.<br/>Natively.</h1>
+    <p class="sub">A lightweight time-tracking app built with SwiftUI and SwiftData. Sync across devices via a self-hosted middleware on Vercel — zero cloud lock-in, zero subscription.</p>
+    <div class="badges">
+      <span class="badge">
+        <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8s3.58 8 8 8 8-3.58 8-8-3.58-8-8-8zm3.91 5.82L8.94 11.7c-.18.27-.46.43-.77.44h-.01c-.3 0-.58-.15-.76-.4l-2.06-2.9c-.34-.48-.23-1.14.25-1.48.48-.34 1.14-.23 1.48.25l1.3 1.83 2.02-3.04c.32-.49.98-.62 1.47-.3.49.32.62.98.3 1.47l-.25-.75z"/></svg>
+        iOS 17+
+      </span>
+      <span class="badge">
+        <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8s3.58 8 8 8 8-3.58 8-8-3.58-8-8-8zm3.91 5.82L8.94 11.7c-.18.27-.46.43-.77.44h-.01c-.3 0-.58-.15-.76-.4l-2.06-2.9c-.34-.48-.23-1.14.25-1.48.48-.34 1.14-.23 1.48.25l1.3 1.83 2.02-3.04c.32-.49.98-.62 1.47-.3.49.32.62.98.3 1.47l-.25-.75z"/></svg>
+        macOS 14+
+      </span>
+      <span class="badge">Swift 5.10</span>
+      <span class="badge">SwiftData</span>
+      <span class="badge">SwiftUI</span>
+      <span class="badge">Open Source</span>
+    </div>
+    <div class="cta-group">
+      <a href="https://github.com/AlbertoBarrago/Timelog" class="btn-primary" target="_blank" rel="noopener">View on GitHub</a>
+      <a href="#features" class="btn-secondary">Explore features</a>
+    </div>
+    <div class="scroll-hint">
+      <span>scroll</span>
+      <div class="chevron"></div>
+    </div>
+  </section>
+
+  <!-- PLATFORMS -->
+  <section class="platforms" id="platforms">
+    <div class="platform-grid">
+      <div class="platform-card fade-in">
+        <div class="platform-icon">📱</div>
+        <p class="platform-label">iPhone &amp; iPad</p>
+        <h3>Timelog for iOS</h3>
+        <p>Full-featured mobile app with real-time session tracking, Live Activity on your lock screen and Dynamic Island, and automatic sync at every launch.</p>
+        <ul class="feature-list">
+          <li>Today view — log time manually or start live sessions; running daily total</li>
+          <li>Clients &amp; Projects — color-coded, archivable, swipe to edit</li>
+          <li>Timer — Stopwatch or Pomodoro with ring progress and notifications</li>
+          <li>Live Activity on lock screen &amp; Dynamic Island</li>
+          <li>Smart Tracking — session alert if you forget to stop</li>
+          <li>Automatic pull at launch + push with 2-second debounce</li>
+        </ul>
+      </div>
+      <div class="platform-card fade-in">
+        <div class="platform-icon">🖥</div>
+        <p class="platform-label">macOS 14+</p>
+        <h3>Timelog for Mac</h3>
+        <p>Native macOS app that lives in your menu bar. Always visible, never in the way — with a full window for deep work sessions and client management.</p>
+        <ul class="feature-list">
+          <li>Menu bar icon — live elapsed time while timer is running</li>
+          <li>Today view — active sessions with live ticker and context menus</li>
+          <li>Clients &amp; Projects — NavigationSplitView with native Table</li>
+          <li>Pomodoro / stopwatch window — Space to start/pause</li>
+          <li>MongoDB Atlas sync via MongoKitten — credentials in Keychain</li>
+          <li>Settings window accessible via ⌘,</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- FEATURES -->
+  <section id="features">
+    <p class="section-eyebrow">Highlights</p>
+    <h2 class="section-title">Every detail, considered.</h2>
+    <p class="section-sub">Built for developers and freelancers who want a native app — not another Electron wrapper or subscription SaaS.</p>
+    <div class="features-grid fade-in">
+      <div class="feature-cell">
+        <span class="feature-emoji">⚡️</span>
+        <h4>Instant tracking</h4>
+        <p>Tap once to start a session. Duration is logged automatically when you stop. Multiple sessions can run simultaneously.</p>
+      </div>
+      <div class="feature-cell">
+        <span class="feature-emoji">🍅</span>
+        <h4>Pomodoro built-in</h4>
+        <p>Configurable focus and break intervals with a ring progress view and lock-screen notification when a phase ends.</p>
+      </div>
+      <div class="feature-cell">
+        <span class="feature-emoji">🔄</span>
+        <h4>Bidirectional sync</h4>
+        <p>Data entered on Mac arrives on iPhone automatically. Push and pull via a tiny Vercel middleware you host yourself.</p>
+      </div>
+      <div class="feature-cell">
+        <span class="feature-emoji">🏝</span>
+        <h4>Dynamic Island</h4>
+        <p>Active sessions and the running timer appear live in your Dynamic Island and on the lock screen via ActivityKit.</p>
+      </div>
+      <div class="feature-cell">
+        <span class="feature-emoji">🔐</span>
+        <h4>Privacy first</h4>
+        <p>All credentials live exclusively in the system Keychain. No analytics, no third-party SDKs, no data leaves your infrastructure.</p>
+      </div>
+      <div class="feature-cell">
+        <span class="feature-emoji">🎨</span>
+        <h4>Color-coded clients</h4>
+        <p>Assign colors to each client. Projects inherit the client palette and collapse cleanly when archived.</p>
+      </div>
+      <div class="feature-cell">
+        <span class="feature-emoji">📊</span>
+        <h4>Daily totals</h4>
+        <p>The Today view sums all sessions in real time. See exactly how much time went to each client without doing the math.</p>
+      </div>
+      <div class="feature-cell">
+        <span class="feature-emoji">🛎</span>
+        <h4>Smart reminders</h4>
+        <p>Configure a daily reminder to start tracking, and a threshold alert if a session is still open past your end-of-day time.</p>
+      </div>
+      <div class="feature-cell">
+        <span class="feature-emoji">📦</span>
+        <h4>Zero dependencies (iOS)</h4>
+        <p>The iOS app uses only first-party Apple frameworks — no CocoaPods, no SPM cloud packages, no Electron.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- SYNC -->
+  <section class="sync-section" id="sync">
+    <p class="section-eyebrow">Architecture</p>
+    <h2 class="section-title">Sync you control.</h2>
+    <p class="section-sub">A tiny Vercel serverless function sits between your iPhone and MongoDB Atlas. You own the infra, you own the data.</p>
+
+    <div class="sync-diagram fade-in">
+      <div class="sync-row">
+        <div class="sync-node">
+          <span class="node-icon">📱</span>
+          <div class="node-label">iPhone / iPad</div>
+          <div class="node-sub">RestSyncService · URLSession</div>
+        </div>
+        <div class="sync-arrow">
+          <span class="arrow-label">GET /api/pull<br/>POST /api/sync</span>
+          <div class="arrow-line"></div>
+        </div>
+        <div class="sync-node">
+          <span class="node-icon">▲</span>
+          <div class="node-label">Vercel Functions</div>
+          <div class="node-sub">Node.js · TypeScript · X-API-Key auth</div>
+        </div>
+        <div class="sync-arrow">
+          <div class="arrow-line"></div>
+        </div>
+        <div class="sync-node">
+          <span class="node-icon">🍃</span>
+          <div class="node-label">MongoDB Atlas</div>
+          <div class="node-sub">Free M0 · upsert · multi-device</div>
+        </div>
+      </div>
+      <div class="sync-row">
+        <div class="sync-node">
+          <span class="node-icon">🖥</span>
+          <div class="node-label">Mac</div>
+          <div class="node-sub">MongoSyncService · direct connection</div>
+        </div>
+        <div class="sync-arrow">
+          <span class="arrow-label">Wire protocol</span>
+          <div class="arrow-line"></div>
+        </div>
+        <div class="sync-node">
+          <span class="node-icon">🍃</span>
+          <div class="node-label">MongoDB Atlas</div>
+          <div class="node-sub">Same cluster · same collections</div>
+        </div>
+        <div class="sync-arrow" style="visibility:hidden"></div>
+        <div class="sync-node" style="visibility:hidden"></div>
+      </div>
+    </div>
+
+    <div class="sync-cards fade-in">
+      <div class="sync-card">
+        <span class="tag">iOS</span>
+        <h4>RestSyncService</h4>
+        <p>Pure URLSession, zero external dependencies. Pulls at every launch, pushes changes with a 2-second debounce. Credentials auto-loaded from a gitignored bundle file.</p>
+      </div>
+      <div class="sync-card">
+        <span class="tag" style="background:rgba(48,209,88,0.12); border-color:rgba(48,209,88,0.3); color:var(--accent2);">macOS</span>
+        <h4>MongoSyncService</h4>
+        <p>Direct connection to MongoDB Atlas. Connection string stored in Keychain, never in code or UserDefaults. Auto-push on every SwiftData save, with 2-second debounce.</p>
+      </div>
+      <div class="sync-card">
+        <span class="tag" style="background:rgba(191,90,242,0.12); border-color:rgba(191,90,242,0.3); color:var(--accent4);">Server</span>
+        <h4>Vercel Middleware</h4>
+        <p>Two serverless functions — GET /api/pull and POST /api/sync. Auth via X-API-Key header. Full Swagger UI at your deployment URL. Runs on the free tier.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- TECH STACK -->
+  <section id="tech">
+    <p class="section-eyebrow">Stack</p>
+    <h2 class="section-title">First-party, all the way.</h2>
+    <p class="section-sub">No Electron, no React Native, no subscriptions. Just Swift and Apple frameworks the way they were designed to be used.</p>
+    <div class="tech-pills fade-in">
+      <span class="tech-pill"><span class="dot" style="background:#f05138"></span>Swift 5.10</span>
+      <span class="tech-pill"><span class="dot" style="background:#0071e3"></span>SwiftUI</span>
+      <span class="tech-pill"><span class="dot" style="background:#30d158"></span>SwiftData</span>
+      <span class="tech-pill"><span class="dot" style="background:#ff9f0a"></span>@Observable</span>
+      <span class="tech-pill"><span class="dot" style="background:#bf5af2"></span>ActivityKit</span>
+      <span class="tech-pill"><span class="dot" style="background:#ff375f"></span>WidgetKit</span>
+      <span class="tech-pill"><span class="dot" style="background:#0071e3"></span>MenuBarExtra</span>
+      <span class="tech-pill"><span class="dot" style="background:#30d158"></span>UserNotifications</span>
+      <span class="tech-pill"><span class="dot" style="background:#64d2ff"></span>Keychain</span>
+      <span class="tech-pill"><span class="dot" style="background:#47a248"></span>MongoKitten (macOS)</span>
+      <span class="tech-pill"><span class="dot" style="background:#fff"></span>Vercel</span>
+      <span class="tech-pill"><span class="dot" style="background:#3178c6"></span>TypeScript</span>
+      <span class="tech-pill"><span class="dot" style="background:#f05138"></span>Xcode 16+</span>
+    </div>
+  </section>
+
+  <!-- OSS BANNER -->
+  <section style="padding: 60px 5%;">
+    <div class="oss-banner fade-in">
+      <span class="big-icon">🧑‍💻</span>
+      <h2>Free &amp; Open Source</h2>
+      <p>Timelog is fully open source. Fork it, extend it, self-host the sync server — or just read the code. No vendor lock-in, ever.</p>
+      <div class="cta-group">
+        <a href="https://github.com/AlbertoBarrago/Timelog" class="btn-primary" target="_blank" rel="noopener">View source on GitHub</a>
+        <a href="https://github.com/AlbertoBarrago/Timelog/blob/main/docs/SETUP_SYNC_SERVER.md" class="btn-secondary" target="_blank" rel="noopener">Setup guide</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer>
+    <div>
+      <div class="footer-brand">Timelog</div>
+      <p>Built by <a href="https://github.com/AlbertoBarrago" style="color:var(--muted); text-decoration:underline" target="_blank">Alberto Barrago</a> · iOS 17+ &amp; macOS 14+</p>
+    </div>
+    <ul class="footer-links">
+      <li><a href="https://github.com/AlbertoBarrago/Timelog" target="_blank" rel="noopener">GitHub</a></li>
+      <li><a href="https://github.com/AlbertoBarrago/Timelog/blob/main/CHANGELOG.md" target="_blank" rel="noopener">Changelog</a></li>
+      <li><a href="https://github.com/AlbertoBarrago/Timelog/blob/main/docs/SETUP_SYNC_SERVER.md" target="_blank" rel="noopener">Docs</a></li>
+    </ul>
+  </footer>
+
+  <script>
+    // Intersection Observer for fade-in animations
+    const observer = new IntersectionObserver(
+      (entries) => entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); } }),
+      { threshold: 0.1 }
+    );
+    document.querySelectorAll('.fade-in').forEach(el => observer.observe(el));
+  </script>
+</body>
+</html>
