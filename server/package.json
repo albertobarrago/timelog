@@ -10,7 +10,8 @@
     "mongodb": "^6.0.0"
   },
   "devDependencies": {
-    "@vercel/node": "^3.0.0",
+    "@types/node": "^25.8.0",
+    "@vercel/node": "^5.8.1",
     "typescript": "^5.0.0"
   }
 }
