@@ -2,6 +2,7 @@ import SwiftUI
 import SwiftData
 import TimelogCore
 import TimelogSync
+import UIKit
 
 private struct RestSyncSetup: ViewModifier {
     @Environment(\.modelContext) private var modelContext
@@ -40,10 +41,33 @@ private struct RestSyncSetup: ViewModifier {
     }
 }
 
+// MARK: - Sync flash overlay
+
+private struct SyncFlashOverlay: ViewModifier {
+    @State private var flash = false
+    private var syncDate: Date? { RestSyncService.shared.lastSyncDate }
+
+    func body(content: Content) -> some View {
+        content
+            .overlay(
+                RoundedRectangle(cornerRadius: 0)
+                    .fill(Color.green.opacity(flash ? 0.18 : 0))
+                    .ignoresSafeArea()
+                    .allowsHitTesting(false)
+                    .animation(.easeOut(duration: 0.5), value: flash)
+            )
+            .onChange(of: RestSyncService.shared.lastSyncDate) { _, _ in
+                UINotificationFeedbackGenerator().notificationOccurred(.success)
+                flash = true
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { flash = false }
+            }
+    }
+}
+
 @main
 struct TimelogApp: App {
-    @State private var settings = SettingsStore()
-    @State private var timerVM  = TimerViewModel()
+    @State private var settings  = SettingsStore()
+    @State private var timerVM   = TimerViewModel()
     @State private var showSplash = true
 
     var body: some Scene {
@@ -58,6 +82,7 @@ struct TimelogApp: App {
                         settings.applyReminders()
                     }
                     .modifier(RestSyncSetup())
+                    .modifier(SyncFlashOverlay())
 
                 if showSplash {
                     SplashView(isShowing: $showSplash)
