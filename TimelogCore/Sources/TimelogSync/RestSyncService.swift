@@ -164,32 +164,36 @@ public final class RestSyncService {
         for c in (try? context.fetch(FetchDescriptor<Client>())) ?? []              { context.delete(c) }
         try context.save()
 
+        // Teniamo gli oggetti in memoria per linkare le relazioni senza re-fetch
+        var clientMap: [String: Client] = [:]
         for dto in response.clients {
             let c = Client(name: dto.name, colorHex: dto.colorHex ?? "#007AFF", isArchived: dto.isArchived ?? false)
             c.mongoId = dto._id
             context.insert(c)
+            clientMap[dto._id] = c
         }
         try context.save()
 
-        let allClients  = (try? context.fetch(FetchDescriptor<Client>())) ?? []
-        let allProjects = (try? context.fetch(FetchDescriptor<TimelogCore.Project>())) ?? []
-
+        var projectMap: [String: TimelogCore.Project] = [:]
         for dto in response.projects {
             let p = TimelogCore.Project(name: dto.name, code: dto.code, isArchived: dto.isArchived ?? false)
             p.mongoId = dto._id
-            p.client = allClients.first { $0.mongoId == dto.clientMongoId }
+            p.client = dto.clientMongoId.flatMap { clientMap[$0] }
             context.insert(p)
+            projectMap[dto._id] = p
         }
         try context.save()
-
-        let allProjectsUpdated = (try? context.fetch(FetchDescriptor<TimelogCore.Project>())) ?? []
 
         for dto in response.entries {
             let dateStr = dto.date ?? ""
             let date = Self.iso8601.date(from: dateStr) ?? Self.iso8601NoFrac.date(from: dateStr) ?? Date()
-            let client  = allClients.first { $0.mongoId == dto.clientMongoId }
-            let project = allProjectsUpdated.first { $0.mongoId == dto.projectMongoId }
-            let e = TimeEntry(date: date, durationMinutes: dto.durationMinutes ?? 0, notes: dto.notes, client: client, project: project)
+            let e = TimeEntry(
+                date: date,
+                durationMinutes: dto.durationMinutes ?? 0,
+                notes: dto.notes,
+                client:  dto.clientMongoId.flatMap  { clientMap[$0] },
+                project: dto.projectMongoId.flatMap { projectMap[$0] }
+            )
             e.mongoId = dto._id
             context.insert(e)
         }
