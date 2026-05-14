@@ -2,6 +2,16 @@ import Foundation
 import SwiftData
 import TimelogCore
 
+// MARK: - Errors
+
+public enum RestSyncError: LocalizedError {
+    case httpError(Int, String)
+    public var errorDescription: String? {
+        if case .httpError(let code, let body) = self { return "HTTP \(code): \(body)" }
+        return nil
+    }
+}
+
 // MARK: - DTOs
 
 private struct PullResponse: Decodable {
@@ -211,7 +221,13 @@ public final class RestSyncService {
     private func get<T: Decodable>(url: URL) async throws -> T {
         var req = URLRequest(url: url)
         req.setValue(readApiKey(), forHTTPHeaderField: "X-API-Key")
-        let (data, _) = try await URLSession.shared.data(for: req)
+        let (data, response) = try await URLSession.shared.data(for: req)
+        let status = (response as? HTTPURLResponse)?.statusCode ?? -1
+        print("[RestSync] GET \(url.path) → \(status)")
+        print("[RestSync] body: \(String(data: data, encoding: .utf8) ?? "<non-utf8>")")
+        guard status == 200 else {
+            throw RestSyncError.httpError(status, String(data: data, encoding: .utf8) ?? "")
+        }
         return try JSONDecoder().decode(T.self, from: data)
     }
 
