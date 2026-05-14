@@ -11,6 +11,7 @@ struct SettingsView: View {
     @Query(sort: \TimeEntry.date, order: .reverse) private var entries: [TimeEntry]
     @Query private var activeSessions: [ActiveSession]
     @AppStorage("onboarding_completed") private var onboardingCompleted = true
+    @State private var showDeleteConfirm = false
 
     var body: some View {
         @Bindable var store = store
@@ -74,12 +75,25 @@ struct SettingsView: View {
                 }
 
                 Section("Danger Zone") {
-                    Button("Delete all entries", role: .destructive) {
-                        for e in entries { context.delete(e) }
-                        for s in activeSessions {
-                            NotificationManager.shared.cancelSession(id: s.notificationID)
-                            context.delete(s)
+                    Button(role: .destructive) {
+                        showDeleteConfirm = true
+                    } label: {
+                        Label("Delete all entries", systemImage: "flame.fill")
+                            .foregroundStyle(.red)
+                    }
+                    .confirmationDialog("Delete all entries?",
+                                        isPresented: $showDeleteConfirm,
+                                        titleVisibility: .visible) {
+                        Button("Delete all", role: .destructive) {
+                            for e in entries { context.delete(e) }
+                            for s in activeSessions {
+                                NotificationManager.shared.cancelSession(id: s.notificationID)
+                                context.delete(s)
+                            }
                         }
+                        Button("Cancel", role: .cancel) {}
+                    } message: {
+                        Text("This will permanently delete all time entries and active sessions. This action cannot be undone.")
                     }
                 }
             }

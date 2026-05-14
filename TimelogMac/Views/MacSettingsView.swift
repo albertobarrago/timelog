@@ -10,6 +10,7 @@ struct MacSettingsView: View {
     @Environment(\.modelContext) private var modelContext
     @Query(sort: \TimeEntry.date, order: .reverse) private var entries: [TimeEntry]
     @Query private var activeSessions: [ActiveSession]
+    @State private var showDeleteConfirm = false
 
     var body: some View {
         @Bindable var store = store
@@ -98,12 +99,25 @@ struct MacSettingsView: View {
 
             // MARK: Danger Zone
             Section {
-                Button("Delete all entries", role: .destructive) {
-                    for e in entries { modelContext.delete(e) }
-                    for s in activeSessions {
-                        NotificationManager.shared.cancelSession(id: s.notificationID)
-                        modelContext.delete(s)
+                Button(role: .destructive) {
+                    showDeleteConfirm = true
+                } label: {
+                    Label("Delete all entries", systemImage: "flame.fill")
+                        .foregroundStyle(.red)
+                }
+                .confirmationDialog("Delete all entries?",
+                                    isPresented: $showDeleteConfirm,
+                                    titleVisibility: .visible) {
+                    Button("Delete all", role: .destructive) {
+                        for e in entries { modelContext.delete(e) }
+                        for s in activeSessions {
+                            NotificationManager.shared.cancelSession(id: s.notificationID)
+                            modelContext.delete(s)
+                        }
                     }
+                    Button("Cancel", role: .cancel) {}
+                } message: {
+                    Text("This will permanently delete all time entries and active sessions. This action cannot be undone.")
                 }
             } header: {
                 Text("Danger Zone")
