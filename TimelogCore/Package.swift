@@ -22,7 +22,7 @@ let package = Package(
             name: "TimelogSync",
             dependencies: [
                 "TimelogCore",
-                .product(name: "MongoKitten", package: "MongoKitten")
+                .product(name: "MongoKitten", package: "MongoKitten", condition: .when(platforms: [.macOS]))
             ],
             path: "Sources/TimelogSync",
             swiftSettings: [.swiftLanguageMode(.v5)]
