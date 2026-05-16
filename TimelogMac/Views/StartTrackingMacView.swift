@@ -3,6 +3,7 @@ import SwiftData
 import TimelogCore
 
 struct StartTrackingMacView: View {
+    var onDismiss: (() -> Void)? = nil
     @Environment(\.modelContext) private var context
     @Environment(\.dismiss) private var dismiss
     @Environment(SettingsStore.self) private var settings
@@ -41,7 +42,7 @@ struct StartTrackingMacView: View {
             TextField("Notes (optional)", text: $notes)
 
             HStack {
-                Button("Cancel") { dismiss() }
+                Button("Cancel") { dismissSelf() }
                     .keyboardShortcut(.escape)
                 Spacer()
                 Button("Start") { start() }
@@ -51,6 +52,10 @@ struct StartTrackingMacView: View {
         }
         .padding()
         .frame(width: 280)
+    }
+
+    private func dismissSelf() {
+        if let onDismiss { onDismiss() } else { dismiss() }
     }
 
     private func start() {
@@ -68,6 +73,6 @@ struct StartTrackingMacView: View {
             endHour: settings.trackingEndHour,
             endMinute: settings.trackingEndMinute
         )
-        dismiss()
+        dismissSelf()
     }
 }

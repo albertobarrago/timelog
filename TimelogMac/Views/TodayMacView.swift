@@ -35,8 +35,12 @@ struct TodayMacView: View {
                 }
             } else {
                 List {
-                    if !activeSessions.isEmpty {
-                        Section("Active") {
+                    Section("Active") {
+                        if activeSessions.isEmpty {
+                            Text("No active sessions on this Mac")
+                                .font(.caption)
+                                .foregroundStyle(.tertiary)
+                        } else {
                             TimelineView(.periodic(from: .now, by: 1)) { _ in
                                 ForEach(activeSessions) { session in
                                     ActiveSessionMacRow(session: session)

@@ -23,72 +23,74 @@ struct MenuBarView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            // Compact timer row
             CompactTimerRow(vm: timerVM)
                 .padding(.horizontal, 12)
                 .padding(.vertical, 10)
 
             Divider()
 
-            // Active sessions
-            if !activeSessions.isEmpty {
-                VStack(alignment: .leading, spacing: 0) {
-                    Label("Active", systemImage: "record.circle.fill")
-                        .font(.caption.weight(.semibold))
-                        .foregroundStyle(.red)
-                        .padding(.horizontal, 12)
-                        .padding(.top, 8)
-                        .padding(.bottom, 4)
+            if showingStartTracking {
+                StartTrackingMacView(onDismiss: { showingStartTracking = false })
+                    .environment(settings)
+            } else if let session = sessionToStop {
+                StopSessionMacView(session: session, onDismiss: { sessionToStop = nil })
+            } else {
+                // Active sessions
+                if !activeSessions.isEmpty {
+                    VStack(alignment: .leading, spacing: 0) {
+                        Label("Active", systemImage: "record.circle.fill")
+                            .font(.caption.weight(.semibold))
+                            .foregroundStyle(.red)
+                            .padding(.horizontal, 12)
+                            .padding(.top, 8)
+                            .padding(.bottom, 4)
 
-                    TimelineView(.periodic(from: .now, by: 1)) { _ in
-                        ForEach(activeSessions) { session in
-                            MenuSessionRow(session: session) {
-                                sessionToStop = session
-                            } onDiscard: {
-                                NotificationManager.shared.cancelSession(id: session.notificationID)
-                                context.delete(session)
+                        TimelineView(.periodic(from: .now, by: 1)) { _ in
+                            ForEach(activeSessions) { session in
+                                MenuSessionRow(session: session) {
+                                    sessionToStop = session
+                                } onDiscard: {
+                                    NotificationManager.shared.cancelSession(id: session.notificationID)
+                                    context.delete(session)
+                                }
                             }
                         }
                     }
+                    Divider()
                 }
-                Divider()
-            }
 
-            // Footer
-            HStack {
-                VStack(alignment: .leading, spacing: 1) {
-                    Text("Today").font(.caption2).foregroundStyle(.secondary)
-                    TimelineView(.periodic(from: .now, by: 60)) { _ in
-                        Text(todayMinutes.formattedDuration)
-                            .font(.caption.weight(.semibold)).monospacedDigit()
+                // Footer
+                HStack {
+                    VStack(alignment: .leading, spacing: 1) {
+                        Text("Today").font(.caption2).foregroundStyle(.secondary)
+                        TimelineView(.periodic(from: .now, by: 60)) { _ in
+                            Text(todayMinutes.formattedDuration)
+                                .font(.caption.weight(.semibold)).monospacedDigit()
+                        }
                     }
-                }
-                Spacer()
-                Button { showingStartTracking = true } label: {
-                    Label("Track", systemImage: "play.circle")
-                        .font(.caption)
-                }
-                .buttonStyle(.bordered)
-                .controlSize(.small)
+                    Spacer()
+                    Button { showingStartTracking = true } label: {
+                        Label("Track", systemImage: "play.circle")
+                            .font(.caption)
+                    }
+                    .buttonStyle(.bordered)
+                    .controlSize(.small)
 
-                Button {
-                    openWindow(id: "main")
-                    NSApplication.shared.activate(ignoringOtherApps: true)
-                } label: {
-                    Image(systemName: "arrow.up.forward.app")
+                    Button {
+                        openWindow(id: "main")
+                        NSApplication.shared.activate(ignoringOtherApps: true)
+                    } label: {
+                        Image(systemName: "arrow.up.forward.app")
+                    }
+                    .buttonStyle(.bordered)
+                    .controlSize(.small)
+                    .help("Open Timelog window")
                 }
-                .buttonStyle(.bordered)
-                .controlSize(.small)
-                .help("Open Timelog window")
+                .padding(.horizontal, 12)
+                .padding(.vertical, 8)
             }
-            .padding(.horizontal, 12)
-            .padding(.vertical, 8)
         }
         .frame(width: 300)
-        .sheet(isPresented: $showingStartTracking) {
-            StartTrackingMacView().environment(settings)
-        }
-        .sheet(item: $sessionToStop) { StopSessionMacView(session: $0) }
     }
 }
 

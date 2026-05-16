@@ -3,6 +3,7 @@ import SwiftData
 import TimelogCore
 
 struct StopSessionMacView: View {
+    var onDismiss: (() -> Void)? = nil
     @Environment(\.modelContext) private var context
     @Environment(\.dismiss) private var dismiss
 
@@ -12,7 +13,8 @@ struct StopSessionMacView: View {
     @State private var minutes: Int
     @State private var notes: String
 
-    init(session: ActiveSession) {
+    init(session: ActiveSession, onDismiss: (() -> Void)? = nil) {
+        self.onDismiss = onDismiss
         self.session = session
         let elapsed = max(0, Int(Date().timeIntervalSince(session.startDate) / 60))
         _hours = State(initialValue: elapsed / 60)
@@ -42,7 +44,7 @@ struct StopSessionMacView: View {
             TextField("Notes (optional)", text: $notes)
 
             HStack {
-                Button("Cancel") { dismiss() }
+                Button("Cancel") { dismissSelf() }
                     .keyboardShortcut(.escape)
                 Spacer()
                 Button("Log Entry") { stop() }
@@ -55,17 +57,18 @@ struct StopSessionMacView: View {
         .frame(width: 320)
     }
 
+    private func dismissSelf() {
+        if let onDismiss { onDismiss() } else { dismiss() }
+    }
+
     private func stop() {
-        let entry = TimeEntry(
-            date: session.startDate,
+        let entry = session.asTimeEntry(
             durationMinutes: hours * 60 + minutes,
-            notes: notes.isEmpty ? nil : notes,
-            client: session.client,
-            project: session.project
+            notes: notes.isEmpty ? nil : notes
         )
         context.insert(entry)
         NotificationManager.shared.cancelSession(id: session.notificationID)
         context.delete(session)
-        dismiss()
+        dismissSelf()
     }
 }
