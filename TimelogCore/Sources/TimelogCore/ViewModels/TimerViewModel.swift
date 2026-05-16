@@ -40,7 +40,7 @@ public final class TimerViewModel {
         longBreakMinutes = store.pomodoroLongBreak
     }
 
-    nonisolated(unsafe) private var timer: Timer?
+    private var timer: Timer?
 
     public var phaseTotal: TimeInterval {
         switch phase {
@@ -145,7 +145,7 @@ public final class TimerViewModel {
     }
     #endif
 
-    deinit { timer?.invalidate() }
+    deinit { MainActor.assumeIsolated { timer?.invalidate() } }
 }
 
 #if os(iOS) && !targetEnvironment(macCatalyst)
