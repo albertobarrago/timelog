@@ -9,6 +9,7 @@ private struct RestSyncSetup: ViewModifier {
     @Query private var clients:  [Client]
     @Query private var projects: [Project]
     @Query private var entries:  [TimeEntry]
+    @Query private var sessions: [ActiveSession]
     @State private var isPulling = false
 
     func body(content: Content) -> some View {
@@ -17,6 +18,7 @@ private struct RestSyncSetup: ViewModifier {
             .onChange(of: clients.count)  { _, _ in if !isPulling { RestSyncService.shared.triggerSync() } }
             .onChange(of: projects.count) { _, _ in if !isPulling { RestSyncService.shared.triggerSync() } }
             .onChange(of: entries.count)  { _, _ in if !isPulling { RestSyncService.shared.triggerSync() } }
+            .onChange(of: sessions.count) { _, _ in if !isPulling { RestSyncService.shared.triggerSync() } }
     }
 
     private func setup() {
@@ -27,7 +29,8 @@ private struct RestSyncSetup: ViewModifier {
             return (
                 (try? ctx.fetch(FetchDescriptor<Client>())) ?? [],
                 (try? ctx.fetch(FetchDescriptor<Project>())) ?? [],
-                (try? ctx.fetch(FetchDescriptor<TimeEntry>())) ?? []
+                (try? ctx.fetch(FetchDescriptor<TimeEntry>())) ?? [],
+                (try? ctx.fetch(FetchDescriptor<ActiveSession>())) ?? []
             )
         }
         guard RestSyncService.shared.isConfigured else { return }

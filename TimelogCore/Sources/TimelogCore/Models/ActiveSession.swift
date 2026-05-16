@@ -8,6 +8,7 @@ public final class ActiveSession {
     public var project: Project?
     public var notes: String?
     public var notificationID: String
+    public var mongoId: String?
 
     public init(client: Client? = nil, project: Project? = nil, notes: String? = nil) {
         self.startDate = .now
@@ -15,6 +16,7 @@ public final class ActiveSession {
         self.project = project
         self.notes = notes
         self.notificationID = UUID().uuidString
+        self.mongoId = Client.newMongoId()
     }
 
     public var elapsedDisplay: String {

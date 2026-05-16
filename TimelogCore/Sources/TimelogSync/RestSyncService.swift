@@ -18,6 +18,16 @@ private struct PullResponse: Decodable {
     var clients:  [ClientDTO]
     var projects: [ProjectDTO]
     var entries:  [EntryDTO]
+    var sessions: [SessionDTO]
+}
+
+private struct SessionDTO: Codable {
+    var _id: String
+    var startDate: String?
+    var notes: String?
+    var clientMongoId: String?
+    var projectMongoId: String?
+    var notificationID: String?
 }
 
 private struct ClientDTO: Codable {
@@ -51,6 +61,7 @@ private struct SyncPayload: Encodable {
     var clients:  [ClientDTO]
     var projects: [ProjectDTO]
     var entries:  [EntryDTO]
+    var sessions: [SessionDTO]
 }
 
 // MARK: - Service
@@ -60,7 +71,7 @@ private struct SyncPayload: Encodable {
 public final class RestSyncService {
     public static let shared = RestSyncService()
 
-    public typealias DataProvider = () -> (clients: [Client], projects: [TimelogCore.Project], entries: [TimeEntry])
+    public typealias DataProvider = () -> (clients: [Client], projects: [TimelogCore.Project], entries: [TimeEntry], sessions: [ActiveSession])
 
     private var dataProvider: DataProvider?
     private var debounceTask: Task<Void, Never>?
@@ -141,7 +152,7 @@ public final class RestSyncService {
             guard !Task.isCancelled, let self else { return }
             guard let data = self.dataProvider?() else { return }
             do {
-                try await self.push(clients: data.clients, projects: data.projects, entries: data.entries)
+                try await self.push(clients: data.clients, projects: data.projects, entries: data.entries, sessions: data.sessions)
             } catch {
                 self.lastError = error.localizedDescription
             }
@@ -203,20 +214,47 @@ public final class RestSyncService {
                 e.mongoId = dto._id; context.insert(e)
             }
         }
+        // Sessions: replace strategy (remote is authoritative)
+        let allLocalSessions = (try? context.fetch(FetchDescriptor<ActiveSession>())) ?? []
+        let localSessionById = Dictionary(uniqueKeysWithValues: allLocalSessions.compactMap { s in s.mongoId.map { ($0, s) } })
+        let remoteSessionIds = Set(response.sessions.map { $0._id })
+        for dto in response.sessions {
+            let startDate = dto.startDate.flatMap { Self.iso8601.date(from: $0) ?? Self.iso8601NoFrac.date(from: $0) } ?? Date()
+            if let s = localSessionById[dto._id] {
+                s.startDate = startDate; s.notes = dto.notes
+            } else {
+                let s = ActiveSession(
+                    client: dto.clientMongoId.flatMap { clientMap[$0] },
+                    project: dto.projectMongoId.flatMap { projectMap[$0] },
+                    notes: dto.notes
+                )
+                s.startDate = startDate
+                s.mongoId = dto._id
+                s.notificationID = dto.notificationID ?? UUID().uuidString
+                context.insert(s)
+            }
+        }
+        for local in allLocalSessions {
+            if let mid = local.mongoId, !remoteSessionIds.contains(mid) {
+                NotificationManager.shared.cancelSession(id: local.notificationID)
+                context.delete(local)
+            }
+        }
         try context.save()
         lastSyncDate = .now
     }
 
     // MARK: - Push (SwiftData → server)
 
-    private func push(clients: [Client], projects: [TimelogCore.Project], entries: [TimeEntry]) async throws {
+    private func push(clients: [Client], projects: [TimelogCore.Project], entries: [TimeEntry], sessions: [ActiveSession]) async throws {
         guard let url = serverURL(path: "/api/sync") else { return }
         isSyncing = true; lastError = nil; defer { isSyncing = false }
 
         let payload = SyncPayload(
             clients: clients.map { ClientDTO(_id: $0.mongoId ?? "", name: $0.name, colorHex: $0.colorHex, isArchived: $0.isArchived, deletedAt: $0.deletedAt.map { Self.iso8601.string(from: $0) }) },
             projects: projects.map { ProjectDTO(_id: $0.mongoId ?? "", name: $0.name, code: $0.code, isArchived: $0.isArchived, clientMongoId: $0.client?.mongoId, deletedAt: $0.deletedAt.map { Self.iso8601.string(from: $0) }) },
-            entries: entries.map { EntryDTO(_id: $0.mongoId ?? "", date: Self.iso8601.string(from: $0.date), durationMinutes: $0.durationMinutes, notes: $0.notes, clientMongoId: $0.client?.mongoId, projectMongoId: $0.project?.mongoId, deletedAt: $0.deletedAt.map { Self.iso8601.string(from: $0) }) }
+            entries: entries.map { EntryDTO(_id: $0.mongoId ?? "", date: Self.iso8601.string(from: $0.date), durationMinutes: $0.durationMinutes, notes: $0.notes, clientMongoId: $0.client?.mongoId, projectMongoId: $0.project?.mongoId, deletedAt: $0.deletedAt.map { Self.iso8601.string(from: $0) }) },
+            sessions: sessions.map { SessionDTO(_id: $0.mongoId ?? "", startDate: Self.iso8601.string(from: $0.startDate), notes: $0.notes, clientMongoId: $0.client?.mongoId, projectMongoId: $0.project?.mongoId, notificationID: $0.notificationID) }
         )
         try await post(url: url, body: payload)
         lastSyncDate = .now

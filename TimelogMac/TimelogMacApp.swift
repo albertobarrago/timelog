@@ -9,6 +9,7 @@ private struct MongoSyncSetup: ViewModifier {
     @Query private var clients: [Client]
     @Query private var projects: [Project]
     @Query private var entries: [TimeEntry]
+    @Query private var sessions: [ActiveSession]
 
     func body(content: Content) -> some View {
         content
@@ -17,10 +18,11 @@ private struct MongoSyncSetup: ViewModifier {
                 MongoSyncService.shared.loadConnectionStringFromFile()
                 MongoSyncService.shared.setDataProvider { [container] in
                     let ctx = container.mainContext
-                    let clients  = (try? ctx.fetch(FetchDescriptor<Client>()))  ?? []
-                    let projects = (try? ctx.fetch(FetchDescriptor<Project>())) ?? []
-                    let entries  = (try? ctx.fetch(FetchDescriptor<TimeEntry>())) ?? []
-                    return (clients, projects, entries)
+                    let clients  = (try? ctx.fetch(FetchDescriptor<Client>()))        ?? []
+                    let projects = (try? ctx.fetch(FetchDescriptor<Project>()))       ?? []
+                    let entries  = (try? ctx.fetch(FetchDescriptor<TimeEntry>()))     ?? []
+                    let sessions = (try? ctx.fetch(FetchDescriptor<ActiveSession>())) ?? []
+                    return (clients, projects, entries, sessions)
                 }
                 Task {
                     try? await Task.sleep(for: .milliseconds(300))
@@ -32,6 +34,7 @@ private struct MongoSyncSetup: ViewModifier {
             .onChange(of: clients.count)  { _, _ in MongoSyncService.shared.triggerSync() }
             .onChange(of: projects.count) { _, _ in MongoSyncService.shared.triggerSync() }
             .onChange(of: entries.count)  { _, _ in MongoSyncService.shared.triggerSync() }
+            .onChange(of: sessions.count) { _, _ in MongoSyncService.shared.triggerSync() }
     }
 }
 

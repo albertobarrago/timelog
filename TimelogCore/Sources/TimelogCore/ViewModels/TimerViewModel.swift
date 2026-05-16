@@ -117,7 +117,7 @@ public final class TimerViewModel {
         #endif
     }
 
-    private func tick() {
+    func tick() {
         elapsed += 1
         #if os(iOS) && !targetEnvironment(macCatalyst)
         if Int(elapsed) % 5 == 0 { updateLiveActivity() }
@@ -125,7 +125,7 @@ public final class TimerViewModel {
         if pomodoroEnabled, elapsed >= phaseTotal { phaseComplete() }
     }
 
-    private func phaseComplete() {
+    func phaseComplete() {
         pause()
         elapsed = 0
         if phase == .work {

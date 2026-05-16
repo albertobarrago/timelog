@@ -61,11 +61,26 @@ private struct TimeEntryDocument: Codable {
     }
 }
 
+private struct ActiveSessionDocument: Codable {
+    var _id: ObjectId
+    var startDate: Date
+    var notes: String?
+    var clientMongoId: String?
+    var projectMongoId: String?
+    var notificationID: String
+    init(from session: ActiveSession) {
+        _id = session.mongoId.flatMap { ObjectId($0) } ?? ObjectId()
+        startDate = session.startDate; notes = session.notes
+        clientMongoId = session.client?.mongoId; projectMongoId = session.project?.mongoId
+        notificationID = session.notificationID
+    }
+}
+
 @Observable
 @MainActor
 public final class MongoSyncService {
     public static let shared = MongoSyncService()
-    public typealias DataProvider = () -> (clients: [Client], projects: [TimelogCore.Project], entries: [TimeEntry])
+    public typealias DataProvider = () -> (clients: [Client], projects: [TimelogCore.Project], entries: [TimeEntry], sessions: [ActiveSession])
 
     private var db: MongoDatabase?
     private var dataProvider: DataProvider?
@@ -119,17 +134,18 @@ public final class MongoSyncService {
                 do { try await self.connect() } catch { self.lastError = error.localizedDescription; return }
             }
             guard let data = self.dataProvider?() else { return }
-            try? await self.syncAll(clients: data.clients, projects: data.projects, entries: data.entries)
+            try? await self.syncAll(clients: data.clients, projects: data.projects, entries: data.entries, sessions: data.sessions)
         }
     }
 
-    public func syncAll(clients: [Client], projects: [TimelogCore.Project], entries: [TimeEntry]) async throws {
+    public func syncAll(clients: [Client], projects: [TimelogCore.Project], entries: [TimeEntry], sessions: [ActiveSession]) async throws {
         guard let db else { throw MongoSyncError.notConnected }
         isSyncing = true; lastError = nil; defer { isSyncing = false }
         do {
             try await push(clients: clients, to: db)
             try await push(projects: projects, to: db)
             try await push(entries: entries, to: db)
+            try await push(sessions: sessions, to: db)
             lastSyncDate = .now
         } catch { lastError = error.localizedDescription; throw error }
     }
@@ -141,6 +157,7 @@ public final class MongoSyncService {
             let clientMap = try await pull(clientsInto: context, from: db)
             let projectMap = try await pull(projectsInto: context, from: db, clientMap: clientMap)
             try await pull(entriesInto: context, from: db, clientMap: clientMap, projectMap: projectMap)
+            try await pull(sessionsInto: context, from: db, clientMap: clientMap, projectMap: projectMap)
             try context.save()
             lastSyncDate = .now
         } catch { lastError = error.localizedDescription; throw error }
@@ -217,6 +234,40 @@ public final class MongoSyncService {
         let col = db["time_entries"]
         for e in entries { let doc = TimeEntryDocument(from: e); try await col.upsertEncoded(doc, where: "_id" == doc._id) }
     }
+
+    private func push(sessions: [ActiveSession], to db: MongoDatabase) async throws {
+        let col = db["active_sessions"]
+        for s in sessions { let doc = ActiveSessionDocument(from: s); try await col.upsertEncoded(doc, where: "_id" == doc._id) }
+    }
+
+    private func pull(sessionsInto ctx: ModelContext, from db: MongoDatabase, clientMap: [String: Client], projectMap: [String: TimelogCore.Project]) async throws {
+        let docs = try await db["active_sessions"].find().decode(ActiveSessionDocument.self).drain()
+        let remoteIds = Set(docs.map { $0._id.hexString })
+        let allLocal = (try? ctx.fetch(FetchDescriptor<ActiveSession>())) ?? []
+        let localById = Dictionary(uniqueKeysWithValues: allLocal.compactMap { s in s.mongoId.map { ($0, s) } })
+        for doc in docs {
+            let id = doc._id.hexString
+            if let s = localById[id] {
+                s.startDate = doc.startDate; s.notes = doc.notes
+            } else {
+                let s = ActiveSession(
+                    client: doc.clientMongoId.flatMap { clientMap[$0] },
+                    project: doc.projectMongoId.flatMap { projectMap[$0] },
+                    notes: doc.notes
+                )
+                s.startDate = doc.startDate
+                s.mongoId = id
+                s.notificationID = doc.notificationID
+                ctx.insert(s)
+            }
+        }
+        for local in allLocal {
+            if let mid = local.mongoId, !remoteIds.contains(mid) {
+                NotificationManager.shared.cancelSession(id: local.notificationID)
+                ctx.delete(local)
+            }
+        }
+    }
 }
 
 #else
@@ -227,7 +278,7 @@ public final class MongoSyncService {
 @MainActor
 public final class MongoSyncService {
     public static let shared = MongoSyncService()
-    public typealias DataProvider = () -> (clients: [Client], projects: [TimelogCore.Project], entries: [TimeEntry])
+    public typealias DataProvider = () -> (clients: [Client], projects: [TimelogCore.Project], entries: [TimeEntry], sessions: [ActiveSession])
 
     public private(set) var isSyncing = false
     public private(set) var lastSyncDate: Date?
@@ -244,7 +295,7 @@ public final class MongoSyncService {
     public func setDataProvider(_ provider: @escaping DataProvider) {}
     public func triggerSync() {}
     public func stopAutoSync() {}
-    public func syncAll(clients: [Client], projects: [TimelogCore.Project], entries: [TimeEntry]) async throws {}
+    public func syncAll(clients: [Client], projects: [TimelogCore.Project], entries: [TimeEntry], sessions: [ActiveSession]) async throws {}
     public func pullAll(into context: ModelContext) async throws {}
 }
 

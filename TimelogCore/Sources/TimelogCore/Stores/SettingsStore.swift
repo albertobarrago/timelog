@@ -15,10 +15,13 @@ public final class SettingsStore {
     public var trackingEndHour: Int = 18 { didSet { save() } }
     public var trackingEndMinute: Int = 0 { didSet { save() } }
 
-    private let defaults = UserDefaults.standard
+    private let defaults: UserDefaults
     private var isLoading = false
 
-    public init() { load() }
+    public init(defaults: UserDefaults = .standard) {
+        self.defaults = defaults
+        load()
+    }
 
     public func load() {
         isLoading = true
