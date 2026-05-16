@@ -17,6 +17,6 @@ public final class TimeEntry {
         self.notes = notes
         self.client = client
         self.project = project
-        self.mongoId = withUnsafeBytes(of: UUID().uuid) { $0.prefix(12).map { String(format: "%02x", $0) }.joined() }
+        self.mongoId = Client.newMongoId()
     }
 }

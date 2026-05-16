@@ -2,6 +2,7 @@ import UserNotifications
 
 public final class NotificationManager {
     public static let shared = NotificationManager()
+    private static let overdueNotificationDelay: TimeInterval = 4 * 3600
     private init() {}
 
     public func requestPermission() {
@@ -44,7 +45,7 @@ public final class NotificationManager {
         content.userInfo = ["sessionID": id]
         let calendar = Calendar.current
         var fireDate = calendar.date(bySettingHour: endHour, minute: endMinute, second: 0, of: startDate) ?? startDate
-        if fireDate <= .now { fireDate = Date().addingTimeInterval(4 * 3600) }
+        if fireDate <= .now { fireDate = Date().addingTimeInterval(Self.overdueNotificationDelay) }
         let components = calendar.dateComponents([.year, .month, .day, .hour, .minute], from: fireDate)
         let trigger = UNCalendarNotificationTrigger(dateMatching: components, repeats: false)
         let request = UNNotificationRequest(identifier: "session_\(id)", content: content, trigger: trigger)

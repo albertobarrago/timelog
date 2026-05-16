@@ -20,6 +20,7 @@ public enum PomodoroPhase {
 }
 
 @Observable
+@MainActor
 public final class TimerViewModel {
     public var isRunning = false
     public var elapsed: TimeInterval = 0
@@ -39,7 +40,7 @@ public final class TimerViewModel {
         longBreakMinutes = store.pomodoroLongBreak
     }
 
-    private var timer: Timer?
+    nonisolated(unsafe) private var timer: Timer?
 
     public var phaseTotal: TimeInterval {
         switch phase {

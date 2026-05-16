@@ -7,10 +7,10 @@ public final class SettingsStore {
     public var pomodoroShortBreak: Int = 5 { didSet { save() } }
     public var pomodoroLongBreak: Int = 15 { didSet { save() } }
 
-    public var reminderEnabled: Bool = false { didSet { save(); applyReminders() } }
-    public var reminderHour: Int = 17 { didSet { save(); applyReminders() } }
-    public var reminderMinute: Int = 0 { didSet { save(); applyReminders() } }
-    public var reminderDays: Set<Int> = [2, 3, 4, 5, 6] { didSet { save(); applyReminders() } }
+    public var reminderEnabled: Bool = false { didSet { save(); if !isLoading { applyReminders() } } }
+    public var reminderHour: Int = 17 { didSet { save(); if !isLoading { applyReminders() } } }
+    public var reminderMinute: Int = 0 { didSet { save(); if !isLoading { applyReminders() } } }
+    public var reminderDays: Set<Int> = [2, 3, 4, 5, 6] { didSet { save(); if !isLoading { applyReminders() } } }
 
     public var trackingEndHour: Int = 18 { didSet { save() } }
     public var trackingEndMinute: Int = 0 { didSet { save() } }
@@ -22,7 +22,10 @@ public final class SettingsStore {
 
     public func load() {
         isLoading = true
-        defer { isLoading = false }
+        defer {
+            isLoading = false
+            applyReminders()
+        }
         let w = defaults.integer(forKey: "pomodoro_work")
         let s = defaults.integer(forKey: "pomodoro_short")
         let l = defaults.integer(forKey: "pomodoro_long")

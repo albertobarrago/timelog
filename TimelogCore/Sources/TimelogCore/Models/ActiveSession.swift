@@ -30,4 +30,14 @@ public final class ActiveSession {
     public var elapsedMinutes: Int {
         max(0, Int(Date().timeIntervalSince(startDate) / 60))
     }
+
+    public func asTimeEntry(durationMinutes: Int, notes: String?) -> TimeEntry {
+        TimeEntry(
+            date: startDate,
+            durationMinutes: durationMinutes,
+            notes: notes,
+            client: client,
+            project: project
+        )
+    }
 }

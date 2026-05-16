@@ -16,7 +16,7 @@ public final class Client {
         self.mongoId = Self.newMongoId()
     }
 
-    static func newMongoId() -> String {
+    public static func newMongoId() -> String {
         withUnsafeBytes(of: UUID().uuid) { $0.prefix(12).map { String(format: "%02x", $0) }.joined() }
     }
 

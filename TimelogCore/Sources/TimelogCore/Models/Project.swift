@@ -14,6 +14,6 @@ public final class Project {
         self.name = name
         self.code = code
         self.isArchived = isArchived
-        self.mongoId = withUnsafeBytes(of: UUID().uuid) { $0.prefix(12).map { String(format: "%02x", $0) }.joined() }
+        self.mongoId = Client.newMongoId()
     }
 }

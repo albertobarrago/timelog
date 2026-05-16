@@ -63,12 +63,9 @@ struct StopSessionSheet: View {
     }
 
     private func stop() {
-        let entry = TimeEntry(
-            date: session.startDate,
+        let entry = session.asTimeEntry(
             durationMinutes: hours * 60 + minutes,
-            notes: notes.isEmpty ? nil : notes,
-            client: session.client,
-            project: session.project
+            notes: notes.isEmpty ? nil : notes
         )
         context.insert(entry)
         NotificationManager.shared.cancelSession(id: session.notificationID)

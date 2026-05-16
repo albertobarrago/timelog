@@ -16,16 +16,6 @@ struct HomeView: View {
         allEntries.filter { Calendar.current.isDateInToday($0.date) }
     }
 
-    private var widgetSnapshotSignature: String {
-        let entryPart = todayEntries
-            .map { "\($0.persistentModelID):\($0.durationMinutes):\($0.date.timeIntervalSince1970)" }
-            .joined(separator: "|")
-        let sessionPart = activeSessions
-            .map { "\($0.persistentModelID):\($0.startDate.timeIntervalSince1970)" }
-            .joined(separator: "|")
-        return "\(entryPart)#\(sessionPart)"
-    }
-
     var body: some View {
         NavigationStack {
             VStack(spacing: 0) {
@@ -130,7 +120,8 @@ struct HomeView: View {
                 }
             }
             .onAppear { updateWidgetSnapshot() }
-            .onChange(of: widgetSnapshotSignature) { updateWidgetSnapshot() }
+            .onChange(of: allEntries) { _, _ in updateWidgetSnapshot() }
+            .onChange(of: activeSessions) { _, _ in updateWidgetSnapshot() }
         }
     }
 
@@ -178,34 +169,34 @@ private struct ActiveSessionRow: View {
     let session: ActiveSession
 
     var body: some View {
-        TimelineView(.periodic(from: .now, by: 1)) { _ in
-            HStack(spacing: 12) {
-                RoundedRectangle(cornerRadius: 3)
-                    .fill(session.client?.color ?? .accentColor)
-                    .frame(width: 4, height: 36)
+        HStack(spacing: 12) {
+            RoundedRectangle(cornerRadius: 3)
+                .fill(session.client?.color ?? .accentColor)
+                .frame(width: 4, height: 36)
 
-                VStack(alignment: .leading, spacing: 2) {
-                    Text(session.client?.name ?? "No client")
-                        .font(.subheadline.weight(.semibold))
-                    if let proj = session.project {
-                        Text(proj.name)
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
-                    }
+            VStack(alignment: .leading, spacing: 2) {
+                Text(session.client?.name ?? "No client")
+                    .font(.subheadline.weight(.semibold))
+                if let proj = session.project {
+                    Text(proj.name)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
                 }
+            }
 
-                Spacer()
+            Spacer()
 
+            TimelineView(.periodic(from: .now, by: 1)) { _ in
                 Text(session.elapsedDisplay)
                     .font(.subheadline.monospacedDigit())
                     .foregroundStyle(.tint)
-
-                Image(systemName: "stop.circle.fill")
-                    .foregroundStyle(.red)
-                    .font(.title3)
             }
-            .padding(.vertical, 2)
+
+            Image(systemName: "stop.circle.fill")
+                .foregroundStyle(.red)
+                .font(.title3)
         }
+        .padding(.vertical, 2)
     }
 }
 

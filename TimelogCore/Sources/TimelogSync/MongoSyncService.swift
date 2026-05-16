@@ -138,65 +138,75 @@ public final class MongoSyncService {
             try context.delete(model: TimelogCore.Project.self)
             try context.delete(model: Client.self)
             try context.save()
-            try await pull(clientsInto: context, from: db)
-            try await pull(projectsInto: context, from: db)
-            try await pull(entriesInto: context, from: db)
+            let clientMap = try await pull(clientsInto: context, from: db)
+            let projectMap = try await pull(projectsInto: context, from: db, clientMap: clientMap)
+            try await pull(entriesInto: context, from: db, clientMap: clientMap, projectMap: projectMap)
             lastSyncDate = .now
         } catch { lastError = error.localizedDescription; throw error }
     }
 
-    private func pull(clientsInto ctx: ModelContext, from db: MongoDatabase) async throws {
+    private func pull(clientsInto ctx: ModelContext, from db: MongoDatabase) async throws -> [String: Client] {
         let docs = try await db["clients"].find().decode(ClientDocument.self).drain()
         let remoteIds = Set(docs.map { $0._id.hexString })
+        let allLocalClients = (try? ctx.fetch(FetchDescriptor<Client>())) ?? []
+        var localById = Dictionary(uniqueKeysWithValues: allLocalClients.compactMap { c in c.mongoId.map { ($0, c) } })
         for doc in docs {
             let id = doc._id.hexString
-            if let c = try? ctx.fetch(FetchDescriptor<Client>(predicate: #Predicate { $0.mongoId == id })).first {
+            if let c = localById[id] {
                 c.name = doc.name; c.colorHex = doc.colorHex; c.isArchived = doc.isArchived
             } else {
                 let c = Client(name: doc.name, colorHex: doc.colorHex, isArchived: doc.isArchived)
-                c.mongoId = id; ctx.insert(c)
+                c.mongoId = id; ctx.insert(c); localById[id] = c
             }
         }
-        for local in (try? ctx.fetch(FetchDescriptor<Client>())) ?? [] {
+        for local in allLocalClients {
             if let mid = local.mongoId, !remoteIds.contains(mid) { ctx.delete(local) }
         }
         try ctx.save()
+        return localById
     }
 
-    private func pull(projectsInto ctx: ModelContext, from db: MongoDatabase) async throws {
+    private func pull(projectsInto ctx: ModelContext, from db: MongoDatabase, clientMap: [String: Client]) async throws -> [String: TimelogCore.Project] {
         let docs = try await db["projects"].find().decode(ProjectDocument.self).drain()
         let remoteIds = Set(docs.map { $0._id.hexString })
+        let allLocalProjects = (try? ctx.fetch(FetchDescriptor<TimelogCore.Project>())) ?? []
+        var localById = Dictionary(uniqueKeysWithValues: allLocalProjects.compactMap { p in p.mongoId.map { ($0, p) } })
         for doc in docs {
             let id = doc._id.hexString
-            if let p = try? ctx.fetch(FetchDescriptor<TimelogCore.Project>(predicate: #Predicate { $0.mongoId == id })).first {
+            if let p = localById[id] {
                 p.name = doc.name; p.code = doc.code; p.isArchived = doc.isArchived
             } else {
                 let p = TimelogCore.Project(name: doc.name, code: doc.code, isArchived: doc.isArchived)
                 p.mongoId = id
-                if let cid = doc.clientMongoId {
-                    p.client = try? ctx.fetch(FetchDescriptor<Client>(predicate: #Predicate { $0.mongoId == cid })).first
-                }
-                ctx.insert(p)
+                if let cid = doc.clientMongoId { p.client = clientMap[cid] }
+                ctx.insert(p); localById[id] = p
             }
         }
-        for local in (try? ctx.fetch(FetchDescriptor<TimelogCore.Project>())) ?? [] {
+        for local in allLocalProjects {
             if let mid = local.mongoId, !remoteIds.contains(mid) { ctx.delete(local) }
         }
         try ctx.save()
+        return localById
     }
 
-    private func pull(entriesInto ctx: ModelContext, from db: MongoDatabase) async throws {
+    private func pull(entriesInto ctx: ModelContext, from db: MongoDatabase, clientMap: [String: Client], projectMap: [String: TimelogCore.Project]) async throws {
         let docs = try await db["time_entries"].find().decode(TimeEntryDocument.self).drain()
+        let remoteIds = Set(docs.map { $0._id.hexString })
+        let allLocalEntries = (try? ctx.fetch(FetchDescriptor<TimeEntry>())) ?? []
+        let localById = Dictionary(uniqueKeysWithValues: allLocalEntries.compactMap { e in e.mongoId.map { ($0, e) } })
         for doc in docs {
             let id = doc._id.hexString
-            if let e = try? ctx.fetch(FetchDescriptor<TimeEntry>(predicate: #Predicate { $0.mongoId == id })).first {
+            if let e = localById[id] {
                 e.date = doc.date; e.durationMinutes = doc.durationMinutes; e.notes = doc.notes
             } else {
-                let client = doc.clientMongoId.flatMap { cid in try? ctx.fetch(FetchDescriptor<Client>(predicate: #Predicate { $0.mongoId == cid })).first }
-                let project = doc.projectMongoId.flatMap { pid in try? ctx.fetch(FetchDescriptor<TimelogCore.Project>(predicate: #Predicate { $0.mongoId == pid })).first }
+                let client = doc.clientMongoId.flatMap { clientMap[$0] }
+                let project = doc.projectMongoId.flatMap { projectMap[$0] }
                 let e = TimeEntry(date: doc.date, durationMinutes: doc.durationMinutes, notes: doc.notes, client: client, project: project)
                 e.mongoId = id; ctx.insert(e)
             }
+        }
+        for local in allLocalEntries {
+            if let mid = local.mongoId, !remoteIds.contains(mid) { ctx.delete(local) }
         }
         try ctx.save()
     }
