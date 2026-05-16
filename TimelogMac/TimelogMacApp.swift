@@ -34,12 +34,29 @@ private struct MongoSyncSetup: ViewModifier {
     }
 }
 
+final class AppDelegate: NSObject, NSApplicationDelegate {
+    func applicationShouldTerminate(_ sender: NSApplication) -> NSApplication.TerminateReply {
+        let ctx = TimelogMacApp.container.mainContext
+        let sessions = (try? ctx.fetch(FetchDescriptor<ActiveSession>())) ?? []
+        guard !sessions.isEmpty else { return .terminateNow }
+
+        let alert = NSAlert()
+        alert.messageText = "Sessione di tracking in corso"
+        alert.informativeText = "Hai \(sessions.count == 1 ? "una sessione attiva" : "\(sessions.count) sessioni attive"). Chiudi l'app comunque?"
+        alert.alertStyle = .warning
+        alert.addButton(withTitle: "Chiudi comunque")
+        alert.addButton(withTitle: "Annulla")
+        return alert.runModal() == .alertFirstButtonReturn ? .terminateNow : .terminateCancel
+    }
+}
+
 @main
 struct TimelogMacApp: App {
+    @NSApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
     @State private var settings = SettingsStore()
     @State private var timerVM = TimerViewModel()
 
-    private static let container: ModelContainer = {
+    static let container: ModelContainer = {
         try! ModelContainer(for: Client.self, Project.self, TimeEntry.self, ActiveSession.self)
     }()
 
