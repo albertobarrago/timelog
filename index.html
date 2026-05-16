@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Timelog — Track time. Natively.</title>
   <meta name="description" content="A lightweight time-tracking app for iOS and macOS. Built with SwiftUI, SwiftData, and a self-hosted sync layer. No subscriptions." />
-  <link rel="icon" type="image/png" href="../Timelog/Assets.xcassets/AppIcon.appiconset/AppIcon.png" />
+  <link rel="icon" type="image/png" href="Timelog/Assets.xcassets/AppIcon.appiconset/AppIcon.png" />
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -132,6 +132,14 @@
       align-items: center;
       justify-content: center;
       font-size: 56px;
+      overflow: hidden;
+    }
+
+    .app-icon img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
     }
 
     .eyebrow {
@@ -255,6 +263,8 @@
 
     /* ── SECTIONS ── */
     section { padding: 100px 5%; }
+
+    .oss-section { padding: 60px 5%; }
 
     .section-eyebrow {
       font-size: 12px;
@@ -658,19 +668,232 @@
 
     /* ── RESPONSIVE ── */
     @media (max-width: 768px) {
+      nav {
+        height: 56px;
+        padding: 0 20px;
+      }
+
+      nav .logo { font-size: 16px; }
+      nav .gh-btn {
+        padding: 7px 12px;
+        font-size: 12px;
+      }
+
+      .hero {
+        min-height: auto;
+        padding: 104px 20px 72px;
+        justify-content: flex-start;
+      }
+
+      .hero::before {
+        top: -260px;
+        width: 560px;
+        height: 560px;
+        opacity: 0.85;
+      }
+
+      .hero::after {
+        right: -180px;
+        bottom: -170px;
+        width: 360px;
+        height: 360px;
+      }
+
+      .app-icon {
+        width: 92px;
+        height: 92px;
+        border-radius: 22px;
+        margin-bottom: 26px;
+        font-size: 44px;
+        box-shadow: 0 28px 58px rgba(0,0,0,0.55), 0 0 0 1px rgba(255,255,255,0.08);
+      }
+
+      .eyebrow {
+        margin-bottom: 12px;
+        font-size: 11px;
+        letter-spacing: 1.6px;
+      }
+
+      .hero h1 {
+        font-size: clamp(42px, 15vw, 64px);
+        letter-spacing: -1.8px;
+        line-height: 0.98;
+        margin-bottom: 18px;
+      }
+
+      .hero .sub {
+        font-size: 17px;
+        line-height: 1.5;
+        max-width: 34rem;
+        margin-bottom: 30px;
+      }
+
+      .badges {
+        gap: 8px;
+        margin-bottom: 34px;
+      }
+
+      .badge {
+        padding: 7px 11px;
+        font-size: 11px;
+      }
+
+      .cta-group {
+        width: 100%;
+        max-width: 360px;
+        margin-inline: auto;
+        gap: 10px;
+      }
+
+      .btn-primary,
+      .btn-secondary {
+        flex: 1 1 100%;
+        min-height: 48px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 13px 18px;
+      }
+
+      .scroll-hint { display: none; }
+
+      section {
+        padding: 76px 20px;
+        scroll-margin-top: 56px;
+      }
+
+      .section-title {
+        font-size: clamp(32px, 10vw, 44px);
+        letter-spacing: -1px;
+      }
+
+      .section-sub {
+        font-size: 16px;
+        margin-bottom: 42px;
+      }
+
       .platform-grid { grid-template-columns: 1fr; }
-      .platform-card:first-child { border-right: none; border-bottom: 1px solid var(--border); border-radius: var(--radius) var(--radius) 0 0; }
-      .platform-card:last-child { border-radius: 0 0 var(--radius) var(--radius); }
-      .sync-cards { grid-template-columns: 1fr; }
+      .platform-card {
+        padding: 36px 24px;
+      }
+      .platform-card:first-child {
+        border-right: none;
+        border-bottom: 1px solid var(--border);
+        border-radius: 16px 16px 0 0;
+      }
+      .platform-card:last-child { border-radius: 0 0 16px 16px; }
+
+      .platform-card h3 { font-size: 24px; }
+
+      .features-grid {
+        grid-template-columns: 1fr;
+        border-radius: 16px;
+      }
+
+      .feature-cell { padding: 28px 24px; }
+
+      .sync-diagram { gap: 18px; }
+      .sync-cards {
+        grid-template-columns: 1fr;
+        gap: 12px;
+        margin-top: 34px;
+      }
       nav .nav-links { display: none; }
-      .sync-row { flex-direction: column; }
-      .sync-arrow { transform: rotate(90deg); }
-      footer { flex-direction: column; align-items: flex-start; }
+      .sync-row {
+        flex-direction: column;
+        gap: 10px;
+      }
+
+      .sync-node {
+        width: 100%;
+        padding: 18px 20px;
+      }
+
+      .sync-arrow {
+        min-width: 0;
+        min-height: 54px;
+        justify-content: center;
+      }
+
+      .sync-arrow .arrow-label {
+        white-space: normal;
+        text-align: center;
+        line-height: 1.35;
+      }
+
+      .sync-arrow .arrow-line {
+        width: 2px;
+        height: 34px;
+        background: linear-gradient(180deg, var(--accent), var(--accent2));
+      }
+
+      .sync-arrow .arrow-line::after {
+        right: -4px;
+        top: auto;
+        bottom: -6px;
+        border-left: 5px solid transparent;
+        border-right: 5px solid transparent;
+        border-top: 8px solid var(--accent2);
+        border-bottom: none;
+      }
+
+      .sync-row .sync-arrow[style*="visibility:hidden"],
+      .sync-row .sync-node[style*="visibility:hidden"] {
+        display: none;
+      }
+
+      .tech-pills {
+        justify-content: flex-start;
+        gap: 8px;
+      }
+
+      .tech-pill {
+        padding: 9px 13px;
+        font-size: 13px;
+      }
+
+      .oss-banner {
+        padding: 42px 24px;
+        border-radius: 16px;
+      }
+
+      .oss-banner h2 {
+        font-size: 30px;
+        letter-spacing: -0.7px;
+      }
+
+      footer {
+        flex-direction: column;
+        align-items: flex-start;
+        padding: 34px 20px;
+      }
+
+      footer .footer-links {
+        width: 100%;
+        justify-content: space-between;
+      }
     }
 
     @media (max-width: 480px) {
-      section { padding: 70px 5%; }
-      .oss-banner { padding: 40px 24px; }
+      nav { padding: 0 16px; }
+      .hero { padding: 92px 16px 64px; }
+      .hero h1 {
+        font-size: clamp(40px, 17vw, 56px);
+        letter-spacing: -1.3px;
+      }
+      .hero .sub { font-size: 16px; }
+      .badges {
+        justify-content: flex-start;
+        max-width: 360px;
+        margin-inline: auto;
+      }
+      section { padding: 64px 16px; }
+      .platform-card { padding: 30px 20px; }
+      .feature-cell { padding: 26px 20px; }
+      .sync-card { padding: 24px 20px; }
+      .oss-section { padding: 50px 16px; }
+      .oss-banner { padding: 36px 20px; }
+      footer { padding-inline: 16px; }
     }
   </style>
 </head>
@@ -695,7 +918,9 @@
 
   <!-- HERO -->
   <section class="hero">
-    <div class="app-icon">⏱</div>
+    <div class="app-icon">
+      <img src="Timelog/Assets.xcassets/AppIcon.appiconset/AppIcon.png" alt="Timelog app icon" />
+    </div>
     <p class="eyebrow">iOS &amp; macOS</p>
     <h1>Track time.<br/>Natively.</h1>
     <p class="sub">A lightweight time-tracking app built with SwiftUI and SwiftData. Sync across devices via a self-hosted middleware on Vercel — zero cloud lock-in, zero subscription.</p>
@@ -904,7 +1129,7 @@
   </section>
 
   <!-- OSS BANNER -->
-  <section style="padding: 60px 5%;">
+  <section class="oss-section">
     <div class="oss-banner fade-in">
       <span class="big-icon">🧑‍💻</span>
       <h2>Free &amp; Open Source</h2>
