@@ -158,6 +158,22 @@ echo "mongodb+srv://..." > ~/.config/timelog/mongo.local
 
 ---
 
+## Testing
+
+```bash
+# Unit tests del package (no Xcode required)
+cd TimelogCore && swift test
+```
+
+Per i test che richiedono l'app bundle (Keychain, Notifications), usa **⌘U** in Xcode sul scheme `Timelog`.
+
+| Target | Suite | Runner |
+|--------|-------|--------|
+| `TimelogCoreTests` | `Int.formattedDuration`, `Color+Hex`, `Client`, `ActiveSession`, `WidgetSnapshot` | `swift test` |
+| `TimelogTests` | `KeychainHelper`, `SettingsStore`, `TimerViewModel` | Xcode ⌘U |
+
+---
+
 ## Changelog
 
 See [CHANGELOG.md](CHANGELOG.md).

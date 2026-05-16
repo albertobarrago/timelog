@@ -1,6 +1,6 @@
 import Testing
 import Foundation
-@testable import TimelogCore
+import TimelogCore
 
 @Suite("SettingsStore")
 struct SettingsStoreTests {

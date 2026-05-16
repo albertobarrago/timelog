@@ -5,6 +5,54 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
 
+## [Unreleased]
+
+---
+
+## [1.2.0] — 2026-05-16
+
+### Added
+- **Sync ActiveSession tra device** — sessioni attive sincronizzate via `MongoSyncService` (macOS) e `RestSyncService` (iOS); pull con replace strategy (remote è autoritativo); `dataProvider` include `sessions` in entrambe le app
+- `ActiveSession.mongoId` — ID persistente generato all'`init` per l'upsert in sync
+- **Avviso sessioni attive alla chiusura** — alert di conferma se ci sono sessioni di tracking aperte alla chiusura dell'app (iOS e macOS)
+- `MongoSyncService.pullAll(into:)` — pull sync MongoDB → SwiftData all'avvio; upsert di client, project e time entry per `mongoId`; supporto multi-device e multi-utente (iOS stub no-op)
+- `MongoSyncService.loadConnectionStringFromFile()` — legge `~/.config/timelog/mongo.local` all'avvio e salva in Keychain se vuoto; file mai committato
+- Toast banner in-app al completamento della sync (push o pull)
+- `docs/` con documentazione tecnica e diagrammi Mermaid: architettura, data model, user flows, MongoDB sync flow
+- macOS History sidebar: grafico a barre settimanale (7 giorni, proporzionale, click per navigare) + voci raggruppate per cliente con subtotali
+- iOS History sheet: date picker, totale per giorno, swipe-to-delete, tap-to-edit
+- `WidgetSnapshotStore` in `TimelogCore` — scrive `TimelogWidgetSnapshot` su App Group `UserDefaults` per il widget
+- Widget Today home-screen (sostituisce template Xcode): minuti loggati + attivi, ultimo cliente/progetto, indicatore di registrazione
+- **Unit test suite** (`TimelogCoreTests`, `swift test`) — 5 suite CLI: `Int.formattedDuration` (10 casi), `Color+Hex`, `Client.newMongoId`, `ActiveSession` (elapsed, asTimeEntry), `WidgetSnapshot` (Codable, aggregazioni)
+- **App target tests** (`TimelogTests`, ⌘U) — 3 suite con app bundle: `KeychainHelper`, `SettingsStore` (UserDefaults iniettabile), `TimerViewModel` (fasi pomodoro, displayTime, progress, reset)
+
+### Fixed
+- **Soft delete** su `Client`, `Project`, `TimeEntry` — campo `deletedAt: Date?`; pull ignora oggetti con `deletedAt != nil`; UI filtra correttamente
+- `ModelContainer`: reset automatico su store corrotto — evita crash al lancio dopo update
+- `ModelConfiguration` con nome esplicito `"TimelogMac"` — evita collisioni con `default.store` generico su macOS
+- `pullAll`: save atomico dopo ogni upsert — risolve crash `model invalidated`
+- `MongoSyncService`: ambiguità `'Project'` risolta qualificando come `TimelogCore.Project` (collisione con tipo MongoKitten dopo Xcode 26)
+- `dataProvider` cattura `modelContainer` invece di `modelContext` — evita contesto stale con fetch vuoti
+- iOS + macOS: sheet progetto si chiudeva prima del salvataggio — `dismiss()` chiamato prima di `context.insert()`
+- macOS: doppio `client.projects.append(p)` rimosso — SwiftData gestisce già la relazione inversa
+- iOS: secondo cliente non si salvava — unificati due `.sheet` modifier in un singolo enum `ClientSheet`
+- macOS: crash `model instance was invalidated` su delete cliente — selezione ora usa `PersistentIdentifier`
+- macOS: `client.projects` sostituito con `@Query` in `ProjectsMacView` — evita accesso a backing SwiftData invalidato
+- macOS: spazio vuoto in cima a Projects e History view — radice `VStack` → `List`
+
+### Changed
+- macOS Settings: rimosso campo MongoDB connection string — gestito esclusivamente via `~/.config/timelog/mongo.local` + Keychain; rimane pulsante "Sync Now" e status
+- macOS: input durata → `DurationPickerMac` — 6 bottoni rapidi (15m…2h) + input testo con stepper
+- iOS + macOS: color picker cliente → griglia 12 swatches preset; `ColorPicker` nativo come fallback "Custom"
+- `HomeView` refactored a singolo enum `activeSheet` — sostituisce quattro `@State` bool separati
+- macOS sidebar include ora History tra Today e Clients
+- `AppTab` enum estratto in `ToolbarOnlyNavigation.swift`
+
+### Removed
+- Modalità menu-bar-only (toggle nascondi Dock icon) — rimossa in attesa di implementazione stabile
+
+---
+
 ## [1.1.0] — 2026-05-14 (Beta)
 
 ### Added
@@ -24,50 +72,6 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ### Changed
 - iOS Settings: rimossi campi URL e API Key — un solo tasto **Sync Now** + status row.
 - `MongoSyncService` rimane macOS-only; iOS usa `RestSyncService` via middleware.
-
----
-
-## [Unreleased]
-
-### Added
-- `MongoSyncService.pullAll(into:)` — pull sync from MongoDB → SwiftData on startup; upserts clients, projects and time entries by `mongoId`; enables multi-device and multi-user support (iOS stub is a no-op)
-- In-app toast banner shown when sync (pull or push) completes successfully
-- `MongoSyncService.loadConnectionStringFromFile()` — reads `~/.config/timelog/mongo.local` at startup and saves to Keychain if empty; file is never committed (outside the repo)
-- `docs/` folder with technical documentation and Mermaid diagrams: architecture, data model, user flows, MongoDB sync flow
-
-### Fixed
-- `MongoSyncService`: `'Project'` type ambiguity resolved by qualifying as `TimelogCore.Project` — MongoKitten exports its own `Project` type for aggregation pipeline stages, causing the collision after Xcode 26 upgrade
-- MongoDB sync now captures `modelContainer` (via `@Environment(\.modelContainer)`) instead of `modelContext` in the `dataProvider` closure — prevents stale context from returning empty fetch results
-
-### Changed
-- macOS Settings: removed MongoDB connection string text field and "Save & Sync" button — connection string is now managed exclusively via `~/.config/timelog/mongo.local` + Keychain; a "Sync Now" button and sync status remain
-
----
-
-### Fixed
-- iOS + macOS: project form sheet closing abruptly on save — `dismiss()` now called before `context.insert()` to prevent SwiftData relationship update from resetting the `showingAddProject` state mid-dismissal
-- macOS: duplicate `client.projects.append(p)` in `ProjectMacFormView.save()` removed — SwiftData already handles the inverse relationship when setting `p.client`
-- iOS: second client not saving — consolidated two `.sheet` modifiers into a single `ClientSheet` enum to fix iOS sheet reuse bug
-- macOS: `Fatal error: model instance was invalidated` crash on client delete — selection now uses `PersistentIdentifier` instead of a direct `Client` reference
-- macOS: `client.projects` relationship access replaced with `@Query` in `ProjectsMacView` to avoid accessing invalidated SwiftData backing
-- macOS: large empty space at top of Projects view — replaced `VStack` root with `List` (same fix applied to History view)
-
-### Added
-- macOS History sidebar view: weekly bar chart (7-day, proportional bars, click to navigate) + entries grouped by client with subtotals
-- iOS History sheet: date picker, per-day total, swipe-to-delete, tap-to-edit entries
-- `WidgetSnapshotStore` in `TimelogCore` — writes a `TimelogWidgetSnapshot` to an App Group `UserDefaults` so the widget reads live data
-- Timelog Today home-screen widget (replaces Xcode template): shows logged + active minutes, last client/project, recording indicator
-
-### Changed
-- macOS: duration input replaced with `DurationPickerMac` — 6 quick-pick buttons (15m, 30m, 45m, 1h, 1h30m, 2h) + direct text input with stepper for fine adjustment; used in QuickLog, StopSession, and History edit sheet
-- iOS + macOS: client color picker replaced with a 12-swatch preset grid; native `ColorPicker` kept as "Custom" fallback — faster to use and works on all screen sizes
-- `HomeView` refactored to a single `activeSheet` enum — replaces four separate `@State` booleans
-- `HomeView` pushes a widget snapshot on appear and on every data change via `widgetSnapshotSignature`
-- `AppTab` enum extracted to `ToolbarOnlyNavigation.swift`
-- macOS sidebar now includes History between Today and Clients
-
-### Removed
-- Menu-bar-only mode (hide Dock icon toggle) — removed pending a stable implementation
 
 ---
 
