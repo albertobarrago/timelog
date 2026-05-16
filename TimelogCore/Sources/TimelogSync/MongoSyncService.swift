@@ -132,12 +132,6 @@ public final class MongoSyncService {
         guard let db else { throw MongoSyncError.notConnected }
         isSyncing = true; lastError = nil; defer { isSyncing = false }
         do {
-            NotificationCenter.default.post(name: MongoSyncService.willWipeDataNotification, object: nil)
-            try await Task.sleep(for: .milliseconds(150))
-            try context.delete(model: TimeEntry.self)
-            try context.delete(model: TimelogCore.Project.self)
-            try context.delete(model: Client.self)
-            try context.save()
             let clientMap = try await pull(clientsInto: context, from: db)
             let projectMap = try await pull(projectsInto: context, from: db, clientMap: clientMap)
             try await pull(entriesInto: context, from: db, clientMap: clientMap, projectMap: projectMap)
@@ -159,9 +153,6 @@ public final class MongoSyncService {
                 c.mongoId = id; ctx.insert(c); localById[id] = c
             }
         }
-        for local in allLocalClients {
-            if let mid = local.mongoId, !remoteIds.contains(mid) { ctx.delete(local) }
-        }
         try ctx.save()
         return localById
     }
@@ -182,9 +173,6 @@ public final class MongoSyncService {
                 ctx.insert(p); localById[id] = p
             }
         }
-        for local in allLocalProjects {
-            if let mid = local.mongoId, !remoteIds.contains(mid) { ctx.delete(local) }
-        }
         try ctx.save()
         return localById
     }
@@ -204,9 +192,6 @@ public final class MongoSyncService {
                 let e = TimeEntry(date: doc.date, durationMinutes: doc.durationMinutes, notes: doc.notes, client: client, project: project)
                 e.mongoId = id; ctx.insert(e)
             }
-        }
-        for local in allLocalEntries {
-            if let mid = local.mongoId, !remoteIds.contains(mid) { ctx.delete(local) }
         }
         try ctx.save()
     }
