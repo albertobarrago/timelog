@@ -59,7 +59,7 @@ struct TimelogMacApp: App {
 
     static let container: ModelContainer = {
         let schema = Schema([Client.self, Project.self, TimeEntry.self, ActiveSession.self])
-        let config = ModelConfiguration(schema: schema)
+        let config = ModelConfiguration("TimelogMac", schema: schema)
         do {
             return try ModelContainer(for: schema, configurations: config)
         } catch {
