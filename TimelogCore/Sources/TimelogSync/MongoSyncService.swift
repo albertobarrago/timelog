@@ -141,6 +141,7 @@ public final class MongoSyncService {
             let clientMap = try await pull(clientsInto: context, from: db)
             let projectMap = try await pull(projectsInto: context, from: db, clientMap: clientMap)
             try await pull(entriesInto: context, from: db, clientMap: clientMap, projectMap: projectMap)
+            try context.save()
             lastSyncDate = .now
         } catch { lastError = error.localizedDescription; throw error }
     }
@@ -160,7 +161,6 @@ public final class MongoSyncService {
                 c.mongoId = id; ctx.insert(c); localById[id] = c
             }
         }
-        try ctx.save()
         return localById
     }
 
@@ -181,7 +181,6 @@ public final class MongoSyncService {
                 ctx.insert(p); localById[id] = p
             }
         }
-        try ctx.save()
         return localById
     }
 
@@ -202,7 +201,6 @@ public final class MongoSyncService {
                 e.mongoId = id; ctx.insert(e)
             }
         }
-        try ctx.save()
     }
 
     private func push(clients: [Client], to db: MongoDatabase) async throws {

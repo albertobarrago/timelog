@@ -171,8 +171,6 @@ public final class RestSyncService {
                 context.insert(c); clientMap[dto._id] = c
             }
         }
-        try context.save()
-
         let existingProjects = (try? context.fetch(FetchDescriptor<TimelogCore.Project>())) ?? []
         var projectMap: [String: TimelogCore.Project] = Dictionary(uniqueKeysWithValues: existingProjects.compactMap { p in p.mongoId.map { ($0, p) } })
         for dto in response.projects {
@@ -189,8 +187,6 @@ public final class RestSyncService {
                 context.insert(p); projectMap[dto._id] = p
             }
         }
-        try context.save()
-
         let existingEntries = (try? context.fetch(FetchDescriptor<TimeEntry>())) ?? []
         let entryMap: [String: TimeEntry] = Dictionary(uniqueKeysWithValues: existingEntries.compactMap { e in e.mongoId.map { ($0, e) } })
         for dto in response.entries {
@@ -208,7 +204,6 @@ public final class RestSyncService {
             }
         }
         try context.save()
-
         lastSyncDate = .now
     }
 

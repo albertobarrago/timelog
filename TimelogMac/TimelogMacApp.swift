@@ -23,6 +23,7 @@ private struct MongoSyncSetup: ViewModifier {
                     return (clients, projects, entries)
                 }
                 Task {
+                    try? await Task.sleep(for: .milliseconds(300))
                     try? await MongoSyncService.shared.connect()
                     try? await MongoSyncService.shared.pullAll(into: modelContext)
                     MongoSyncService.shared.triggerSync()
