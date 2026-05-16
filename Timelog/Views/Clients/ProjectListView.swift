@@ -59,7 +59,7 @@ struct ProjectListView: View {
             Spacer()
         }
         .swipeActions(edge: .trailing) {
-            Button(role: .destructive) { context.delete(project) } label: {
+            Button(role: .destructive) { project.deletedAt = .now } label: {
                 Label("Delete", systemImage: "trash")
             }
             Button { projectToEdit = project } label: {

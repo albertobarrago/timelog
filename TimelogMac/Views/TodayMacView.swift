@@ -5,7 +5,7 @@ import TimelogCore
 struct TodayMacView: View {
     @Environment(\.modelContext) private var context
     @Environment(SettingsStore.self) private var settings
-    @Query(sort: \TimeEntry.date, order: .reverse) private var allEntries: [TimeEntry]
+    @Query(filter: #Predicate<TimeEntry> { $0.deletedAt == nil }, sort: \TimeEntry.date, order: .reverse) private var allEntries: [TimeEntry]
     @Query(sort: \ActiveSession.startDate) private var activeSessions: [ActiveSession]
 
     @State private var showingQuickLog      = false
@@ -67,7 +67,7 @@ struct TodayMacView: View {
                                 .contextMenu {
                                     Button("Edit") { entryToEdit = entry }
                                     Divider()
-                                    Button("Delete", role: .destructive) { context.delete(entry) }
+                                    Button("Delete", role: .destructive) { entry.deletedAt = .now }
                                 }
                         }
                     }

@@ -15,7 +15,7 @@ private enum ClientSheet: Identifiable {
 
 struct ClientsView: View {
     @Environment(\.modelContext) private var context
-    @Query(sort: \Client.name) private var clients: [Client]
+    @Query(filter: #Predicate<Client> { $0.deletedAt == nil }, sort: \Client.name) private var clients: [Client]
 
     @State private var activeSheet: ClientSheet?
     @State private var showArchived = false
@@ -55,7 +55,7 @@ struct ClientsView: View {
                                 }
                             }
                             .swipeActions(edge: .trailing) {
-                                Button(role: .destructive) { context.delete(client) } label: {
+                                Button(role: .destructive) { client.deletedAt = .now } label: {
                                     Label("Delete", systemImage: "trash")
                                 }
                                 Button { activeSheet = .edit(client) } label: {

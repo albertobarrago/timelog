@@ -5,7 +5,7 @@ import TimelogCore
 struct QuickLogMacView: View {
     @Environment(\.modelContext) private var context
     @Environment(\.dismiss) private var dismiss
-    @Query(filter: #Predicate<Client> { !$0.isArchived }, sort: \Client.name) private var clients: [Client]
+    @Query(filter: #Predicate<Client> { !$0.isArchived && $0.deletedAt == nil }, sort: \Client.name) private var clients: [Client]
 
     var entry: TimeEntry?
 

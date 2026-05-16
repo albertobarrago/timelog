@@ -8,6 +8,7 @@ public final class Client {
     public var isArchived: Bool
     public var mongoId: String?
     @Relationship(deleteRule: .cascade) public var projects: [Project] = []
+    public var deletedAt: Date? = nil
 
     public init(name: String, colorHex: String = "#007AFF", isArchived: Bool = false) {
         self.name = name

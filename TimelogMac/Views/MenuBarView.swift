@@ -9,8 +9,8 @@ struct MenuBarView: View {
     @Environment(\.modelContext) private var context
     @Environment(\.openWindow) private var openWindow
     @Query(sort: \ActiveSession.startDate) private var activeSessions: [ActiveSession]
-    @Query(sort: \TimeEntry.date, order: .reverse) private var allEntries: [TimeEntry]
-    @Query(filter: #Predicate<Client> { !$0.isArchived }, sort: \Client.name) private var clients: [Client]
+    @Query(filter: #Predicate<TimeEntry> { $0.deletedAt == nil }, sort: \TimeEntry.date, order: .reverse) private var allEntries: [TimeEntry]
+    @Query(filter: #Predicate<Client> { !$0.isArchived && $0.deletedAt == nil }, sort: \Client.name) private var clients: [Client]
 
     @State private var showingStartTracking = false
     @State private var sessionToStop: ActiveSession?

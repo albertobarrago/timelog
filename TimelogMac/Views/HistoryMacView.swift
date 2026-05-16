@@ -4,7 +4,7 @@ import TimelogCore
 
 struct HistoryMacView: View {
     @Environment(\.modelContext) private var context
-    @Query(sort: \TimeEntry.date, order: .reverse) private var allEntries: [TimeEntry]
+    @Query(filter: #Predicate<TimeEntry> { $0.deletedAt == nil }, sort: \TimeEntry.date, order: .reverse) private var allEntries: [TimeEntry]
 
     @State private var selectedDate = Date()
     @State private var entryToEdit: TimeEntry?
@@ -142,7 +142,7 @@ struct HistoryMacView: View {
                                     Button("Edit") { entryToEdit = entry }
                                     Divider()
                                     Button("Delete", role: .destructive) {
-                                        context.delete(entry)
+                                        entry.deletedAt = .now
                                     }
                                 }
                         }

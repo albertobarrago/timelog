@@ -7,9 +7,9 @@ import WidgetKit
 
 struct HomeView: View {
     @Environment(\.modelContext) private var context
-    @Query(sort: \TimeEntry.date, order: .reverse) private var allEntries: [TimeEntry]
+    @Query(filter: #Predicate<TimeEntry> { $0.deletedAt == nil }, sort: \TimeEntry.date, order: .reverse) private var allEntries: [TimeEntry]
     @Query(sort: \ActiveSession.startDate) private var activeSessions: [ActiveSession]
-    @Query(filter: #Predicate<Client> { !$0.isArchived }, sort: \Client.name) private var clients: [Client]
+    @Query(filter: #Predicate<Client> { !$0.isArchived && $0.deletedAt == nil }, sort: \Client.name) private var clients: [Client]
     @State private var activeSheet: HomeSheet?
 
     private var todayEntries: [TimeEntry] {
@@ -72,7 +72,7 @@ struct HomeView: View {
                                 .onTapGesture { activeSheet = .editEntry(entry) }
                                 .swipeActions(edge: .trailing) {
                                     Button(role: .destructive) {
-                                        context.delete(entry)
+                                        entry.deletedAt = .now
                                     } label: {
                                         Label("Delete", systemImage: "trash")
                                     }

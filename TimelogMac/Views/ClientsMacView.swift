@@ -5,8 +5,8 @@ import TimelogSync
 
 struct ClientsMacView: View {
     @Environment(\.modelContext) private var context
-    @Query(sort: \Client.name) private var allClients: [Client]
-    @Query(filter: #Predicate<Client> { !$0.isArchived }, sort: \Client.name) private var activeClients: [Client]
+    @Query(filter: #Predicate<Client> { $0.deletedAt == nil }, sort: \Client.name) private var allClients: [Client]
+    @Query(filter: #Predicate<Client> { !$0.isArchived && $0.deletedAt == nil }, sort: \Client.name) private var activeClients: [Client]
 
     @State private var selectedClientID: PersistentIdentifier?
     @State private var showingAddClient  = false
@@ -39,7 +39,7 @@ struct ClientsMacView: View {
                                 if selectedClientID == client.persistentModelID {
                                     selectedClientID = nil
                                 }
-                                context.delete(client)
+                                client.deletedAt = .now
                             }
                         }
                 }
@@ -159,7 +159,7 @@ struct ProjectsMacView: View {
                                 }
                                 Divider()
                                 Button("Delete", role: .destructive) {
-                                    context.delete(proj)
+                                    proj.deletedAt = .now
                                 }
                             }
                     }

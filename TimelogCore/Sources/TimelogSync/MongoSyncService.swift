@@ -22,9 +22,11 @@ private struct ClientDocument: Codable {
     var name: String
     var colorHex: String
     var isArchived: Bool
+    var deletedAt: Date?
     init(from client: Client) {
         _id = client.mongoId.flatMap { ObjectId($0) } ?? ObjectId()
         name = client.name; colorHex = client.colorHex; isArchived = client.isArchived
+        deletedAt = client.deletedAt
     }
 }
 
@@ -34,10 +36,12 @@ private struct ProjectDocument: Codable {
     var code: String?
     var isArchived: Bool
     var clientMongoId: String?
+    var deletedAt: Date?
     init(from project: TimelogCore.Project) {
         _id = project.mongoId.flatMap { ObjectId($0) } ?? ObjectId()
         name = project.name; code = project.code; isArchived = project.isArchived
         clientMongoId = project.client?.mongoId
+        deletedAt = project.deletedAt
     }
 }
 
@@ -48,10 +52,12 @@ private struct TimeEntryDocument: Codable {
     var notes: String?
     var clientMongoId: String?
     var projectMongoId: String?
+    var deletedAt: Date?
     init(from entry: TimeEntry) {
         _id = entry.mongoId.flatMap { ObjectId($0) } ?? ObjectId()
         date = entry.date; durationMinutes = entry.durationMinutes; notes = entry.notes
         clientMongoId = entry.client?.mongoId; projectMongoId = entry.project?.mongoId
+        deletedAt = entry.deletedAt
     }
 }
 
@@ -148,7 +154,8 @@ public final class MongoSyncService {
             let id = doc._id.hexString
             if let c = localById[id] {
                 c.name = doc.name; c.colorHex = doc.colorHex; c.isArchived = doc.isArchived
-            } else {
+                c.deletedAt = doc.deletedAt
+            } else if doc.deletedAt == nil {
                 let c = Client(name: doc.name, colorHex: doc.colorHex, isArchived: doc.isArchived)
                 c.mongoId = id; ctx.insert(c); localById[id] = c
             }
@@ -166,7 +173,8 @@ public final class MongoSyncService {
             let id = doc._id.hexString
             if let p = localById[id] {
                 p.name = doc.name; p.code = doc.code; p.isArchived = doc.isArchived
-            } else {
+                p.deletedAt = doc.deletedAt
+            } else if doc.deletedAt == nil {
                 let p = TimelogCore.Project(name: doc.name, code: doc.code, isArchived: doc.isArchived)
                 p.mongoId = id
                 if let cid = doc.clientMongoId { p.client = clientMap[cid] }
@@ -186,7 +194,8 @@ public final class MongoSyncService {
             let id = doc._id.hexString
             if let e = localById[id] {
                 e.date = doc.date; e.durationMinutes = doc.durationMinutes; e.notes = doc.notes
-            } else {
+                e.deletedAt = doc.deletedAt
+            } else if doc.deletedAt == nil {
                 let client = doc.clientMongoId.flatMap { clientMap[$0] }
                 let project = doc.projectMongoId.flatMap { projectMap[$0] }
                 let e = TimeEntry(date: doc.date, durationMinutes: doc.durationMinutes, notes: doc.notes, client: client, project: project)

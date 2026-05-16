@@ -8,7 +8,7 @@ struct StartTrackingMacView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(SettingsStore.self) private var settings
 
-    @Query(filter: #Predicate<Client> { !$0.isArchived }, sort: \Client.name)
+    @Query(filter: #Predicate<Client> { !$0.isArchived && $0.deletedAt == nil }, sort: \Client.name)
     private var clients: [Client]
 
     @State private var selectedClient: Client?

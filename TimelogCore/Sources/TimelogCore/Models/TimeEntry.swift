@@ -9,6 +9,7 @@ public final class TimeEntry {
     public var mongoId: String?
     public var client: Client?
     public var project: Project?
+    public var deletedAt: Date? = nil
 
     public init(date: Date = .now, durationMinutes: Int, notes: String? = nil,
                 client: Client? = nil, project: Project? = nil) {
