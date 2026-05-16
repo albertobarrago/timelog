@@ -90,6 +90,15 @@ public final class MongoSyncService {
     public private(set) var lastSyncDate: Date?
     public private(set) var lastError: String?
 
+    public var isUserEditing = false {
+        didSet {
+            guard !isUserEditing, pendingSyncRequested else { return }
+            pendingSyncRequested = false
+            scheduleDebounced()
+        }
+    }
+    private var pendingSyncRequested = false
+
     public static let willWipeDataNotification = Notification.Name("MongoSyncServiceWillWipeData")
     private static let connectionStringKey = "mongo_connection_string"
     private static let debounceSeconds: Double = 2
@@ -126,6 +135,7 @@ public final class MongoSyncService {
     public func stopAutoSync() { debounceTask?.cancel(); dataProvider = nil }
 
     private func scheduleDebounced() {
+        guard !isUserEditing else { pendingSyncRequested = true; return }
         debounceTask?.cancel()
         debounceTask = Task { [weak self] in
             try? await Task.sleep(for: .seconds(Self.debounceSeconds))
@@ -151,6 +161,7 @@ public final class MongoSyncService {
     }
 
     public func pullAll(into context: ModelContext) async throws {
+        guard !isUserEditing else { return }
         guard let db else { throw MongoSyncError.notConnected }
         isSyncing = true; lastError = nil; defer { isSyncing = false }
         do {
@@ -165,6 +176,7 @@ public final class MongoSyncService {
 
     private func pull(clientsInto ctx: ModelContext, from db: MongoDatabase) async throws -> [String: Client] {
         let docs = try await db["clients"].find().decode(ClientDocument.self).drain()
+        let remoteIds = Set(docs.map { $0._id.hexString })
         let allLocalClients = (try? ctx.fetch(FetchDescriptor<Client>())) ?? []
         var localById = Dictionary(uniqueKeysWithValues: allLocalClients.compactMap { c in c.mongoId.map { ($0, c) } })
         for doc in docs {
@@ -177,11 +189,15 @@ public final class MongoSyncService {
                 c.mongoId = id; ctx.insert(c); localById[id] = c
             }
         }
+        for client in allLocalClients {
+            if let mid = client.mongoId, !remoteIds.contains(mid) { ctx.delete(client) }
+        }
         return localById
     }
 
     private func pull(projectsInto ctx: ModelContext, from db: MongoDatabase, clientMap: [String: Client]) async throws -> [String: TimelogCore.Project] {
         let docs = try await db["projects"].find().decode(ProjectDocument.self).drain()
+        let remoteIds = Set(docs.map { $0._id.hexString })
         let allLocalProjects = (try? ctx.fetch(FetchDescriptor<TimelogCore.Project>())) ?? []
         var localById = Dictionary(uniqueKeysWithValues: allLocalProjects.compactMap { p in p.mongoId.map { ($0, p) } })
         for doc in docs {
@@ -195,6 +211,9 @@ public final class MongoSyncService {
                 if let cid = doc.clientMongoId { p.client = clientMap[cid] }
                 ctx.insert(p); localById[id] = p
             }
+        }
+        for project in allLocalProjects {
+            if let mid = project.mongoId, !remoteIds.contains(mid) { ctx.delete(project) }
         }
         return localById
     }
@@ -215,6 +234,9 @@ public final class MongoSyncService {
                 let e = TimeEntry(date: doc.date, durationMinutes: doc.durationMinutes, notes: doc.notes, client: client, project: project)
                 e.mongoId = id; ctx.insert(e)
             }
+        }
+        for entry in allLocalEntries {
+            if let mid = entry.mongoId, !remoteIds.contains(mid) { ctx.delete(entry) }
         }
     }
 

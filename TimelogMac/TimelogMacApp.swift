@@ -31,10 +31,11 @@ private struct MongoSyncSetup: ViewModifier {
                     MongoSyncService.shared.triggerSync()
                 }
             }
-            .onChange(of: clients.count)  { _, _ in MongoSyncService.shared.triggerSync() }
-            .onChange(of: projects.count) { _, _ in MongoSyncService.shared.triggerSync() }
-            .onChange(of: entries.count)  { _, _ in MongoSyncService.shared.triggerSync() }
-            .onChange(of: sessions.count) { _, _ in MongoSyncService.shared.triggerSync() }
+            .onChange(of: dataFingerprint) { _, _ in MongoSyncService.shared.triggerSync() }
+    }
+
+    private var dataFingerprint: Int {
+        clients.count &+ projects.count &+ entries.count &+ sessions.count
     }
 }
 

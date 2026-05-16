@@ -19,10 +19,6 @@ struct HistoryMacView: View {
         entries.reduce(0) { $0 + $1.durationMinutes }
     }
 
-    private var canGoForward: Bool {
-        !Calendar.current.isDateInToday(selectedDate)
-    }
-
     // MARK: - Weekly chart
 
     private var weekDays: [Date] {
@@ -73,21 +69,15 @@ struct HistoryMacView: View {
             // Header: date nav + total
             Section {
                 HStack(alignment: .center, spacing: 12) {
-                    HStack(spacing: 6) {
-                        Button { moveDate(by: -1) } label: { Image(systemName: "chevron.left") }
-                            .help("Previous day")
+                    HStack(spacing: 8) {
                         DatePicker("", selection: $selectedDate, in: ...Date(), displayedComponents: .date)
                             .labelsHidden()
-                            .datePickerStyle(.field)
-                            .frame(width: 120)
-                        Button { moveDate(by: 1) } label: { Image(systemName: "chevron.right") }
-                            .disabled(!canGoForward)
-                            .help("Next day")
+                            .datePickerStyle(.stepperField)
                         Button("Today") { selectedDate = Date() }
                             .disabled(Calendar.current.isDateInToday(selectedDate))
+                            .buttonStyle(.bordered)
+                            .controlSize(.small)
                     }
-                    .buttonStyle(.bordered)
-                    .controlSize(.small)
 
                     Spacer()
 
@@ -168,10 +158,6 @@ struct HistoryMacView: View {
         .sheet(item: $entryToEdit) { QuickLogMacView(entry: $0) }
     }
 
-    private func moveDate(by days: Int) {
-        guard let date = Calendar.current.date(byAdding: .day, value: days, to: selectedDate) else { return }
-        selectedDate = min(date, Date())
-    }
 }
 
 // MARK: - Weekly Bar Chart

@@ -72,6 +72,8 @@ struct ClientsMacView: View {
         }
         .sheet(isPresented: $showingAddClient)  { ClientMacFormView() }
         .sheet(item: $clientToEdit)             { ClientMacFormView(client: $0) }
+        .syncGated(while: $showingAddClient)
+        .syncGated(whilePresent: $clientToEdit)
         .onReceive(NotificationCenter.default.publisher(for: MongoSyncService.willWipeDataNotification)) { _ in
             selectedClientID = nil
             clientToEdit     = nil
@@ -180,6 +182,8 @@ struct ProjectsMacView: View {
         }
         .sheet(isPresented: $showingAddProject) { ProjectMacFormView(client: client) }
         .sheet(item: $projectToEdit)            { ProjectMacFormView(client: client, project: $0) }
+        .syncGated(while: $showingAddProject)
+        .syncGated(whilePresent: $projectToEdit)
         .onReceive(NotificationCenter.default.publisher(for: MongoSyncService.willWipeDataNotification)) { _ in
             projectToEdit    = nil
             selectedProjects = []

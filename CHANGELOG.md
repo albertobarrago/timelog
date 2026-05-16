@@ -10,16 +10,22 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ### Added
 - **Localizzazione EN / IT** — infrastruttura `.xcstrings` (Xcode 15+) per iOS e macOS; ~130 chiavi iOS, ~127 chiavi macOS, tutte tradotte in italiano
 - `it` aggiunto a `knownRegions` in entrambi i `.xcodeproj`
+- **Discard sessione dal form di stop (macOS)** — bottone "Discard" con alert di conferma in `StopSessionMacView`; elimina la sessione senza creare entry
+- **Toggle show/hide finestra principale (macOS)** — il bottone nel MenuBar cerca la finestra titolata esistente via `NSApp.windows` e la mostra/nasconde invece di aprirne una nuova
 
 ### Fixed
+- **Stop sessione non funzionante nella main window macOS** — `onTapGesture` sulla riga veniva intercettato dalla `List`; sostituito con un `Button` esplicito in `ActiveSessionMacRow`, allineato al pattern già funzionante del MenuBar
 - **Sessioni non stoppabili (sync)** — `MongoSyncService.push(sessions:)` ora cancella da MongoDB le sessioni eliminate localmente, evitando la ricreazione al prossimo `pullAll`
 - **Tempo fermo nel main window macOS** — `TimelineView` dentro `List` non forzava il re-render delle celle; passare `context.date` come parametro `now` alle row view risolve il problema
+- **Formato data con spazi extra in History (macOS)** — `DatePicker(.field)` produceva "16/  5/2026" per mesi singola cifra; migrato a `.stepperField` nativo macOS, frecce esterne e `moveDate` rimossi
 
 ### Changed
 - `AppTab.title` (iOS) e `SidebarItem` label (macOS) migrati da `String` a `LocalizedStringKey`
 - `PomodoroPhase.label` wrappato in `LocalizedStringKey` nei view (il tipo nel model resta `String` per `NotificationManager`)
 - `DayPicker` / `DayPickerMac`: `Text(LocalizedStringKey(day.label))` per localizzare le abbreviazioni dei giorni
 - `exportEmail()`: soggetto e intestazione usano `String(localized:)`
+- **Sync pull — cleanup locale (macOS)** — `MongoSyncService.pullAll` ora elimina i record locali con `mongoId` non più presenti in remoto (clients, projects, entries, sessions); i record locali senza `mongoId` non vengono toccati
+- **Sync gate centralizzato (macOS)** — `MongoSyncService.isUserEditing` blocca sync durante data-entry; 4 `onChange` separati unificati in `dataFingerprint`; nuovo modifier `syncGated` applicato a tutti i modal di editing
 
 ---
 

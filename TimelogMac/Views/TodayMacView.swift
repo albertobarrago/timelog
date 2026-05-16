@@ -100,6 +100,10 @@ struct TodayMacView: View {
         .sheet(isPresented: $showingHistory)        { HistoryMacView().frame(minWidth: 520, minHeight: 420) }
         .sheet(item: $entryToEdit)                  { QuickLogMacView(entry: $0) }
         .sheet(item: $sessionToStop)                { StopSessionMacView(session: $0) }
+        .syncGated(while: $showingQuickLog)
+        .syncGated(while: $showingStartTracking)
+        .syncGated(whilePresent: $entryToEdit)
+        .syncGated(whilePresent: $sessionToStop)
     }
 }
 
