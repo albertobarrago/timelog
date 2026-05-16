@@ -104,7 +104,7 @@ private struct MenuBarStatusLabel: View {
             Label(vm.displayTime, systemImage: "timer")
                 .monospacedDigit()
         } else {
-            Image(systemName: "clock")
+            Label("Timelog", systemImage: "clock")
         }
     }
 }
