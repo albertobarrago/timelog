@@ -96,7 +96,7 @@ struct TimelogMacApp: App {
                 Button("About Timelog") {
                     NSApplication.shared.orderFrontStandardAboutPanel(options: [
                         .credits: NSAttributedString(
-                            string: "fatto da un nerd per nerd, il vostro alBz\ngithub.com/AlbertoBarrago",
+                            string: "Built by alBz — who tracks time obsessively,\nexcept when building this app.\ngithub.com/AlbertoBarrago",
                             attributes: [
                                 .font: NSFont.systemFont(ofSize: NSFont.smallSystemFontSize),
                                 .foregroundColor: NSColor.secondaryLabelColor

@@ -53,6 +53,7 @@ struct ClientsMacView: View {
             } else {
                 ContentUnavailableView("Select a client", systemImage: "person.2")
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .offset(y: -70)
             }
         }
         .navigationTitle("Clients")

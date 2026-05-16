@@ -46,6 +46,7 @@ struct HomeView: View {
                         systemImage: "clock",
                         description: Text("Tap + to log time or ▶ to start tracking")
                     )
+                    .padding(.bottom, 120)
                 } else {
                     List {
                         if !activeSessions.isEmpty {
