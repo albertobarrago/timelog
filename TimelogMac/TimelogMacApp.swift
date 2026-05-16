@@ -57,7 +57,19 @@ struct TimelogMacApp: App {
     @State private var timerVM = TimerViewModel()
 
     static let container: ModelContainer = {
-        try! ModelContainer(for: Client.self, Project.self, TimeEntry.self, ActiveSession.self)
+        let schema = Schema([Client.self, Project.self, TimeEntry.self, ActiveSession.self])
+        let config = ModelConfiguration(schema: schema)
+        do {
+            return try ModelContainer(for: schema, configurations: config)
+        } catch {
+            // Store corrotto o incompatibile — reset automatico
+            let url = config.url
+            try? FileManager.default.removeItem(at: url)
+            let base = url.deletingPathExtension()
+            try? FileManager.default.removeItem(at: base.appendingPathExtension("store-shm"))
+            try? FileManager.default.removeItem(at: base.appendingPathExtension("store-wal"))
+            return try! ModelContainer(for: schema, configurations: config)
+        }
     }()
 
     var body: some Scene {
