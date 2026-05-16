@@ -7,6 +7,20 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+### Added
+- **Localizzazione EN / IT** — infrastruttura `.xcstrings` (Xcode 15+) per iOS e macOS; ~130 chiavi iOS, ~127 chiavi macOS, tutte tradotte in italiano
+- `it` aggiunto a `knownRegions` in entrambi i `.xcodeproj`
+
+### Fixed
+- **Sessioni non stoppabili (sync)** — `MongoSyncService.push(sessions:)` ora cancella da MongoDB le sessioni eliminate localmente, evitando la ricreazione al prossimo `pullAll`
+- **Tempo fermo nel main window macOS** — `TimelineView` dentro `List` non forzava il re-render delle celle; passare `context.date` come parametro `now` alle row view risolve il problema
+
+### Changed
+- `AppTab.title` (iOS) e `SidebarItem` label (macOS) migrati da `String` a `LocalizedStringKey`
+- `PomodoroPhase.label` wrappato in `LocalizedStringKey` nei view (il tipo nel model resta `String` per `NotificationManager`)
+- `DayPicker` / `DayPickerMac`: `Text(LocalizedStringKey(day.label))` per localizzare le abbreviazioni dei giorni
+- `exportEmail()`: soggetto e intestazione usano `String(localized:)`
+
 ---
 
 ## [1.2.0] — 2026-05-16

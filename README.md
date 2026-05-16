@@ -15,6 +15,7 @@
   <img src="https://img.shields.io/badge/Swift-5.10-orange?style=flat-square&logo=swift" />
   <img src="https://img.shields.io/badge/SwiftData-✓-blue?style=flat-square" />
   <img src="https://img.shields.io/badge/Vercel-middleware-black?style=flat-square&logo=vercel" />
+  <img src="https://img.shields.io/badge/Localization-EN%20%7C%20IT-green?style=flat-square" />
 </p>
 
 ---
@@ -38,6 +39,7 @@ Both apps share business logic via **TimelogCore**, a local Swift Package in the
 | **Clients** | Manage clients (color coded) and their projects; archive when done |
 | **Timer** | Stopwatch or Pomodoro with ring progress and lock-screen notification |
 | **Settings** | Pomodoro intervals, daily reminders, smart tracking config, sync status |
+| **Language** | English and Italian — follows the system locale automatically |
 
 ### Smart Tracking
 Tap ▶ to start a session when you begin working. Stop it when done — duration is logged automatically. Multiple sessions can run simultaneously. Forgot to stop? You get a notification at your configured end-of-day time.
@@ -58,6 +60,7 @@ Active sessions and the running timer appear on the lock screen and in the Dynam
 - **Timer** — full Pomodoro / stopwatch window, Space to start/pause
 - **MongoDB sync** — push/pull via MongoKitten to your Atlas cluster; connection string stored in Keychain
 - **Settings window** — Pomodoro config, smart tracking end-of-day threshold (`⌘,`)
+- **Localization** — English and Italian; system locale followed automatically
 
 ---
 
