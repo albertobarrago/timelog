@@ -8,7 +8,7 @@ enum AppTab: Int, CaseIterable, Identifiable {
 
     var id: Int { rawValue }
 
-    var title: String {
+    var title: LocalizedStringKey {
         switch self {
         case .today:    "Today"
         case .clients:  "Clients"

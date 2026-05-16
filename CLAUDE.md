@@ -1,5 +1,10 @@
 # Timelog — Project Context for Claude
 
+## Flusso di lavoro
+- **Prima di ogni implementazione**, presenta un piano con i passaggi e attendi conferma esplicita
+- Il piano deve indicare: quali file si toccano, cosa si cambia e perché
+- Eccezioni: correzioni di singola riga ovvie e senza ambiguità possono procedere direttamente
+
 ## Project Context
 - Primary projects are native SwiftUI apps (Timelog for iOS/macOS) and a custom statusbar script — NOT Flutter, NOT the Markasso project unless explicitly named
 - When user says 'status bar', they mean their custom shell script statusline, not Claude Code's built-in one or any project's UI

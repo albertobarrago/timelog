@@ -41,19 +41,20 @@ struct TodayMacView: View {
                                 .font(.caption)
                                 .foregroundStyle(.tertiary)
                         } else {
-                            TimelineView(.periodic(from: .now, by: 1)) { _ in
+                            TimelineView(.periodic(from: .now, by: 1)) { tl in
                                 ForEach(activeSessions) { session in
-                                    ActiveSessionMacRow(session: session)
-                                        .contentShape(Rectangle())
-                                        .onTapGesture { sessionToStop = session }
-                                        .contextMenu {
-                                            Button("Stop & Log") { sessionToStop = session }
-                                            Divider()
-                                            Button("Discard", role: .destructive) {
-                                                NotificationManager.shared.cancelSession(id: session.notificationID)
-                                                context.delete(session)
-                                            }
+                                    ActiveSessionMacRow(session: session, now: tl.date) {
+                                        sessionToStop = session
+                                    }
+                                    .contextMenu {
+                                        Button("Stop & Log") { sessionToStop = session }
+                                        Divider()
+                                        Button("Discard", role: .destructive) {
+                                            NotificationManager.shared.cancelSession(id: session.notificationID)
+                                            context.delete(session)
+                                            try? context.save()
                                         }
+                                    }
                                 }
                             }
                         }
@@ -104,6 +105,17 @@ struct TodayMacView: View {
 
 struct ActiveSessionMacRow: View {
     let session: ActiveSession
+    var now: Date = .now
+    var onStop: (() -> Void)? = nil
+
+    private var elapsedDisplay: String {
+        let s = Int(now.timeIntervalSince(session.startDate))
+        let h = s / 3600, m = (s % 3600) / 60, sec = s % 60
+        return h > 0
+            ? String(format: "%d:%02d:%02d", h, m, sec)
+            : String(format: "%02d:%02d", m, sec)
+    }
+
     var body: some View {
         HStack(spacing: 12) {
             RoundedRectangle(cornerRadius: 3)
@@ -117,13 +129,23 @@ struct ActiveSessionMacRow: View {
                 }
             }
             Spacer()
-            Text(session.elapsedDisplay)
+            Text(elapsedDisplay)
                 .font(.system(.body, design: .monospaced, weight: .medium))
                 .foregroundStyle(.tint)
                 .monospacedDigit()
-            Image(systemName: "stop.circle.fill")
-                .foregroundStyle(.red)
-                .imageScale(.large)
+            if let onStop {
+                Button(action: onStop) {
+                    Image(systemName: "stop.circle.fill")
+                        .foregroundStyle(.red)
+                        .imageScale(.large)
+                }
+                .buttonStyle(.plain)
+                .help("Stop and log")
+            } else {
+                Image(systemName: "stop.circle.fill")
+                    .foregroundStyle(.red)
+                    .imageScale(.large)
+            }
         }
     }
 }

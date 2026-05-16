@@ -165,7 +165,6 @@ public final class MongoSyncService {
 
     private func pull(clientsInto ctx: ModelContext, from db: MongoDatabase) async throws -> [String: Client] {
         let docs = try await db["clients"].find().decode(ClientDocument.self).drain()
-        let remoteIds = Set(docs.map { $0._id.hexString })
         let allLocalClients = (try? ctx.fetch(FetchDescriptor<Client>())) ?? []
         var localById = Dictionary(uniqueKeysWithValues: allLocalClients.compactMap { c in c.mongoId.map { ($0, c) } })
         for doc in docs {
@@ -183,7 +182,6 @@ public final class MongoSyncService {
 
     private func pull(projectsInto ctx: ModelContext, from db: MongoDatabase, clientMap: [String: Client]) async throws -> [String: TimelogCore.Project] {
         let docs = try await db["projects"].find().decode(ProjectDocument.self).drain()
-        let remoteIds = Set(docs.map { $0._id.hexString })
         let allLocalProjects = (try? ctx.fetch(FetchDescriptor<TimelogCore.Project>())) ?? []
         var localById = Dictionary(uniqueKeysWithValues: allLocalProjects.compactMap { p in p.mongoId.map { ($0, p) } })
         for doc in docs {
@@ -237,7 +235,16 @@ public final class MongoSyncService {
 
     private func push(sessions: [ActiveSession], to db: MongoDatabase) async throws {
         let col = db["active_sessions"]
-        for s in sessions { let doc = ActiveSessionDocument(from: s); try await col.upsertEncoded(doc, where: "_id" == doc._id) }
+        let localIds = Set(sessions.compactMap { $0.mongoId })
+        for s in sessions {
+            let doc = ActiveSessionDocument(from: s)
+            try await col.upsertEncoded(doc, where: "_id" == doc._id)
+        }
+        // Delete remote sessions no longer present locally (e.g. stopped on this device)
+        let remoteDocs = try await col.find().decode(ActiveSessionDocument.self).drain()
+        for remote in remoteDocs where !localIds.contains(remote._id.hexString) {
+            try await col.deleteAll(where: "_id" == remote._id)
+        }
     }
 
     private func pull(sessionsInto ctx: ModelContext, from db: MongoDatabase, clientMap: [String: Client], projectMap: [String: TimelogCore.Project]) async throws {

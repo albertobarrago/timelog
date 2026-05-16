@@ -136,7 +136,7 @@ struct MacSettingsView: View {
         let weekStart = cal.date(from: cal.dateComponents([.yearForWeekOfYear, .weekOfYear], from: now))!
         let weekEntries = entries.filter { $0.date >= weekStart }
 
-        var lines = ["Timelog — Week of \(weekStart.formatted(date: .abbreviated, time: .omitted))", ""]
+        var lines = [String(localized: "Timelog — Week of") + " \(weekStart.formatted(date: .abbreviated, time: .omitted))", ""]
         for entry in weekEntries.sorted(by: { $0.date < $1.date }) {
             let dateStr = entry.date.formatted(date: .abbreviated, time: .omitted)
             let dur     = entry.durationMinutes.formattedDuration
@@ -146,10 +146,10 @@ struct MacSettingsView: View {
             lines.append("[\(dateStr)] \(client) / \(project): \(dur)\(notes)")
         }
         let total = weekEntries.reduce(0) { $0 + $1.durationMinutes }
-        lines += ["", "Total: \(total.formattedDuration)"]
+        lines += ["", String(localized: "Total:") + " \(total.formattedDuration)"]
 
         let body    = lines.joined(separator: "\n")
-        let subject = "Timelog Week Export"
+        let subject = String(localized: "Timelog Week Export")
         let mailto  = "mailto:?subject=\(subject.urlEncoded)&body=\(body.urlEncoded)"
         if let url = URL(string: mailto) { openURL(url) }
     }
@@ -253,7 +253,7 @@ private struct DayPickerMac: View {
                     if on { selectedDays.remove(day.index) }
                     else  { selectedDays.insert(day.index) }
                 } label: {
-                    Text(day.label)
+                    Text(LocalizedStringKey(day.label))
                         .font(.system(size: 12, weight: .semibold))
                         .frame(width: 28, height: 28)
                         .background(on ? Color.accentColor : Color.secondary.opacity(0.12), in: Circle())

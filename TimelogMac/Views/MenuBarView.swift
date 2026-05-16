@@ -45,9 +45,9 @@ struct MenuBarView: View {
                             .padding(.top, 8)
                             .padding(.bottom, 4)
 
-                        TimelineView(.periodic(from: .now, by: 1)) { _ in
+                        TimelineView(.periodic(from: .now, by: 1)) { tl in
                             ForEach(activeSessions) { session in
-                                MenuSessionRow(session: session) {
+                                MenuSessionRow(session: session, now: tl.date) {
                                     sessionToStop = session
                                 } onDiscard: {
                                     NotificationManager.shared.cancelSession(id: session.notificationID)
@@ -77,14 +77,23 @@ struct MenuBarView: View {
                     .controlSize(.small)
 
                     Button {
-                        openWindow(id: "main")
-                        NSApplication.shared.activate(ignoringOtherApps: true)
+                        if let window = NSApp.windows.first(where: { $0.styleMask.contains(.titled) }) {
+                            if window.isVisible {
+                                window.orderOut(nil)
+                            } else {
+                                window.makeKeyAndOrderFront(nil)
+                                NSApp.activate(ignoringOtherApps: true)
+                            }
+                        } else {
+                            openWindow(id: "main")
+                            NSApp.activate(ignoringOtherApps: true)
+                        }
                     } label: {
                         Image(systemName: "arrow.up.forward.app")
                     }
                     .buttonStyle(.bordered)
                     .controlSize(.small)
-                    .help("Open Timelog window")
+                    .help("Show/hide Timelog window")
                 }
                 .padding(.horizontal, 12)
                 .padding(.vertical, 8)
@@ -99,7 +108,7 @@ private struct CompactTimerRow: View {
     var body: some View {
         HStack(spacing: 12) {
             VStack(alignment: .leading, spacing: 1) {
-                Text(vm.pomodoroEnabled ? vm.phase.label : "Stopwatch")
+                Text(vm.pomodoroEnabled ? LocalizedStringKey(vm.phase.label) : "Stopwatch")
                     .font(.caption2).foregroundStyle(.secondary)
                 Text(vm.displayTime)
                     .font(.system(size: 22, weight: .light, design: .monospaced))
@@ -133,8 +142,17 @@ private struct CompactTimerRow: View {
 
 private struct MenuSessionRow: View {
     let session: ActiveSession
+    var now: Date = .now
     let onStop: () -> Void
     let onDiscard: () -> Void
+
+    private var elapsedDisplay: String {
+        let s = Int(now.timeIntervalSince(session.startDate))
+        let h = s / 3600, m = (s % 3600) / 60, sec = s % 60
+        return h > 0
+            ? String(format: "%d:%02d:%02d", h, m, sec)
+            : String(format: "%02d:%02d", m, sec)
+    }
 
     var body: some View {
         HStack(spacing: 8) {
@@ -149,7 +167,7 @@ private struct MenuSessionRow: View {
                 }
             }
             Spacer()
-            Text(session.elapsedDisplay)
+            Text(elapsedDisplay)
                 .font(.system(.caption, design: .monospaced, weight: .medium))
                 .foregroundStyle(.tint).monospacedDigit()
             Button(action: onStop) {

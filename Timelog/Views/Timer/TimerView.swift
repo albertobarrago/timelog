@@ -13,7 +13,7 @@ struct TimerView: View {
 
                 if vm.pomodoroEnabled {
                     VStack(spacing: 8) {
-                        Text(vm.phase.label)
+                        Text(LocalizedStringKey(vm.phase.label))
                             .font(.title3)
                             .foregroundStyle(.secondary)
 

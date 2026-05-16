@@ -93,7 +93,7 @@ struct TimerMacView: View {
                     .monospacedDigit()
                     .contentTransition(.numericText())
 
-                Text(vm.pomodoroEnabled ? vm.phase.label : "Stopwatch")
+                Text(vm.pomodoroEnabled ? LocalizedStringKey(vm.phase.label) : "Stopwatch")
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
             }
@@ -102,10 +102,10 @@ struct TimerMacView: View {
 
     private func phasePanel(vm: TimerViewModel) -> some View {
         VStack(alignment: .leading, spacing: 10) {
-            Label(vm.pomodoroEnabled ? vm.phase.label : "Open session", systemImage: vm.pomodoroEnabled ? "timer" : "clock")
+            Label(vm.pomodoroEnabled ? LocalizedStringKey(vm.phase.label) : "Open session", systemImage: vm.pomodoroEnabled ? "timer" : "clock")
                 .font(.headline)
 
-            Text(vm.pomodoroEnabled ? phaseDescription(for: vm.phase) : "Track elapsed time without a fixed interval.")
+            Text(vm.pomodoroEnabled ? LocalizedStringKey(phaseDescription(for: vm.phase)) : "Track elapsed time without a fixed interval.")
                 .font(.caption)
                 .foregroundStyle(.secondary)
                 .fixedSize(horizontal: false, vertical: true)

@@ -31,7 +31,7 @@ struct MainMacView: View {
         NavigationSplitView(columnVisibility: $columnVisibility) {
             VStack(spacing: 0) {
                 List(SidebarItem.primaryItems, selection: $selection) { item in
-                    Label(item.rawValue, systemImage: item.icon)
+                    Label(LocalizedStringKey(item.rawValue), systemImage: item.icon)
                         .tag(item)
                 }
                 .listStyle(.sidebar)

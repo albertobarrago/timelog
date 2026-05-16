@@ -12,6 +12,7 @@ struct StopSessionMacView: View {
     @State private var hours: Int
     @State private var minutes: Int
     @State private var notes: String
+    @State private var showDiscardAlert = false
 
     init(session: ActiveSession, onDismiss: (() -> Void)? = nil) {
         self.onDismiss = onDismiss
@@ -44,9 +45,16 @@ struct StopSessionMacView: View {
             TextField("Notes (optional)", text: $notes)
 
             HStack {
+                Button("Discard", role: .destructive) { showDiscardAlert = true }
+                    .alert("Discard session?", isPresented: $showDiscardAlert) {
+                        Button("Discard", role: .destructive) { discard() }
+                        Button("Cancel", role: .cancel) { }
+                    } message: {
+                        Text("The tracked time will be lost.")
+                    }
+                Spacer()
                 Button("Cancel") { dismissSelf() }
                     .keyboardShortcut(.escape)
-                Spacer()
                 Button("Log Entry") { stop() }
                     .keyboardShortcut(.return)
                     .buttonStyle(.borderedProminent)
@@ -61,6 +69,13 @@ struct StopSessionMacView: View {
         if let onDismiss { onDismiss() } else { dismiss() }
     }
 
+    private func discard() {
+        NotificationManager.shared.cancelSession(id: session.notificationID)
+        context.delete(session)
+        try? context.save()
+        dismissSelf()
+    }
+
     private func stop() {
         let entry = session.asTimeEntry(
             durationMinutes: hours * 60 + minutes,
@@ -69,6 +84,7 @@ struct StopSessionMacView: View {
         context.insert(entry)
         NotificationManager.shared.cancelSession(id: session.notificationID)
         context.delete(session)
+        try? context.save()
         dismissSelf()
     }
 }
