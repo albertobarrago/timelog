@@ -99,10 +99,32 @@ struct TimelogMacApp: App {
 
 private struct MenuBarStatusLabel: View {
     let vm: TimerViewModel
+
+    private var iconName: String {
+        guard vm.isRunning || vm.elapsed > 0 else { return "clock" }
+        guard vm.pomodoroEnabled else { return "stopwatch" }
+        switch vm.phase {
+        case .work:       return "flame.fill"
+        case .shortBreak: return "cup.and.saucer.fill"
+        case .longBreak:  return "figure.walk"
+        }
+    }
+
+    private var iconColor: Color {
+        guard vm.isRunning else { return .secondary }
+        guard vm.pomodoroEnabled else { return .orange }
+        switch vm.phase {
+        case .work:       return .red
+        case .shortBreak: return .green
+        case .longBreak:  return .blue
+        }
+    }
+
     var body: some View {
-        if vm.isRunning {
-            Label(vm.displayTime, systemImage: "timer")
+        if vm.isRunning || vm.elapsed > 0 {
+            Label(vm.displayTime, systemImage: iconName)
                 .monospacedDigit()
+                .foregroundStyle(iconColor)
         } else {
             Label("Timelog", systemImage: "clock")
         }

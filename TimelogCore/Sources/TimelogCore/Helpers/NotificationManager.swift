@@ -65,13 +65,47 @@ public final class NotificationManager {
 
     // MARK: - Pomodoro
 
-    public func schedulePomodoroEnd(phase: String, in seconds: TimeInterval) {
+    public func schedulePomodoroEnd(phase: String, in seconds: TimeInterval, completedCount: Int = 0) {
         cancelPomodoroNotification()
         guard seconds > 0 else { return }
         let content = UNMutableNotificationContent()
-        content.title = "\(phase) complete!"
-        content.body = phase == "Focus" ? "Time for a break." : "Back to work!"
         content.sound = .default
+
+        switch phase {
+        case "Focus":
+            let messages: [(String, String)] = [
+                ("Focus #\(completedCount) done!", "Guarda fuori dalla finestra per 20 secondi. Sul serio."),
+                ("Pomodoro \(completedCount) completato!", "Alzati. Stiracchiati. Il codice può aspettarti."),
+                ("Ottimo lavoro!", "Regola 20-20-20: 20 piedi di distanza, 20 secondi. I tuoi occhi ti ringrazieranno."),
+                ("Session \(completedCount) in the bag!", "Ruota le spalle. Bevi dell'acqua. Sei una macchina biologica, non solo digitale."),
+                ("Focus finito!", "Gira la faccia dal monitor. Anche solo 5 minuti fanno la differenza."),
+            ]
+            let (title, body) = messages.randomElement()!
+            content.title = title; content.body = body
+        case "Short Break":
+            let messages: [(String, String)] = [
+                ("Pausa finita, si torna!", "La mente è ricaricata. Diamoci dentro."),
+                ("Break over!", "Il prossimo focus inizia adesso. Ce la puoi fare."),
+                ("Pronti?", "Respiro profondo e via — un pomodoro alla volta."),
+                ("Torna alla scrivania!", "La pausa ha fatto il suo lavoro. Ora tocca a te."),
+                ("Si riparte!", "Focus mode attivata. Silenzio e concentrazione."),
+            ]
+            let (title, body) = messages.randomElement()!
+            content.title = title; content.body = body
+        case "Long Break":
+            let messages: [(String, String)] = [
+                ("Lunga pausa finita!", "Speriamo tu abbia fatto una passeggiata. Ora si lavora."),
+                ("Bentornato!", "La pausa lunga è servita. Rimettiamoci in carreggiata."),
+                ("Riposato?", "Perché ora inizia un nuovo set di pomodori."),
+                ("Ci sei?", "Dopo una bella pausa lunga, il cervello è al massimo. Usiamolo."),
+            ]
+            let (title, body) = messages.randomElement()!
+            content.title = title; content.body = body
+        default:
+            content.title = "\(phase) complete!"
+            content.body = "Time for a break."
+        }
+
         let trigger = UNTimeIntervalNotificationTrigger(timeInterval: seconds, repeats: false)
         let request = UNNotificationRequest(identifier: "pomodoro_phase", content: content, trigger: trigger)
         UNUserNotificationCenter.current().add(request)

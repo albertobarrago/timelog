@@ -81,7 +81,7 @@ public final class TimerViewModel {
         RunLoop.main.add(t, forMode: .common)
         timer = t
         if pomodoroEnabled {
-            NotificationManager.shared.schedulePomodoroEnd(phase: phase.label, in: phaseTotal - elapsed)
+            NotificationManager.shared.schedulePomodoroEnd(phase: phase.label, in: phaseTotal - elapsed, completedCount: completedPomodoros)
         }
         #if os(iOS) && !targetEnvironment(macCatalyst)
         startLiveActivity()
