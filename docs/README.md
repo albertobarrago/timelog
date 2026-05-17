@@ -10,6 +10,7 @@ Time tracking app for iOS and macOS with MongoDB Atlas synchronisation.
 | [02-modello-dati.md](02-modello-dati.md) | SwiftData entities, relationships, persistence |
 | [03-flussi.md](03-flussi.md) | Tracking, Pomodoro, Notifications, Live Activity |
 | [04-sync-mongodb.md](04-sync-mongodb.md) | Sync architecture, connection, upsert strategy |
+| [05-self-hosting.md](05-self-hosting.md) | Self-hosting guide: Atlas setup, Vercel deploy, user migration |
 
 ## Stack
 
