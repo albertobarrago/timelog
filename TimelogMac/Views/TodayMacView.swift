@@ -34,6 +34,7 @@ struct TodayMacView: View {
                     Button("Log Time")       { showingQuickLog = true }
                     Button("Start Tracking") { showingStartTracking = true }
                 }
+                .offset(y: -40)
             } else {
                 List {
                     Section("Active") {
