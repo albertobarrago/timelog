@@ -9,7 +9,7 @@ struct StartTrackingMacView: View {
     @Environment(SettingsStore.self) private var settings
 
     @Query(filter: #Predicate<Client> { !$0.isArchived && $0.deletedAt == nil }, sort: \Client.name)
-    private var clients: [Client]
+    private var allClients: [Client]
     @Query(filter: #Predicate<Project> { !$0.isArchived && $0.deletedAt == nil }, sort: \Project.name)
     private var allProjects: [Project]
 
@@ -17,6 +17,7 @@ struct StartTrackingMacView: View {
     @State private var selectedProject: Project?
     @State private var notes = ""
 
+    private var clients: [Client] { allClients.filter { $0.userId == settings.userId } }
     private var availableProjects: [Project] {
         guard let client = selectedClient else { return [] }
         return allProjects.filter { $0.client?.persistentModelID == client.persistentModelID }
@@ -71,7 +72,8 @@ struct StartTrackingMacView: View {
         let session = ActiveSession(
             client: selectedClient,
             project: selectedProject,
-            notes: notes.isEmpty ? nil : notes
+            notes: notes.isEmpty ? nil : notes,
+            userId: settings.userId
         )
         context.insert(session)
         NotificationManager.shared.scheduleSessionOverdue(

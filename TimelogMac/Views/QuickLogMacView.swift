@@ -5,7 +5,8 @@ import TimelogCore
 struct QuickLogMacView: View {
     @Environment(\.modelContext) private var context
     @Environment(\.dismiss) private var dismiss
-    @Query(filter: #Predicate<Client> { !$0.isArchived && $0.deletedAt == nil }, sort: \Client.name) private var clients: [Client]
+    @Environment(SettingsStore.self) private var settings
+    @Query(filter: #Predicate<Client> { !$0.isArchived && $0.deletedAt == nil }, sort: \Client.name) private var allClients: [Client]
     @Query(filter: #Predicate<Project> { !$0.isArchived && $0.deletedAt == nil }, sort: \Project.name) private var allProjects: [Project]
 
     var entry: TimeEntry?
@@ -17,6 +18,7 @@ struct QuickLogMacView: View {
     @State private var minutes = 30
     @State private var notes = ""
 
+    private var clients: [Client] { allClients.filter { $0.userId == settings.userId } }
     private var availableProjects: [Project] {
         guard let client = selectedClient else { return [] }
         return allProjects.filter { $0.client?.persistentModelID == client.persistentModelID }
@@ -96,7 +98,8 @@ struct QuickLogMacView: View {
         } else {
             context.insert(TimeEntry(date: date, durationMinutes: total,
                                      notes: notes.isEmpty ? nil : notes,
-                                     client: selectedClient, project: selectedProject))
+                                     client: selectedClient, project: selectedProject,
+                                     userId: settings.userId))
         }
         dismiss()
     }

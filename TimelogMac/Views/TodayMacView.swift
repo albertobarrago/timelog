@@ -6,7 +6,7 @@ struct TodayMacView: View {
     @Environment(\.modelContext) private var context
     @Environment(SettingsStore.self) private var settings
     @Query(filter: #Predicate<TimeEntry> { $0.deletedAt == nil }, sort: \TimeEntry.date, order: .reverse) private var allEntries: [TimeEntry]
-    @Query(sort: \ActiveSession.startDate) private var activeSessions: [ActiveSession]
+    @Query(sort: \ActiveSession.startDate) private var allSessions: [ActiveSession]
 
     @State private var showingQuickLog      = false
     @State private var showingStartTracking = false
@@ -14,8 +14,9 @@ struct TodayMacView: View {
     @State private var entryToEdit: TimeEntry?
     @State private var sessionToStop: ActiveSession?
 
+    private var activeSessions: [ActiveSession] { allSessions.filter { $0.userId == settings.userId } }
     private var todayEntries: [TimeEntry] {
-        allEntries.filter { Calendar.current.isDateInToday($0.date) }
+        allEntries.filter { $0.userId == settings.userId && Calendar.current.isDateInToday($0.date) }
     }
     private var todayTotal: Int {
         todayEntries.reduce(0) { $0 + $1.durationMinutes }

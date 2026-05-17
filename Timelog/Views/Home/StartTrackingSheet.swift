@@ -61,7 +61,8 @@ struct StartTrackingSheet: View {
         let session = ActiveSession(
             client: selectedClient,
             project: selectedProject,
-            notes: notes.isEmpty ? nil : notes
+            notes: notes.isEmpty ? nil : notes,
+            userId: settings.userId
         )
         context.insert(session)
         NotificationManager.shared.scheduleSessionOverdue(
