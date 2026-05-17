@@ -1,6 +1,7 @@
 import SwiftUI
 import SwiftData
 import TimelogCore
+import TimelogSync
 
 struct UserSetupMacView: View {
     @Environment(\.modelContext) private var context
@@ -46,6 +47,12 @@ struct UserSetupMacView: View {
         guard !trimmed.isEmpty else { return }
         migrateExistingRecords(to: trimmed)
         settings.userId = trimmed
+        MongoSyncService.shared.userId = trimmed
+        Task {
+            try? await MongoSyncService.shared.connect()
+            try? await MongoSyncService.shared.pullAll(into: context)
+            MongoSyncService.shared.triggerSync()
+        }
     }
 
     private func migrateExistingRecords(to userId: String) {
