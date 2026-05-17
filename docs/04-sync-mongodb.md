@@ -57,6 +57,8 @@ flowchart TD
 
 `onChange` on clients/projects/entries → `triggerSync()` (only if `!isPulling`) → debounce 2s → POST `/api/sync`
 
+> **userId filtering (RestSyncService)**: DTOs sent to and received from Vercel Functions include `userId`. On pull, `RestSyncService` filters the returned records client-side, keeping only those where `userId == settings.userId` (or where `userId` is absent/empty for legacy records). On push, each serialised document includes the current `settings.userId`.
+
 ### Configuration
 
 ```bash
@@ -119,6 +121,8 @@ flowchart TD
 
 `onChange` on clients/projects/entries → `triggerSync()` → debounce 2s → `upsertEncoded` on all three collections
 
+> **userId filtering (MongoSyncService)**: all MongoDB queries include a `"userId" == userId` filter at the driver level, so only the current user's documents are fetched. Each document pushed via `upsertEncoded` includes the `userId` field. This means MongoSyncService never reads or overwrites another user's data even on a shared Atlas cluster.
+
 ### Configuration
 
 ```bash
@@ -151,25 +155,27 @@ Documents are identical regardless of which platform wrote them (iOS via Vercel,
 
 ### `clients`
 ```json
-{ "_id": ObjectId("..."), "name": "Acme", "colorHex": "#FF5733", "isArchived": false, "deletedAt": null }
+{ "_id": ObjectId("..."), "name": "Acme", "colorHex": "#FF5733", "isArchived": false, "userId": "alice", "deletedAt": null }
 ```
 
 ### `projects`
 ```json
-{ "_id": ObjectId("..."), "name": "Website", "code": "PRJ-01", "isArchived": false, "clientMongoId": "64abc...", "deletedAt": null }
+{ "_id": ObjectId("..."), "name": "Website", "code": "PRJ-01", "isArchived": false, "clientMongoId": "64abc...", "userId": "alice", "deletedAt": null }
 ```
 
 ### `time_entries`
 ```json
-{ "_id": ObjectId("..."), "date": "2025-05-15T09:00:00.000Z", "durationMinutes": 90, "notes": "...", "clientMongoId": "...", "projectMongoId": "...", "deletedAt": null }
+{ "_id": ObjectId("..."), "date": "2025-05-15T09:00:00.000Z", "durationMinutes": 90, "notes": "...", "clientMongoId": "...", "projectMongoId": "...", "userId": "alice", "deletedAt": null }
 ```
 
 ### `sessions` (ActiveSession)
 ```json
-{ "_id": ObjectId("..."), "startDate": "2025-05-15T09:00:00.000Z", "notes": "...", "clientMongoId": "...", "projectMongoId": "..." }
+{ "_id": ObjectId("..."), "startDate": "2025-05-15T09:00:00.000Z", "notes": "...", "clientMongoId": "...", "projectMongoId": "...", "userId": "alice" }
 ```
 
 > **`deletedAt` note**: the field is `null` for active records, set to the deletion date for logically deleted records. During sync, records with `deletedAt != null` are removed from local SwiftData after pull.
+
+> **`userId` note**: every document written by either platform includes a `userId` field containing the owner's nickname (from `SettingsStore.userId`). This enables multiple users to share a single MongoDB database without their data colliding. Legacy documents with a missing or empty `userId` are treated as nil-tolerant by `RestSyncService` (iOS) and are still visible to the user; `MongoSyncService` (macOS) filters at query time so they are simply not returned. A compound index on `{ userId: 1, _id: 1 }` is recommended for each collection to keep per-user queries efficient.
 
 ---
 

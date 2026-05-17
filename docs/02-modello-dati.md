@@ -9,6 +9,7 @@ erDiagram
         String  colorHex
         Bool    isArchived
         String  mongoId
+        String  userId      "owner identifier — multi-user isolation"
         Date    deletedAt   "optional — soft delete"
     }
     PROJECT {
@@ -16,6 +17,7 @@ erDiagram
         String  code        "optional"
         Bool    isArchived
         String  mongoId
+        String  userId      "owner identifier — multi-user isolation"
         Date    deletedAt   "optional — soft delete"
     }
     TIME_ENTRY {
@@ -23,6 +25,7 @@ erDiagram
         Int     durationMinutes
         String  notes       "optional"
         String  mongoId
+        String  userId      "owner identifier — multi-user isolation"
         Date    deletedAt   "optional — soft delete"
     }
     ACTIVE_SESSION {
@@ -30,6 +33,7 @@ erDiagram
         String  notes       "optional"
         String  notificationID
         String  mongoId
+        String  userId      "owner identifier — multi-user isolation"
     }
 
     CLIENT ||--o{ PROJECT       : "has"
@@ -46,6 +50,7 @@ Represents a client. Holds the list of projects (cascade delete) and is referenc
 
 - `colorHex` — identifying colour in `#RRGGBB` format, exposed as `Color` via `Color+Hex`
 - `mongoId` — MongoDB `ObjectId` serialised as a string (assigned on first upsert)
+- `userId` — nickname/identifier of the record owner, set at creation time from `SettingsStore.userId`; used to isolate data per user on a shared database. All `@Query` results are filtered to records where `userId == settings.userId`. Defaults to `""` for pre-migration records; migrated on first launch.
 - `deletedAt` — logical deletion date (`nil` = active); used by the soft-delete strategy during sync
 - Relationship with `Project`: deleteRule `.cascade` — deleting a client removes all its projects
 
@@ -54,6 +59,7 @@ Project belonging to a client. The `code` field is optional (job number, e.g. "P
 
 - Relationship with `TimeEntry`: deleteRule `.nullify` — deleting a project does not delete entries, just unlinks them
 - `mongoId` — same as above
+- `userId` — same as above; identifies the owner and is used for multi-user isolation on a shared database
 - `deletedAt` — same as above (soft delete)
 
 ### `TimeEntry`
@@ -61,6 +67,7 @@ A logged time record. The core data structure of the app.
 
 - `durationMinutes` — duration in whole minutes; formatted via `Int.formattedDuration` ("1h 30m")
 - `client` and `project` are optional — an entry can be unassigned
+- `userId` — same as above; identifies the owner and is used for multi-user isolation on a shared database
 - `deletedAt` — same as above (soft delete)
 
 ### `ActiveSession`
@@ -69,9 +76,15 @@ An in-progress tracking session. At most one per active client/project combinati
 - `client` and `project` optional — a session can be unassigned
 - `notes` — optional notes transferred to the `TimeEntry` on stop
 - `mongoId` — same as above; the session is multi-device syncable
+- `userId` — same as above; identifies the owner and is used for multi-user isolation on a shared database
 - `elapsedDisplay` — `"HH:MM:SS"` string computed at runtime from `startDate`
 - `elapsedMinutes` — computed integer, used to estimate duration before stopping
 - `notificationID` — ID of the UNUserNotification for the open-session reminder; cancelled on stop
+
+### `SettingsStore.userId`
+`userId` is not a SwiftData entity but a persisted setting. It is stored in `UserDefaults` under the key `"user_id"` and exposed via `SettingsStore`. On first launch, the app shows a nickname prompt that populates this value. All four models default to `userId = ""` to support pre-migration data; on first launch, existing records with an empty `userId` are migrated to the current `settings.userId`.
+
+---
 
 ## Persistence
 

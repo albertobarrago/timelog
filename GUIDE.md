@@ -68,7 +68,18 @@ The app launches with both the main window **and** the menu bar icon.
 
 ---
 
-## 6. Features available immediately
+## 6. First launch — choose your nickname
+
+On first launch the app will ask for a **nickname**. This is a one-time step.
+
+- The nickname identifies your data when sharing the same MongoDB cluster with teammates
+- Each person uses their own nickname — data is fully isolated, nobody sees anyone else's entries
+- Pick something short and consistent (e.g. your first name or GitHub handle)
+- It cannot be changed easily after the first sync, so choose carefully
+
+---
+
+## 7. Features available immediately
 
 - **Menu bar** — clock icon always visible, shows the running timer
 - **Main window** — `⌘` click the menu bar icon, or open the app normally
@@ -77,7 +88,7 @@ The app launches with both the main window **and** the menu bar icon.
 
 ---
 
-## Troubleshooting
+## 8. Troubleshooting
 
 | Problem | Solution |
 |---------|----------|
