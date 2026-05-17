@@ -24,6 +24,7 @@ enum SidebarItem: String, CaseIterable, Identifiable {
 }
 
 struct MainMacView: View {
+    @Environment(SettingsStore.self) private var settings
     @State private var selection: SidebarItem = .today
     @State private var columnVisibility: NavigationSplitViewVisibility = .all
 
@@ -69,6 +70,13 @@ struct MainMacView: View {
             detailView
         }
         .frame(minWidth: 700, minHeight: 460)
+        .sheet(isPresented: Binding(
+            get: { settings.userId.isEmpty },
+            set: { _ in }
+        )) {
+            UserSetupMacView()
+                .environment(settings)
+        }
     }
 
     @ViewBuilder private var detailView: some View {

@@ -3,6 +3,7 @@ import SwiftUI
 
 struct ContentView: View {
     @Environment(TimerViewModel.self) private var timerVM
+    @Environment(SettingsStore.self) private var settings
     @State private var selectedTab: AppTab = .today
     @AppStorage("onboarding_completed") private var onboardingCompleted = false
 
@@ -26,6 +27,13 @@ struct ContentView: View {
             set: { if !$0 { onboardingCompleted = true } }
         )) {
             OnboardingView { onboardingCompleted = true }
+        }
+        .fullScreenCover(isPresented: Binding(
+            get: { onboardingCompleted && settings.userId.isEmpty },
+            set: { _ in }
+        )) {
+            UserSetupView()
+                .environment(settings)
         }
     }
 }
