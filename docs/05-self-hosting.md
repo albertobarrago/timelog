@@ -108,23 +108,6 @@ API_KEY=your-secret-key
 
 ---
 
-## Migrating existing data
-
-If you already have data in a shared cluster and are adding user isolation, run this migration in `mongosh` **before** updating the app:
-
-```js
-const MY_USER_ID = "your-nickname"  // must match what you enter in the app
-
-db.clients.updateMany({ userId: { $exists: false } }, { $set: { userId: MY_USER_ID } })
-db.projects.updateMany({ userId: { $exists: false } }, { $set: { userId: MY_USER_ID } })
-db.time_entries.updateMany({ userId: { $exists: false } }, { $set: { userId: MY_USER_ID } })
-db.active_sessions.updateMany({ userId: { $exists: false } }, { $set: { userId: MY_USER_ID } })
-```
-
-This tags all legacy records with your nickname without touching records that already have a `userId`.
-
----
-
 ## Adding a teammate
 
 Each teammate:
