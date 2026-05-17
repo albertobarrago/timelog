@@ -70,18 +70,8 @@ struct HistoryMacView: View {
             // Header: date nav + total
             Section {
                 HStack(alignment: .center, spacing: 12) {
-                    HStack(spacing: 8) {
-                        DatePicker("", selection: $selectedDate, in: ...Date(), displayedComponents: .date)
-                            .labelsHidden()
-                            .datePickerStyle(.stepperField)
-                        Button("Today") { selectedDate = Date() }
-                            .disabled(Calendar.current.isDateInToday(selectedDate))
-                            .buttonStyle(.bordered)
-                            .controlSize(.small)
-                    }
-
+                    DateNavControl(date: $selectedDate)
                     Spacer()
-
                     if totalMinutes > 0 {
                         Text(totalMinutes.formattedDuration)
                             .font(.system(.title3, design: .rounded, weight: .bold))
@@ -242,6 +232,7 @@ private struct DayBar: View {
 
 private struct HistoryMacRow: View {
     let entry: TimeEntry
+    @State private var isHovered = false
 
     var body: some View {
         HStack(spacing: 12) {
@@ -265,6 +256,64 @@ private struct HistoryMacRow: View {
                 .font(.system(.body, design: .monospaced))
                 .foregroundStyle(.secondary)
                 .monospacedDigit()
+        }
+        .padding(.vertical, 2)
+        .padding(.horizontal, 4)
+        .background(isHovered ? Color.primary.opacity(0.05) : .clear, in: RoundedRectangle(cornerRadius: 5))
+        .onHover { isHovered = $0 }
+    }
+}
+
+// MARK: - Date Nav Control
+
+private struct DateNavControl: View {
+    @Binding var date: Date
+    private let cal = Calendar.current
+
+    private var isToday: Bool { cal.isDateInToday(date) }
+
+    var body: some View {
+        HStack(spacing: 0) {
+            Button { step(-1) } label: {
+                Image(systemName: "chevron.left")
+                    .imageScale(.small)
+                    .padding(.horizontal, 6)
+                    .padding(.vertical, 4)
+            }
+            .buttonStyle(.plain)
+            .foregroundStyle(.secondary)
+            .accessibilityLabel(Text("Previous day"))
+
+            Text(date, format: .dateTime.weekday(.abbreviated).day().month(.wide).year())
+                .font(.system(.body, weight: .medium))
+                .frame(minWidth: 200, alignment: .center)
+                .contentTransition(.numericText())
+                .animation(.easeInOut(duration: 0.12), value: date)
+
+            Button { step(+1) } label: {
+                Image(systemName: "chevron.right")
+                    .imageScale(.small)
+                    .padding(.horizontal, 6)
+                    .padding(.vertical, 4)
+            }
+            .buttonStyle(.plain)
+            .foregroundStyle(.secondary)
+            .disabled(isToday)
+            .accessibilityLabel(Text("Next day"))
+
+            if !isToday {
+                Button(String(localized: "Today")) { date = .now }
+                    .buttonStyle(.bordered)
+                    .controlSize(.small)
+                    .padding(.leading, 8)
+            }
+        }
+    }
+
+    private func step(_ days: Int) {
+        if let next = cal.date(byAdding: .day, value: days, to: date) {
+            let cap = cal.startOfDay(for: .now).addingTimeInterval(86400)
+            date = min(next, cap)
         }
     }
 }

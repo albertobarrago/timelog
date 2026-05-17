@@ -31,6 +31,7 @@ struct QuickLogMacView: View {
 
             GroupBox(String(localized: "When")) {
                 DatePicker("Date", selection: $date, in: ...Date(), displayedComponents: .date)
+                    .datePickerStyle(.compact)
                     .labelsHidden()
                     .frame(maxWidth: .infinity, alignment: .leading)
             }

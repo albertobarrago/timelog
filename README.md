@@ -20,6 +20,22 @@
 
 ---
 
+## Screenshots
+
+<p align="center">
+  <img src="docs/screenshots/Today.png" width="48%" alt="Today — active sessions and daily entries" />
+  <img src="docs/screenshots/Timer.png" width="48%" alt="Timer — Stopwatch and Pomodoro" />
+</p>
+<p align="center">
+  <img src="docs/screenshots/History.png" width="80%" alt="History — weekly bar chart and daily entries grouped by client" />
+</p>
+<p align="center">
+  <img src="docs/screenshots/Clients.png" width="48%" alt="Clients — manage clients and projects" />
+  <img src="docs/screenshots/widget.png" width="28%" alt="Menu bar widget" />
+</p>
+
+---
+
 ## Apps
 
 | App | Platform | Description |

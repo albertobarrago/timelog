@@ -634,6 +634,7 @@
       font-size: 14px;
       font-weight: 600;
       color: var(--text);
+      margin-bottom: 6px;
     }
 
     footer p {
@@ -654,6 +655,46 @@
       transition: color .2s;
     }
     footer .footer-links a:hover { color: var(--text); }
+
+    /* ── SCREENSHOTS ── */
+    .screenshots-section {
+      background: var(--bg2);
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+      text-align: center;
+    }
+
+    .screenshot-hero {
+      max-width: 860px;
+      margin: 0 auto;
+    }
+
+    .screenshot-hero img {
+      width: 100%;
+      border-radius: 14px;
+      box-shadow:
+        0 0 0 1px rgba(255,255,255,0.07),
+        0 28px 72px rgba(0,0,0,0.7),
+        0 4px 16px rgba(0,0,0,0.45);
+      display: block;
+    }
+
+    .screenshot-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+      max-width: 860px;
+      margin: 14px auto 0;
+    }
+
+    .screenshot-row img {
+      width: 100%;
+      border-radius: 12px;
+      box-shadow:
+        0 0 0 1px rgba(255,255,255,0.06),
+        0 16px 44px rgba(0,0,0,0.6);
+      display: block;
+    }
 
     /* ── ANIMATIONS ── */
     .fade-in {
@@ -894,6 +935,7 @@
       .oss-section { padding: 50px 16px; }
       .oss-banner { padding: 36px 20px; }
       footer { padding-inline: 16px; }
+      .screenshot-row { grid-template-columns: 1fr; }
     }
   </style>
 </head>
@@ -903,6 +945,7 @@
   <nav>
     <a href="#" class="logo">Timelog</a>
     <ul class="nav-links">
+      <li><a href="#screenshots">Screenshots</a></li>
       <li><a href="#features">Features</a></li>
       <li><a href="#platforms">Platforms</a></li>
       <li><a href="#sync">Sync</a></li>
@@ -979,6 +1022,20 @@
           <li>Settings window accessible via ⌘,</li>
         </ul>
       </div>
+    </div>
+  </section>
+
+  <!-- SCREENSHOTS -->
+  <section id="screenshots" class="screenshots-section">
+    <p class="section-eyebrow">In Action</p>
+    <h2 class="section-title">Native by design.</h2>
+    <p class="section-sub">Every pixel follows the macOS HIG. No Electron, no web views — just SwiftUI rendering on Metal.</p>
+    <div class="screenshot-hero fade-in">
+      <img src="docs/screenshots/History.png" alt="Timelog macOS — History view with weekly bar chart and date navigation" />
+    </div>
+    <div class="screenshot-row fade-in">
+      <img src="docs/screenshots/Today.png" alt="Today view — active sessions and daily entries" />
+      <img src="docs/screenshots/Timer.png" alt="Timer — Stopwatch and Pomodoro mode" />
     </div>
   </section>
 
