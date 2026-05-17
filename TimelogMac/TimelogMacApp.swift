@@ -95,15 +95,8 @@ struct TimelogMacApp: App {
             CommandGroup(replacing: .newItem) {}
             CommandGroup(replacing: .appInfo) {
                 Button("About Timelog") {
-                    NSApplication.shared.orderFrontStandardAboutPanel(options: [
-                        .credits: NSAttributedString(
-                            string: "Built by alBz — who tracks time obsessively,\nexcept when building this app.\ngithub.com/AlbertoBarrago",
-                            attributes: [
-                                .font: NSFont.systemFont(ofSize: NSFont.smallSystemFontSize),
-                                .foregroundColor: NSColor.secondaryLabelColor
-                            ]
-                        )
-                    ])
+                    AboutWindowController.shared.showWindow(nil)
+                    NSApp.activate(ignoringOtherApps: true)
                 }
             }
         }
