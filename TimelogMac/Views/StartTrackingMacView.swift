@@ -10,15 +10,16 @@ struct StartTrackingMacView: View {
 
     @Query(filter: #Predicate<Client> { !$0.isArchived && $0.deletedAt == nil }, sort: \Client.name)
     private var clients: [Client]
+    @Query(filter: #Predicate<Project> { !$0.isArchived && $0.deletedAt == nil }, sort: \Project.name)
+    private var allProjects: [Project]
 
     @State private var selectedClient: Client?
     @State private var selectedProject: Project?
     @State private var notes = ""
 
     private var availableProjects: [Project] {
-        (selectedClient?.projects ?? [])
-            .filter { !$0.isArchived }
-            .sorted { $0.name < $1.name }
+        guard let client = selectedClient else { return [] }
+        return allProjects.filter { $0.client?.persistentModelID == client.persistentModelID }
     }
 
     var body: some View {
@@ -26,20 +27,28 @@ struct StartTrackingMacView: View {
             Text("Start Tracking")
                 .font(.headline)
 
-            Picker("Client", selection: $selectedClient) {
-                Text("None").tag(Optional<Client>.none)
-                ForEach(clients) { Text($0.name).tag(Optional($0)) }
-            }
-            .onChange(of: selectedClient) { selectedProject = nil }
+            GroupBox(String(localized: "Project")) {
+                VStack(alignment: .leading, spacing: 8) {
+                    Picker("Client", selection: $selectedClient) {
+                        Text("None").tag(Optional<Client>.none)
+                        ForEach(clients) { Text($0.name).tag(Optional($0)) }
+                    }
+                    .onChange(of: selectedClient) { selectedProject = nil }
 
-            if !availableProjects.isEmpty {
-                Picker("Project", selection: $selectedProject) {
-                    Text("None").tag(Optional<Project>.none)
-                    ForEach(availableProjects) { Text($0.name).tag(Optional($0)) }
+                    if !availableProjects.isEmpty {
+                        Divider()
+                        Picker("Project", selection: $selectedProject) {
+                            Text("None").tag(Optional<Project>.none)
+                            ForEach(availableProjects) { Text($0.name).tag(Optional($0)) }
+                        }
+                    }
                 }
             }
 
-            TextField("Notes (optional)", text: $notes)
+            GroupBox(String(localized: "Notes")) {
+                TextField("Optional", text: $notes)
+                    .frame(maxWidth: .infinity)
+            }
 
             HStack {
                 Button("Cancel") { dismissSelf() }
@@ -51,7 +60,7 @@ struct StartTrackingMacView: View {
             }
         }
         .padding()
-        .frame(width: 280)
+        .frame(width: 320)
     }
 
     private func dismissSelf() {

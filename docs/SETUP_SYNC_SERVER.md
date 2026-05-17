@@ -1,37 +1,37 @@
-# Setup Sync Server — note per nuovo Mac
+# Sync Server Setup — new machine notes
 
-## 1. File di configurazione locale
+## 1. Local configuration file
 
-Crea il file `~/.config/timelog/sync.local` con questo contenuto:
+Create the file `~/.config/timelog/sync.local` with this content:
 
 ```bash
 mkdir -p ~/.config/timelog
 
 cat > ~/.config/timelog/sync.local << 'EOF'
 URL=https://timelog-server.vercel.app
-API_KEY=LA_TUA_API_KEY
+API_KEY=YOUR_API_KEY
 EOF
 
 chmod 600 ~/.config/timelog/sync.local
 ```
 
-> Sostituisci `LA_TUA_API_KEY` con la chiave che hai settato su Vercel.
+> Replace `YOUR_API_KEY` with the key you set on Vercel.
 
-L'app legge questo file al primo avvio e salva le credenziali in Keychain automaticamente.
-Non serve inserire nulla nelle Settings.
+The app reads this file on first launch and saves the credentials to Keychain automatically.
+No manual input in Settings required.
 
-## 2. Variabili d'ambiente Vercel (già settate, solo per riferimento)
+## 2. Vercel environment variables (already set — for reference only)
 
-Sul progetto `timelog-server` su Vercel sono configurate:
-- `MONGODB_URI` — connection string MongoDB Atlas
-- `API_KEY` — chiave segreta condivisa con l'app
+The `timelog-server` project on Vercel has these configured:
+- `MONGODB_URI` — MongoDB Atlas connection string
+- `API_KEY` — secret key shared with the app
 
-Per recuperarle: `vercel env pull` dalla cartella `server/`.
+To retrieve them: run `vercel env pull` from the `server/` folder.
 
-## 3. Verifica rapida
+## 3. Quick verification
 
 ```bash
-curl -s -H "X-API-Key: LA_TUA_API_KEY" https://timelog-server.vercel.app/api/pull
+curl -s -H "X-API-Key: YOUR_API_KEY" https://timelog-server.vercel.app/api/pull
 ```
 
-Risposta attesa: `{"clients":[...],"projects":[...],"entries":[...]}`
+Expected response: `{"clients":[...],"projects":[...],"entries":[...]}`

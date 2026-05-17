@@ -7,6 +7,8 @@ struct QuickLogSheet: View {
     @Environment(\.dismiss) private var dismiss
     @Query(filter: #Predicate<Client> { !$0.isArchived && $0.deletedAt == nil }, sort: \Client.name)
     private var clients: [Client]
+    @Query(filter: #Predicate<Project> { !$0.isArchived && $0.deletedAt == nil }, sort: \Project.name)
+    private var allProjects: [Project]
 
     var entry: TimeEntry?
 
@@ -18,9 +20,8 @@ struct QuickLogSheet: View {
     @State private var notes = ""
 
     private var availableProjects: [Project] {
-        (selectedClient?.projects ?? [])
-            .filter { !$0.isArchived }
-            .sorted { $0.name < $1.name }
+        guard let client = selectedClient else { return [] }
+        return allProjects.filter { $0.client?.persistentModelID == client.persistentModelID }
     }
 
     var body: some View {

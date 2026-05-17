@@ -1,6 +1,6 @@
-# Modello Dati
+# Data Model
 
-## Entità e relazioni
+## Entities and relationships
 
 ```mermaid
 erDiagram
@@ -9,88 +9,88 @@ erDiagram
         String  colorHex
         Bool    isArchived
         String  mongoId
-        Date    deletedAt   "opzionale — soft delete"
+        Date    deletedAt   "optional — soft delete"
     }
     PROJECT {
         String  name
-        String  code        "opzionale"
+        String  code        "optional"
         Bool    isArchived
         String  mongoId
-        Date    deletedAt   "opzionale — soft delete"
+        Date    deletedAt   "optional — soft delete"
     }
     TIME_ENTRY {
         Date    date
         Int     durationMinutes
-        String  notes       "opzionale"
+        String  notes       "optional"
         String  mongoId
-        Date    deletedAt   "opzionale — soft delete"
+        Date    deletedAt   "optional — soft delete"
     }
     ACTIVE_SESSION {
         Date    startDate
-        String  notes       "opzionale"
+        String  notes       "optional"
         String  notificationID
         String  mongoId
     }
 
-    CLIENT ||--o{ PROJECT       : "ha"
-    CLIENT ||--o{ TIME_ENTRY    : "fatturata a"
-    CLIENT ||--o| ACTIVE_SESSION : "in corso per"
-    PROJECT ||--o{ TIME_ENTRY   : "registrata su"
-    PROJECT ||--o| ACTIVE_SESSION : "in corso su"
+    CLIENT ||--o{ PROJECT       : "has"
+    CLIENT ||--o{ TIME_ENTRY    : "billed to"
+    CLIENT ||--o| ACTIVE_SESSION : "running for"
+    PROJECT ||--o{ TIME_ENTRY   : "logged against"
+    PROJECT ||--o| ACTIVE_SESSION : "running on"
 ```
 
-## Descrizione entità
+## Entity descriptions
 
 ### `Client`
-Rappresenta un cliente. Contiene la lista di progetti (cascade delete) e viene usato come riferimento nelle TimeEntry e nelle ActiveSession.
+Represents a client. Holds the list of projects (cascade delete) and is referenced by TimeEntry and ActiveSession.
 
-- `colorHex` — colore identificativo in formato `#RRGGBB`, esposto come `Color` via `Color+Hex`
-- `mongoId` — `ObjectId` MongoDB serializzato come stringa (assegnato al primo upsert)
-- `deletedAt` — data di cancellazione logica (`nil` = attivo); usato dalla strategia di soft delete durante la sync
-- Relazione con `Project`: deleteRule `.cascade` — eliminare un client rimuove tutti i suoi progetti
+- `colorHex` — identifying colour in `#RRGGBB` format, exposed as `Color` via `Color+Hex`
+- `mongoId` — MongoDB `ObjectId` serialised as a string (assigned on first upsert)
+- `deletedAt` — logical deletion date (`nil` = active); used by the soft-delete strategy during sync
+- Relationship with `Project`: deleteRule `.cascade` — deleting a client removes all its projects
 
 ### `Project`
-Progetto associato a un client. Il campo `code` è opzionale (codice commessa, es. "PRJ-001").
+Project belonging to a client. The `code` field is optional (job number, e.g. "PRJ-001").
 
-- Relazione con `TimeEntry`: deleteRule `.nullify` — eliminare un progetto non elimina le entry, le slega
-- `mongoId` — come sopra
-- `deletedAt` — come sopra (soft delete)
+- Relationship with `TimeEntry`: deleteRule `.nullify` — deleting a project does not delete entries, just unlinks them
+- `mongoId` — same as above
+- `deletedAt` — same as above (soft delete)
 
 ### `TimeEntry`
-Record di tempo loggato. È la struttura dati principale dell'app.
+A logged time record. The core data structure of the app.
 
-- `durationMinutes` — durata in minuti interi; formattato tramite `Int.formattedDuration` ("1h 30m")
-- `client` e `project` opzionali — una entry può essere non assegnata
-- `deletedAt` — come sopra (soft delete)
+- `durationMinutes` — duration in whole minutes; formatted via `Int.formattedDuration` ("1h 30m")
+- `client` and `project` are optional — an entry can be unassigned
+- `deletedAt` — same as above (soft delete)
 
 ### `ActiveSession`
-Sessione di tracking in corso. Può esisterne al massimo una per client/progetto attivo. Non ha `deletedAt` perché viene convertita in `TimeEntry` allo stop — non è mai cancellata logicamente.
+An in-progress tracking session. At most one per active client/project combination. Has no `deletedAt` because it is converted into a `TimeEntry` on stop — it is never logically deleted.
 
-- `client` e `project` opzionali — la sessione può non essere associata a nessuno
-- `notes` — note opzionali trasferite alla `TimeEntry` allo stop
-- `mongoId` — come sopra; la sessione è sincronizzabile multi-device
-- `elapsedDisplay` — stringa `"HH:MM:SS"` calcolata a runtime da `startDate`
-- `elapsedMinutes` — intero calcolato, usato per stimare la durata prima dello stop
-- `notificationID` — ID della notifica UNUserNotification per il promemoria di sessione aperta; cancellata allo stop
+- `client` and `project` optional — a session can be unassigned
+- `notes` — optional notes transferred to the `TimeEntry` on stop
+- `mongoId` — same as above; the session is multi-device syncable
+- `elapsedDisplay` — `"HH:MM:SS"` string computed at runtime from `startDate`
+- `elapsedMinutes` — computed integer, used to estimate duration before stopping
+- `notificationID` — ID of the UNUserNotification for the open-session reminder; cancelled on stop
 
-## Persistenza
+## Persistence
 
 ```mermaid
 flowchart LR
     subgraph iOS
-        iApp["App iOS"] -->|"read/write"| SD_iOS[("SwiftData\nSQLite locale")]
+        iApp["iOS App"] -->|"read/write"| SD_iOS[("SwiftData\nlocal SQLite")]
         SD_iOS -->|"onChange + debounce 2s"| RSS["RestSyncService"]
         RSS -->|"POST /api/sync"| VCL["Vercel Functions"]
         VCL -->|"upsert"| MDB[("MongoDB Atlas")]
-        MDB -->|"GET /api/pull\n(avvio)"| RSS
+        MDB -->|"GET /api/pull\n(on launch)"| RSS
         RSS -->|"delete-all + re-insert"| SD_iOS
     end
 
     subgraph macOS
-        mApp["App macOS"] -->|"read/write"| SD_MAC[("SwiftData\nSQLite locale")]
+        mApp["macOS App"] -->|"read/write"| SD_MAC[("SwiftData\nlocal SQLite")]
         SD_MAC -->|"NSManagedObjectContextDidSave\n+ debounce 2s"| MSS["MongoSyncService"]
         MSS -->|"upsert"| MDB
-        MDB -->|"pullAll (avvio se vuoto)"| MSS
+        MDB -->|"pullAll (on first launch)"| MSS
         MSS -->|"upsert"| SD_MAC
     end
 
@@ -101,33 +101,33 @@ flowchart LR
 ```
 
 ### WidgetSnapshotStore
-I widget non accedono a SwiftData direttamente. L'app scrive un snapshot serializzato in un `App Group` condiviso (`group.me.albz.timelog`).
+Widgets do not access SwiftData directly. The app writes a serialised snapshot to a shared `App Group` (`group.me.albz.timelog`).
 
 ```
 TimelogWidgetSnapshot
  ├─ date: Date
- ├─ loggedMinutes: Int          ← minuti loggati oggi
- ├─ activeSessions: [...]       ← sessioni attive
+ ├─ loggedMinutes: Int          ← minutes logged today
+ ├─ activeSessions: [...]       ← active sessions
  ├─ lastClientName: String?
  └─ lastProjectName: String?
 ```
 
-## MongoId e strategia di upsert
+## MongoId and upsert strategy
 
-Ogni entità ha un campo `mongoId: String?` condiviso sia da `RestSyncService` che da `MongoSyncService`.
+Every SwiftData entity has a `mongoId: String?` field used as the sync key by both implementations.
 
-### Pull iOS (RestSyncService)
-Il pull cancella **tutti** i dati locali e reinserisce da zero quanto arriva dal server. Non è un upsert incrementale — è un rimpiazzo completo. La notifica `willWipeDataNotification` viene postata prima della cancellazione per permettere alle view di silenziare animazioni durante il wipe.
+### iOS pull (RestSyncService)
+The pull **deletes all** local data and re-inserts from scratch what the server returns. It is not an incremental upsert — it is a full replacement. The `willWipeDataNotification` notification is posted before deletion to let views silence animations during the wipe.
 
-| Fase | Azione |
+| Step | Action |
 |------|--------|
-| 1. Wipe | Delete di tutte le TimeEntry, poi Project, poi Client da SwiftData |
-| 2. Insert clients | Crea ogni `Client` con `mongoId = dto._id`, salva il contesto |
-| 3. Insert projects | Crea ogni `Project`, linka il `Client` via `clientMongoId`, salva |
-| 4. Insert entries | Crea ogni `TimeEntry`, linka Client e Project via mongoId, salva |
+| 1. Wipe | Delete all TimeEntry, then Project, then Client from SwiftData |
+| 2. Insert clients | Create each `Client` with `mongoId = dto._id`, save context |
+| 3. Insert projects | Create each `Project`, link `Client` via `clientMongoId`, save |
+| 4. Insert entries | Create each `TimeEntry`, link Client and Project via mongoId, save |
 
-### Pull macOS (MongoSyncService)
-Usa upsert incrementale: cerca ogni documento per `mongoId` in SwiftData e aggiorna se trovato, crea se assente.
+### macOS pull (MongoSyncService)
+Uses incremental upsert: finds each document by `mongoId` in SwiftData and updates if found, creates if absent.
 
-### Push (entrambe le piattaforme)
-Ogni entità viene serializzata con il proprio `mongoId` e inviata al server (Vercel per iOS, MongoKitten per macOS) tramite upsert su `_id`.
+### Push (both platforms)
+Each entity is serialised with its `mongoId` and sent to the server (Vercel for iOS, MongoKitten for macOS) via upsert on `_id`.

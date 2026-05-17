@@ -1,54 +1,54 @@
-# Flussi Utente
+# User Flows
 
-## 1. Time Tracking — Avvio e Stop
+## 1. Time Tracking — Start and Stop
 
 ```mermaid
 sequenceDiagram
-    actor U as Utente
+    actor U as User
     participant V as HomeView
     participant SS as StartTrackingSheet
     participant CTX as ModelContext
     participant NM as NotificationManager
     participant LA as LiveActivity (iOS)
 
-    U->>V: Tap "Avvia sessione"
-    V->>SS: Apre sheet
-    U->>SS: Seleziona Client e/o Project
-    U->>SS: Tap "Avvia"
+    U->>V: Tap "Start session"
+    V->>SS: Opens sheet
+    U->>SS: Select Client and/or Project
+    U->>SS: Tap "Start"
     SS->>CTX: insert(ActiveSession)
-    CTX-->>V: Aggiorna lista sessioni attive
+    CTX-->>V: Updates active session list
     SS->>NM: scheduleSessionOverdue(id, endHour, endMinute)
-    SS->>LA: startLiveActivity() [solo iOS]
-    LA-->>U: Lock screen + Dynamic Island attivi
+    SS->>LA: startLiveActivity() [iOS only]
+    LA-->>U: Lock screen + Dynamic Island active
 
-    Note over V: Timer tick ogni 60s (TimelineView)
+    Note over V: Timer tick every 60s (TimelineView)
 
-    U->>V: Tap "Stop" sulla sessione
-    V->>StopSheet: Apre sheet con durata stimata
-    U->>StopSheet: Conferma durata (minuti)
+    U->>V: Tap "Stop" on the session
+    V->>StopSheet: Opens sheet with estimated duration
+    U->>StopSheet: Confirm duration (minutes)
     StopSheet->>CTX: insert(TimeEntry)
     StopSheet->>CTX: delete(ActiveSession)
-    CTX-->>V: Lista aggiornata
+    CTX-->>V: Updated list
     StopSheet->>NM: cancelSession(id)
-    StopSheet->>LA: endLiveActivity() [solo iOS]
+    StopSheet->>LA: endLiveActivity() [iOS only]
 ```
 
-## 2. Quick Log (log manuale)
+## 2. Quick Log (manual entry)
 
 ```mermaid
 flowchart TD
-    A([Tap Quick Log]) --> B[Sheet QuickLogSheet]
-    B --> C{Client selezionato?}
-    C -->|No| D[Log senza client]
-    C -->|Sì| E{Project selezionato?}
-    E -->|No| F[Log solo con client]
-    E -->|Sì| G[Log con client e project]
-    D & F & G --> H[insert TimeEntry\ncon date=oggi, durationMinutes, notes]
-    H --> I[Chiude sheet]
-    I --> J[HomeView aggiornata\nSync debounced 2s\niOS: RestSyncService · macOS: MongoSyncService]
+    A([Tap Quick Log]) --> B[QuickLogSheet]
+    B --> C{Client selected?}
+    C -->|No| D[Log without client]
+    C -->|Yes| E{Project selected?}
+    E -->|No| F[Log with client only]
+    E -->|Yes| G[Log with client and project]
+    D & F & G --> H[insert TimeEntry\ndate=today, durationMinutes, notes]
+    H --> I[Dismiss sheet]
+    I --> J[HomeView updated\nSync debounced 2s\niOS: RestSyncService · macOS: MongoSyncService]
 ```
 
-## 3. Sync iOS — RestSyncService
+## 3. iOS Sync — RestSyncService
 
 ```mermaid
 sequenceDiagram
@@ -60,7 +60,7 @@ sequenceDiagram
     participant VCL as Vercel Functions
 
     App->>RSS: loadConfigFromFile()
-    RSS->>File: legge SyncConfig.local (URL + API_KEY)
+    RSS->>File: reads SyncConfig.local (URL + API_KEY)
     RSS->>KCH: saveConfig(serverURL, apiKey)
 
     App->>RSS: setDataProvider { container.mainContext }
@@ -76,17 +76,17 @@ sequenceDiagram
     RSS->>SD: insert projects (link client) → save
     RSS->>SD: insert entries (link client+project) → save
     RSS->>RSS: lastSyncDate = .now
-    Note over App: isPulling = false\nSyncFlashOverlay: flash verde + haptic
+    Note over App: isPulling = false\nSyncFlashOverlay: green flash + haptic
 
     Note over App: onChange(clients/projects/entries)
-    App->>RSS: triggerSync() [se !isPulling]
+    App->>RSS: triggerSync() [if !isPulling]
     RSS->>RSS: debounce 2s
-    RSS->>SD: fetch tutti i dati via dataProvider
+    RSS->>SD: fetch all data via dataProvider
     RSS->>VCL: POST /api/sync { clients, projects, entries }
     RSS->>RSS: lastSyncDate = .now
 ```
 
-## 4. Sync macOS — MongoSyncService
+## 4. macOS Sync — MongoSyncService
 
 ```mermaid
 sequenceDiagram
@@ -99,9 +99,9 @@ sequenceDiagram
 
     App->>MSS: loadConnectionStringFromFile()
     MSS->>KCH: readConnectionString()
-    alt Keychain vuota
+    alt Keychain empty
         KCH-->>MSS: nil
-        MSS->>File: legge ~/.config/timelog/mongo.local
+        MSS->>File: reads ~/.config/timelog/mongo.local
         MSS->>KCH: saveConnectionString(trimmed)
     end
 
@@ -109,16 +109,16 @@ sequenceDiagram
     App->>MSS: connect() [async]
     MSS->>MDB: MongoDatabase.connect(uri)
 
-    alt SwiftData vuoto (primo avvio)
+    alt SwiftData empty (first launch)
         App->>MSS: pullAll(into: modelContext)
         MSS->>MDB: find all clients/projects/time_entries
-        MDB-->>MSS: documenti
-        MSS->>SD: upsert per mongoId → context.save()
+        MDB-->>MSS: documents
+        MSS->>SD: upsert by mongoId → context.save()
     end
 
     App->>MSS: triggerSync()
-    MSS->>SD: dataProvider() — fetch tutti i dati
-    MSS->>MDB: upsertEncoded su clients/projects/time_entries
+    MSS->>SD: dataProvider() — fetch all data
+    MSS->>MDB: upsertEncoded on clients/projects/time_entries
     MSS->>MSS: lastSyncDate = .now
 
     Note over App: onChange(clients/projects/entries)
@@ -126,7 +126,7 @@ sequenceDiagram
     MSS->>MSS: debounce 2s → push
 ```
 
-## 5. Timer Pomodoro
+## 5. Pomodoro Timer
 
 ```mermaid
 stateDiagram-v2
@@ -151,7 +151,7 @@ stateDiagram-v2
     LongBreak --> Work : phaseComplete()
 ```
 
-### Transizione di fase — dettaglio
+### Phase transition — detail
 
 ```mermaid
 sequenceDiagram
@@ -160,27 +160,27 @@ sequenceDiagram
     participant H as Haptics (iOS)
     participant LA as LiveActivity (iOS)
 
-    T->>T: tick() ogni 1 secondo
+    T->>T: tick() every 1 second
     T->>T: elapsed >= phaseTotal?
 
-    alt Fase completata
+    alt Phase complete
         T->>NM: schedulePomodoroEnd(phase, in: 0)
-        T->>H: UIImpactFeedbackGenerator.heavy [solo iOS]
-        T->>T: completedPomodoros++ (se Work)
+        T->>H: UIImpactFeedbackGenerator.heavy [iOS only]
+        T->>T: completedPomodoros++ (if Work)
         T->>T: phase = nextPhase()
         T->>T: elapsed = 0
-        T->>LA: updateLiveActivity(phase, isRunning) [solo iOS]
+        T->>LA: updateLiveActivity(phase, isRunning) [iOS only]
     end
 ```
 
-## 6. Notifiche
+## 6. Notifications
 
 ```mermaid
 flowchart LR
-    subgraph Tipi["Tipi di notifica"]
-        R["Reminder giornaliero\n'Time to log your hours!'"]
-        S["Sessione aperta\n'You have an open session'"]
-        P["Pomodoro completato\n'Work phase done!'"]
+    subgraph Types
+        R["Daily reminder\n'Time to log your hours!'"]
+        S["Open session\n'You have an open session'"]
+        P["Pomodoro complete\n'Work phase done!'"]
     end
 
     subgraph Trigger
@@ -190,9 +190,9 @@ flowchart LR
     end
 
     subgraph Cancel
-        CR["cancelAllReminders()\nse reminderEnabled=false"]
+        CR["cancelAllReminders()\nif reminderEnabled=false"]
         CS["StopSessionSheet\n→ cancelSession(id)"]
-        CP["Nuovo tick di fase\n→ cancelPomodoroNotification()"]
+        CP["New phase tick\n→ cancelPomodoroNotification()"]
     end
 
     RS --> R
@@ -212,24 +212,24 @@ sequenceDiagram
     participant LS as Lock Screen / Dynamic Island
 
     VM->>AK: Activity.request(attributes, contentState)
-    AK-->>LS: Mostra "timer in corso"
+    AK-->>LS: Shows "session running"
 
-    loop ogni 1 secondo
+    loop every 1 second
         VM->>VM: tick() — elapsed++
         VM->>AK: activity.update(contentState)
-        AK-->>LS: Aggiorna displayTime
+        AK-->>LS: Updates displayTime
     end
 
     VM->>AK: activity.end(dismissalPolicy: .immediate)
-    AK-->>LS: Rimuove Live Activity
+    AK-->>LS: Removes Live Activity
 ```
 
 ## 8. Navigation — macOS
 
 ```mermaid
 flowchart TD
-    MenuBar["MenuBarExtra\n(sempre visibile)"] -->|click| MBV["MenuBarView\n(window style)"]
-    MBV --> QA["Quick actions:\nAvvia · Stoppa · Quick Log"]
+    MenuBar["MenuBarExtra\n(always visible)"] -->|click| MBV["MenuBarView\n(window style)"]
+    MBV --> QA["Quick actions:\nStart · Stop · Quick Log"]
 
     Dock["WindowGroup 'main'"] --> MMV["MainMacView\nNavigationSplitView"]
     MMV -->|"Today"| TV["TodayMacView"]

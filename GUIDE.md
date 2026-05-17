@@ -1,87 +1,87 @@
-# Timelog — Guida all'installazione su un nuovo Mac
+# Timelog — Installation Guide
 
-## Requisiti
+## Requirements
 
-| Cosa | Versione minima |
+| What | Minimum version |
 |------|-----------------|
-| macOS | 14 Sonoma (o superiore) |
+| macOS | 14 Sonoma (or later) |
 | Xcode | 16+ |
-| Git | qualsiasi versione recente |
+| Git | any recent version |
 
 ---
 
-## 1. Clona il repo
+## 1. Clone the repo
 
 ```bash
-git clone <url-del-repo> ~/Code/Swift/TimeLog
+git clone <repo-url> ~/Code/Swift/TimeLog
 cd ~/Code/Swift/TimeLog
 ```
 
-> Se il repo è privato assicurati di avere SSH configurato o di fare login con `gh auth login`.
+> If the repo is private make sure you have SSH configured or log in with `gh auth login`.
 
 ---
 
-## 2. Apri il workspace
+## 2. Open the workspace
 
-**Apri sempre `TimeLog.xcworkspace`**, non i singoli `.xcodeproj`.
+**Always open `TimeLog.xcworkspace`**, not the individual `.xcodeproj` files.
 
 ```bash
 open TimeLog.xcworkspace
 ```
 
-oppure trascinalo in Xcode dal Finder.
+Or drag it into Xcode from Finder.
 
 ---
 
-## 3. Configura la firma (Signing)
+## 3. Configure signing
 
-1. Seleziona il progetto `TimelogMac` nel navigator di Xcode
-2. Target **TimelogMac** → tab **Signing & Capabilities**
-3. Spunta **Automatically manage signing**
-4. Scegli il tuo **Team** (account Apple ID personale va bene)
-5. Lascia che Xcode risolva i provisioning profile da solo
+1. Select the `TimelogMac` project in the Xcode navigator
+2. Target **TimelogMac** → **Signing & Capabilities** tab
+3. Check **Automatically manage signing**
+4. Choose your **Team** (a personal Apple ID works fine)
+5. Let Xcode resolve the provisioning profiles automatically
 
-> Se non hai un Apple ID in Xcode: menu **Xcode → Settings → Accounts → +**
+> If you don't have an Apple ID in Xcode: menu **Xcode → Settings → Accounts → +**
 
 ---
 
 ## 4. Build & Run
 
-Seleziona lo schema **TimelogMac** e come destinazione il tuo Mac, poi:
+Select the **TimelogMac** scheme with your Mac as the destination, then:
 
 ```
 ⌘ R
 ```
 
-L'app si avvia con la finestra principale **e** l'icona nella menu bar.
+The app launches with both the main window **and** the menu bar icon.
 
 ---
 
-## 5. (Opzionale) Esportare un `.app` per portarlo senza Xcode
+## 5. (Optional) Export a `.app` to use without Xcode
 
-1. **Product → Archive** (schema TimelogMac, destinazione "Any Mac")
-2. Nell'Organizer che si apre: **Distribute App → Copy App**
-3. Salva il `.app` dove vuoi (es. `~/Desktop/Timelog.app`)
-4. Copia `Timelog.app` nella cartella `/Applications` del Mac di lavoro
+1. **Product → Archive** (TimelogMac scheme, "Any Mac" destination)
+2. In the Organizer: **Distribute App → Copy App**
+3. Save the `.app` where you want (e.g. `~/Desktop/Timelog.app`)
+4. Copy `Timelog.app` to `/Applications` on your work Mac
 
-> Prima di aprirlo la prima volta: tasto destro → **Apri** (bypassa Gatekeeper per app non notarizzate).
-
----
-
-## 6. Funzionalità attive subito
-
-- **Menu bar** — icona orologio sempre visibile, mostra il timer in esecuzione
-- **Finestra principale** — `⌘` clic sull'icona menu bar, oppure apri l'app normalmente
-- **Preferenze** — `⌘,`
-- **Dati** — salvati localmente in SwiftData (nessun account richiesto per usarla)
+> First launch: right-click → **Open** (bypasses Gatekeeper for non-notarised apps).
 
 ---
 
-## Troubleshooting rapido
+## 6. Features available immediately
 
-| Problema | Soluzione |
-|----------|-----------|
-| Build error su `TimelogCore` | Xcode → **File → Packages → Reset Package Caches** |
-| Signing error "No account" | Aggiungi il tuo Apple ID in Xcode Settings → Accounts |
-| App bloccata da Gatekeeper | Tasto destro → Apri, poi conferma |
-| Menu bar non appare | Controlla che l'app sia in esecuzione in Activity Monitor |
+- **Menu bar** — clock icon always visible, shows the running timer
+- **Main window** — `⌘` click the menu bar icon, or open the app normally
+- **Preferences** — `⌘,`
+- **Data** — saved locally in SwiftData (no account required)
+
+---
+
+## Troubleshooting
+
+| Problem | Solution |
+|---------|----------|
+| Build error on `TimelogCore` | Xcode → **File → Packages → Reset Package Caches** |
+| Signing error "No account" | Add your Apple ID in Xcode Settings → Accounts |
+| App blocked by Gatekeeper | Right-click → Open, then confirm |
+| Menu bar icon not appearing | Check the app is running in Activity Monitor |
