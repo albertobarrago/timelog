@@ -86,6 +86,7 @@ struct TimelogMacApp: App {
                     timerVM.applySettings(settings)
                     NotificationManager.shared.requestPermission()
                     settings.applyReminders()
+                    MongoSyncService.shared.userId = settings.userId
                 }
                 .modifier(MongoSyncSetup())
         }

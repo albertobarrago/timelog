@@ -22,11 +22,12 @@ private struct ClientDocument: Codable {
     var name: String
     var colorHex: String
     var isArchived: Bool
+    var userId: String
     var deletedAt: Date?
     init(from client: Client) {
         _id = client.mongoId.flatMap { ObjectId($0) } ?? ObjectId()
         name = client.name; colorHex = client.colorHex; isArchived = client.isArchived
-        deletedAt = client.deletedAt
+        userId = client.userId; deletedAt = client.deletedAt
     }
 }
 
@@ -35,12 +36,13 @@ private struct ProjectDocument: Codable {
     var name: String
     var code: String?
     var isArchived: Bool
+    var userId: String
     var clientMongoId: String?
     var deletedAt: Date?
     init(from project: TimelogCore.Project) {
         _id = project.mongoId.flatMap { ObjectId($0) } ?? ObjectId()
         name = project.name; code = project.code; isArchived = project.isArchived
-        clientMongoId = project.client?.mongoId
+        userId = project.userId; clientMongoId = project.client?.mongoId
         deletedAt = project.deletedAt
     }
 }
@@ -50,12 +52,14 @@ private struct TimeEntryDocument: Codable {
     var date: Date
     var durationMinutes: Int
     var notes: String?
+    var userId: String
     var clientMongoId: String?
     var projectMongoId: String?
     var deletedAt: Date?
     init(from entry: TimeEntry) {
         _id = entry.mongoId.flatMap { ObjectId($0) } ?? ObjectId()
         date = entry.date; durationMinutes = entry.durationMinutes; notes = entry.notes
+        userId = entry.userId
         clientMongoId = entry.client?.mongoId; projectMongoId = entry.project?.mongoId
         deletedAt = entry.deletedAt
     }
@@ -65,12 +69,13 @@ private struct ActiveSessionDocument: Codable {
     var _id: ObjectId
     var startDate: Date
     var notes: String?
+    var userId: String
     var clientMongoId: String?
     var projectMongoId: String?
     var notificationID: String
     init(from session: ActiveSession) {
         _id = session.mongoId.flatMap { ObjectId($0) } ?? ObjectId()
-        startDate = session.startDate; notes = session.notes
+        startDate = session.startDate; notes = session.notes; userId = session.userId
         clientMongoId = session.client?.mongoId; projectMongoId = session.project?.mongoId
         notificationID = session.notificationID
     }
@@ -85,6 +90,8 @@ public final class MongoSyncService {
     private var db: MongoDatabase?
     private var dataProvider: DataProvider?
     private var debounceTask: Task<Void, Never>?
+
+    public var userId: String = ""
 
     public private(set) var isSyncing = false
     public private(set) var lastSyncDate: Date?
@@ -175,54 +182,57 @@ public final class MongoSyncService {
     }
 
     private func pull(clientsInto ctx: ModelContext, from db: MongoDatabase) async throws -> [String: Client] {
-        let docs = try await db["clients"].find().decode(ClientDocument.self).drain()
+        let docs = try await db["clients"].find("userId" == userId).decode(ClientDocument.self).drain()
         let remoteIds = Set(docs.map { $0._id.hexString })
         let allLocalClients = (try? ctx.fetch(FetchDescriptor<Client>())) ?? []
-        var localById = Dictionary(uniqueKeysWithValues: allLocalClients.compactMap { c in c.mongoId.map { ($0, c) } })
+        let myLocalClients = allLocalClients.filter { $0.userId == userId }
+        var localById = Dictionary(uniqueKeysWithValues: myLocalClients.compactMap { c in c.mongoId.map { ($0, c) } })
         for doc in docs {
             let id = doc._id.hexString
             if let c = localById[id] {
                 c.name = doc.name; c.colorHex = doc.colorHex; c.isArchived = doc.isArchived
                 c.deletedAt = doc.deletedAt
             } else if doc.deletedAt == nil {
-                let c = Client(name: doc.name, colorHex: doc.colorHex, isArchived: doc.isArchived)
+                let c = Client(name: doc.name, colorHex: doc.colorHex, isArchived: doc.isArchived, userId: userId)
                 c.mongoId = id; ctx.insert(c); localById[id] = c
             }
         }
-        for client in allLocalClients {
+        for client in myLocalClients {
             if let mid = client.mongoId, !remoteIds.contains(mid) { ctx.delete(client) }
         }
         return localById
     }
 
     private func pull(projectsInto ctx: ModelContext, from db: MongoDatabase, clientMap: [String: Client]) async throws -> [String: TimelogCore.Project] {
-        let docs = try await db["projects"].find().decode(ProjectDocument.self).drain()
+        let docs = try await db["projects"].find("userId" == userId).decode(ProjectDocument.self).drain()
         let remoteIds = Set(docs.map { $0._id.hexString })
         let allLocalProjects = (try? ctx.fetch(FetchDescriptor<TimelogCore.Project>())) ?? []
-        var localById = Dictionary(uniqueKeysWithValues: allLocalProjects.compactMap { p in p.mongoId.map { ($0, p) } })
+        let myLocalProjects = allLocalProjects.filter { $0.userId == userId }
+        var localById = Dictionary(uniqueKeysWithValues: myLocalProjects.compactMap { p in p.mongoId.map { ($0, p) } })
         for doc in docs {
             let id = doc._id.hexString
             if let p = localById[id] {
                 p.name = doc.name; p.code = doc.code; p.isArchived = doc.isArchived
                 p.deletedAt = doc.deletedAt
             } else if doc.deletedAt == nil {
-                let p = TimelogCore.Project(name: doc.name, code: doc.code, isArchived: doc.isArchived)
+                let p = TimelogCore.Project(name: doc.name, code: doc.code, isArchived: doc.isArchived, userId: userId)
                 p.mongoId = id
                 if let cid = doc.clientMongoId { p.client = clientMap[cid] }
                 ctx.insert(p); localById[id] = p
             }
         }
-        for project in allLocalProjects {
+        for project in myLocalProjects {
             if let mid = project.mongoId, !remoteIds.contains(mid) { ctx.delete(project) }
         }
         return localById
     }
 
     private func pull(entriesInto ctx: ModelContext, from db: MongoDatabase, clientMap: [String: Client], projectMap: [String: TimelogCore.Project]) async throws {
-        let docs = try await db["time_entries"].find().decode(TimeEntryDocument.self).drain()
+        let docs = try await db["time_entries"].find("userId" == userId).decode(TimeEntryDocument.self).drain()
         let remoteIds = Set(docs.map { $0._id.hexString })
         let allLocalEntries = (try? ctx.fetch(FetchDescriptor<TimeEntry>())) ?? []
-        let localById = Dictionary(uniqueKeysWithValues: allLocalEntries.compactMap { e in e.mongoId.map { ($0, e) } })
+        let myLocalEntries = allLocalEntries.filter { $0.userId == userId }
+        let localById = Dictionary(uniqueKeysWithValues: myLocalEntries.compactMap { e in e.mongoId.map { ($0, e) } })
         for doc in docs {
             let id = doc._id.hexString
             if let e = localById[id] {
@@ -231,11 +241,11 @@ public final class MongoSyncService {
             } else if doc.deletedAt == nil {
                 let client = doc.clientMongoId.flatMap { clientMap[$0] }
                 let project = doc.projectMongoId.flatMap { projectMap[$0] }
-                let e = TimeEntry(date: doc.date, durationMinutes: doc.durationMinutes, notes: doc.notes, client: client, project: project)
+                let e = TimeEntry(date: doc.date, durationMinutes: doc.durationMinutes, notes: doc.notes, client: client, project: project, userId: userId)
                 e.mongoId = id; ctx.insert(e)
             }
         }
-        for entry in allLocalEntries {
+        for entry in myLocalEntries {
             if let mid = entry.mongoId, !remoteIds.contains(mid) { ctx.delete(entry) }
         }
     }
@@ -270,10 +280,11 @@ public final class MongoSyncService {
     }
 
     private func pull(sessionsInto ctx: ModelContext, from db: MongoDatabase, clientMap: [String: Client], projectMap: [String: TimelogCore.Project]) async throws {
-        let docs = try await db["active_sessions"].find().decode(ActiveSessionDocument.self).drain()
+        let docs = try await db["active_sessions"].find("userId" == userId).decode(ActiveSessionDocument.self).drain()
         let remoteIds = Set(docs.map { $0._id.hexString })
         let allLocal = (try? ctx.fetch(FetchDescriptor<ActiveSession>())) ?? []
-        let localById = Dictionary(uniqueKeysWithValues: allLocal.compactMap { s in s.mongoId.map { ($0, s) } })
+        let myLocal = allLocal.filter { $0.userId == userId }
+        let localById = Dictionary(uniqueKeysWithValues: myLocal.compactMap { s in s.mongoId.map { ($0, s) } })
         for doc in docs {
             let id = doc._id.hexString
             if let s = localById[id] {
@@ -282,7 +293,7 @@ public final class MongoSyncService {
                 let s = ActiveSession(
                     client: doc.clientMongoId.flatMap { clientMap[$0] },
                     project: doc.projectMongoId.flatMap { projectMap[$0] },
-                    notes: doc.notes
+                    notes: doc.notes, userId: userId
                 )
                 s.startDate = doc.startDate
                 s.mongoId = id
@@ -290,7 +301,7 @@ public final class MongoSyncService {
                 ctx.insert(s)
             }
         }
-        for local in allLocal {
+        for local in myLocal {
             if let mid = local.mongoId, !remoteIds.contains(mid) {
                 NotificationManager.shared.cancelSession(id: local.notificationID)
                 ctx.delete(local)
@@ -308,6 +319,8 @@ public final class MongoSyncService {
 public final class MongoSyncService {
     public static let shared = MongoSyncService()
     public typealias DataProvider = () -> (clients: [Client], projects: [TimelogCore.Project], entries: [TimeEntry], sessions: [ActiveSession])
+
+    public var userId: String = ""
 
     public private(set) var isSyncing = false
     public private(set) var lastSyncDate: Date?
