@@ -23,15 +23,16 @@
 ## Screenshots
 
 <p align="center">
-  <img src="docs/screenshots/mac-today.png" width="48%" alt="Today view" />
-  <img src="docs/screenshots/mac-history.png" width="48%" alt="History view" />
+  <img src="docs/screenshots/Today.png" width="48%" alt="Today — active sessions and daily entries" />
+  <img src="docs/screenshots/Timer.png" width="48%" alt="Timer — Stopwatch and Pomodoro" />
 </p>
 <p align="center">
-  <img src="docs/screenshots/mac-timer.png" width="48%" alt="Timer / Pomodoro" />
-  <img src="docs/screenshots/mac-clients.png" width="48%" alt="Clients & Projects" />
+  <img src="docs/screenshots/History.png" width="80%" alt="History — weekly bar chart and daily entries grouped by client" />
 </p>
-
-> Drop screenshots in `docs/screenshots/` to populate the grid above.
+<p align="center">
+  <img src="docs/screenshots/Clients.png" width="48%" alt="Clients — manage clients and projects" />
+  <img src="docs/screenshots/widget.png" width="28%" alt="Menu bar widget" />
+</p>
 
 ---
 
