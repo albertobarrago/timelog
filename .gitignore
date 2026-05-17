@@ -37,6 +37,9 @@ Icon?
 .Spotlight-V100
 .Trashes
 
+# Claude Code local config (private, non tracciare)
+CLAUDE.local.md
+
 # Secrets
 *.p12
 *.mobileprovision
