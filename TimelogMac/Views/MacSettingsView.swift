@@ -87,6 +87,11 @@ struct MacSettingsView: View {
                     .buttonStyle(.link)
             }
 
+            // MARK: Account
+            Section("Account") {
+                NicknameRevealRow(nickname: store.userId)
+            }
+
             // MARK: About
             Section("About") {
                 LabeledContent("Developer") {
@@ -190,6 +195,39 @@ struct MacSettingsView: View {
 private extension String {
     var urlEncoded: String {
         addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? self
+    }
+}
+
+private struct NicknameRevealRow: View {
+    let nickname: String
+    @State private var revealed = false
+    @State private var hideTask: Task<Void, Never>?
+
+    var body: some View {
+        LabeledContent("Nickname") {
+            HStack(spacing: 8) {
+                Text(revealed ? nickname : String(repeating: "•", count: max(nickname.count, 4)))
+                    .foregroundStyle(revealed ? .primary : .secondary)
+                    .animation(.easeInOut(duration: 0.15), value: revealed)
+                Button {
+                    reveal()
+                } label: {
+                    Image(systemName: revealed ? "eye.slash" : "eye")
+                        .foregroundStyle(.secondary)
+                }
+                .buttonStyle(.plain)
+            }
+        }
+    }
+
+    private func reveal() {
+        hideTask?.cancel()
+        revealed = true
+        hideTask = Task {
+            try? await Task.sleep(for: .seconds(5))
+            guard !Task.isCancelled else { return }
+            revealed = false
+        }
     }
 }
 
