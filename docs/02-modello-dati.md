@@ -9,23 +9,27 @@ erDiagram
         String  colorHex
         Bool    isArchived
         String  mongoId
+        Date    deletedAt   "opzionale — soft delete"
     }
     PROJECT {
         String  name
         String  code        "opzionale"
         Bool    isArchived
         String  mongoId
+        Date    deletedAt   "opzionale — soft delete"
     }
     TIME_ENTRY {
         Date    date
         Int     durationMinutes
         String  notes       "opzionale"
         String  mongoId
+        Date    deletedAt   "opzionale — soft delete"
     }
     ACTIVE_SESSION {
         Date    startDate
         String  notes       "opzionale"
         String  notificationID
+        String  mongoId
     }
 
     CLIENT ||--o{ PROJECT       : "ha"
@@ -42,6 +46,7 @@ Rappresenta un cliente. Contiene la lista di progetti (cascade delete) e viene u
 
 - `colorHex` — colore identificativo in formato `#RRGGBB`, esposto come `Color` via `Color+Hex`
 - `mongoId` — `ObjectId` MongoDB serializzato come stringa (assegnato al primo upsert)
+- `deletedAt` — data di cancellazione logica (`nil` = attivo); usato dalla strategia di soft delete durante la sync
 - Relazione con `Project`: deleteRule `.cascade` — eliminare un client rimuove tutti i suoi progetti
 
 ### `Project`
@@ -49,16 +54,21 @@ Progetto associato a un client. Il campo `code` è opzionale (codice commessa, e
 
 - Relazione con `TimeEntry`: deleteRule `.nullify` — eliminare un progetto non elimina le entry, le slega
 - `mongoId` — come sopra
+- `deletedAt` — come sopra (soft delete)
 
 ### `TimeEntry`
 Record di tempo loggato. È la struttura dati principale dell'app.
 
 - `durationMinutes` — durata in minuti interi; formattato tramite `Int.formattedDuration` ("1h 30m")
 - `client` e `project` opzionali — una entry può essere non assegnata
+- `deletedAt` — come sopra (soft delete)
 
 ### `ActiveSession`
-Sessione di tracking in corso. Può esisterne al massimo una per client/progetto attivo.
+Sessione di tracking in corso. Può esisterne al massimo una per client/progetto attivo. Non ha `deletedAt` perché viene convertita in `TimeEntry` allo stop — non è mai cancellata logicamente.
 
+- `client` e `project` opzionali — la sessione può non essere associata a nessuno
+- `notes` — note opzionali trasferite alla `TimeEntry` allo stop
+- `mongoId` — come sopra; la sessione è sincronizzabile multi-device
 - `elapsedDisplay` — stringa `"HH:MM:SS"` calcolata a runtime da `startDate`
 - `elapsedMinutes` — intero calcolato, usato per stimare la durata prima dello stop
 - `notificationID` — ID della notifica UNUserNotification per il promemoria di sessione aperta; cancellata allo stop

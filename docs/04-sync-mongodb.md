@@ -151,18 +151,25 @@ I documenti sono identici indipendentemente da chi li ha scritti (iOS via Vercel
 
 ### `clients`
 ```json
-{ "_id": ObjectId("..."), "name": "Acme", "colorHex": "#FF5733", "isArchived": false }
+{ "_id": ObjectId("..."), "name": "Acme", "colorHex": "#FF5733", "isArchived": false, "deletedAt": null }
 ```
 
 ### `projects`
 ```json
-{ "_id": ObjectId("..."), "name": "Website", "code": "PRJ-01", "isArchived": false, "clientMongoId": "64abc..." }
+{ "_id": ObjectId("..."), "name": "Website", "code": "PRJ-01", "isArchived": false, "clientMongoId": "64abc...", "deletedAt": null }
 ```
 
 ### `time_entries`
 ```json
-{ "_id": ObjectId("..."), "date": "2025-05-15T09:00:00.000Z", "durationMinutes": 90, "notes": "...", "clientMongoId": "...", "projectMongoId": "..." }
+{ "_id": ObjectId("..."), "date": "2025-05-15T09:00:00.000Z", "durationMinutes": 90, "notes": "...", "clientMongoId": "...", "projectMongoId": "...", "deletedAt": null }
 ```
+
+### `sessions` (ActiveSession)
+```json
+{ "_id": ObjectId("..."), "startDate": "2025-05-15T09:00:00.000Z", "notes": "...", "clientMongoId": "...", "projectMongoId": "..." }
+```
+
+> **Nota `deletedAt`**: il campo è `null` per i record attivi, valorizzato con la data di cancellazione per i record eliminati logicamente. Durante la sync, i record con `deletedAt != null` vengono rimossi dal SwiftData locale dopo il pull.
 
 ---
 

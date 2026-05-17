@@ -94,6 +94,7 @@ graph TD
 | Un solo `ModelContainer` per app | Evita conflitti SwiftData; in macOS è `static let` condiviso tra WindowGroup e MenuBarExtra |
 | iOS usa `RestSyncService`, macOS usa `MongoSyncService` | iOS non può usare MongoKitten (binario ARM-only, dipendenze pesanti); la stessa firma pubblica separa le implementazioni |
 | `#if os(iOS)` per ActivityKit e UIKit haptics | Non usare `#if targetEnvironment(macCatalyst)` — il progetto non usa Catalyst |
+| `deletedAt: Date?` su Client, Project, TimeEntry | Soft delete: i record eliminati vengono marcati ma non rimossi dal database finché la sync non li propaga a tutti i device. `ActiveSession` non ha `deletedAt` perché viene sempre convertita in `TimeEntry` allo stop. |
 
 ## Dipendenze Package
 
