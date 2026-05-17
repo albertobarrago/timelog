@@ -20,6 +20,21 @@
 
 ---
 
+## Screenshots
+
+<p align="center">
+  <img src="docs/screenshots/mac-today.png" width="48%" alt="Today view" />
+  <img src="docs/screenshots/mac-history.png" width="48%" alt="History view" />
+</p>
+<p align="center">
+  <img src="docs/screenshots/mac-timer.png" width="48%" alt="Timer / Pomodoro" />
+  <img src="docs/screenshots/mac-clients.png" width="48%" alt="Clients & Projects" />
+</p>
+
+> Drop screenshots in `docs/screenshots/` to populate the grid above.
+
+---
+
 ## Apps
 
 | App | Platform | Description |

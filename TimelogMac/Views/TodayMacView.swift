@@ -31,10 +31,9 @@ struct TodayMacView: View {
                 } description: {
                     Text("Log time manually or start a tracking session.")
                 } actions: {
-                    Button("Log Time")      { showingQuickLog = true }
+                    Button("Log Time")       { showingQuickLog = true }
                     Button("Start Tracking") { showingStartTracking = true }
                 }
-                .offset(y: -70)
             } else {
                 List {
                     Section("Active") {
@@ -113,6 +112,7 @@ struct ActiveSessionMacRow: View {
     let session: ActiveSession
     var now: Date = .now
     var onStop: (() -> Void)? = nil
+    @State private var isHovered = false
 
     private var elapsedDisplay: String {
         let s = Int(now.timeIntervalSince(session.startDate))
@@ -153,11 +153,17 @@ struct ActiveSessionMacRow: View {
                     .imageScale(.large)
             }
         }
+        .padding(.vertical, 2)
+        .padding(.horizontal, 4)
+        .background(isHovered ? Color.primary.opacity(0.05) : .clear, in: RoundedRectangle(cornerRadius: 5))
+        .onHover { isHovered = $0 }
     }
 }
 
 struct EntryMacRow: View {
     let entry: TimeEntry
+    @State private var isHovered = false
+
     var body: some View {
         HStack(spacing: 12) {
             RoundedRectangle(cornerRadius: 3)
@@ -180,5 +186,9 @@ struct EntryMacRow: View {
                 .foregroundStyle(.secondary)
                 .monospacedDigit()
         }
+        .padding(.vertical, 2)
+        .padding(.horizontal, 4)
+        .background(isHovered ? Color.primary.opacity(0.05) : .clear, in: RoundedRectangle(cornerRadius: 5))
+        .onHover { isHovered = $0 }
     }
 }
