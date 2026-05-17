@@ -7,13 +7,16 @@ import WidgetKit
 
 struct HomeView: View {
     @Environment(\.modelContext) private var context
+    @Environment(SettingsStore.self) private var settings
     @Query(filter: #Predicate<TimeEntry> { $0.deletedAt == nil }, sort: \TimeEntry.date, order: .reverse) private var allEntries: [TimeEntry]
-    @Query(sort: \ActiveSession.startDate) private var activeSessions: [ActiveSession]
-    @Query(filter: #Predicate<Client> { !$0.isArchived && $0.deletedAt == nil }, sort: \Client.name) private var clients: [Client]
+    @Query(sort: \ActiveSession.startDate) private var allSessions: [ActiveSession]
+    @Query(filter: #Predicate<Client> { !$0.isArchived && $0.deletedAt == nil }, sort: \Client.name) private var allClients: [Client]
     @State private var activeSheet: HomeSheet?
 
+    private var activeSessions: [ActiveSession] { allSessions.filter { $0.userId == settings.userId } }
+    private var clients: [Client] { allClients.filter { $0.userId == settings.userId } }
     private var todayEntries: [TimeEntry] {
-        allEntries.filter { Calendar.current.isDateInToday($0.date) }
+        allEntries.filter { $0.userId == settings.userId && Calendar.current.isDateInToday($0.date) }
     }
 
     var body: some View {
@@ -122,7 +125,7 @@ struct HomeView: View {
             }
             .onAppear { updateWidgetSnapshot() }
             .onChange(of: allEntries) { _, _ in updateWidgetSnapshot() }
-            .onChange(of: activeSessions) { _, _ in updateWidgetSnapshot() }
+            .onChange(of: allSessions) { _, _ in updateWidgetSnapshot() }
         }
     }
 

@@ -8,15 +8,17 @@ struct MenuBarView: View {
     @Environment(SettingsStore.self) private var settings
     @Environment(\.modelContext) private var context
     @Environment(\.openWindow) private var openWindow
-    @Query(sort: \ActiveSession.startDate) private var activeSessions: [ActiveSession]
+    @Query(sort: \ActiveSession.startDate) private var allSessions: [ActiveSession]
     @Query(filter: #Predicate<TimeEntry> { $0.deletedAt == nil }, sort: \TimeEntry.date, order: .reverse) private var allEntries: [TimeEntry]
-    @Query(filter: #Predicate<Client> { !$0.isArchived && $0.deletedAt == nil }, sort: \Client.name) private var clients: [Client]
+    @Query(filter: #Predicate<Client> { !$0.isArchived && $0.deletedAt == nil }, sort: \Client.name) private var allClients: [Client]
 
     @State private var showingStartTracking = false
     @State private var sessionToStop: ActiveSession?
 
+    private var activeSessions: [ActiveSession] { allSessions.filter { $0.userId == settings.userId } }
+    private var clients: [Client] { allClients.filter { $0.userId == settings.userId } }
     private var todayMinutes: Int {
-        let logged = allEntries.filter { Calendar.current.isDateInToday($0.date) }
+        let logged = allEntries.filter { $0.userId == settings.userId && Calendar.current.isDateInToday($0.date) }
             .reduce(0) { $0 + $1.durationMinutes }
         return logged + activeSessions.reduce(0) { $0 + $1.elapsedMinutes }
     }

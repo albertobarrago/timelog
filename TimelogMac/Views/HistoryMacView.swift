@@ -4,6 +4,7 @@ import TimelogCore
 
 struct HistoryMacView: View {
     @Environment(\.modelContext) private var context
+    @Environment(SettingsStore.self) private var settings
     @Query(filter: #Predicate<TimeEntry> { $0.deletedAt == nil }, sort: \TimeEntry.date, order: .reverse) private var allEntries: [TimeEntry]
 
     @State private var selectedDate = Date()
@@ -12,7 +13,7 @@ struct HistoryMacView: View {
     // MARK: - Computed
 
     private var entries: [TimeEntry] {
-        allEntries.filter { Calendar.current.isDate($0.date, inSameDayAs: selectedDate) }
+        allEntries.filter { $0.userId == settings.userId && Calendar.current.isDate($0.date, inSameDayAs: selectedDate) }
     }
 
     private var totalMinutes: Int {

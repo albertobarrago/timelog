@@ -5,8 +5,8 @@ import TimelogSync
 
 struct ClientsMacView: View {
     @Environment(\.modelContext) private var context
+    @Environment(SettingsStore.self) private var settings
     @Query(filter: #Predicate<Client> { $0.deletedAt == nil }, sort: \Client.name) private var allClients: [Client]
-    @Query(filter: #Predicate<Client> { !$0.isArchived && $0.deletedAt == nil }, sort: \Client.name) private var activeClients: [Client]
 
     @State private var selectedClientID: PersistentIdentifier?
     @State private var showingAddClient  = false
@@ -14,7 +14,7 @@ struct ClientsMacView: View {
     @State private var showArchived      = false
 
     private var visibleClients: [Client] {
-        showArchived ? allClients : activeClients
+        allClients.filter { $0.userId == settings.userId && (showArchived || !$0.isArchived) }
     }
 
     private var selectedClient: Client? {
@@ -230,6 +230,7 @@ private let presetColorHexes = [
 struct ClientMacFormView: View {
     @Environment(\.modelContext) private var context
     @Environment(\.dismiss)      private var dismiss
+    @Environment(SettingsStore.self) private var settings
     var client: Client?
 
     @State private var name     = ""
@@ -289,13 +290,14 @@ struct ClientMacFormView: View {
     private func save() {
         dismiss()
         if let c = client { c.name = name; c.colorHex = colorHex }
-        else { context.insert(Client(name: name, colorHex: colorHex)) }
+        else { context.insert(Client(name: name, colorHex: colorHex, userId: settings.userId)) }
     }
 }
 
 struct ProjectMacFormView: View {
     @Environment(\.modelContext) private var context
     @Environment(\.dismiss)      private var dismiss
+    @Environment(SettingsStore.self) private var settings
     let client: Client
     var project: Project?
 
@@ -325,7 +327,7 @@ struct ProjectMacFormView: View {
         dismiss()
         if let p = project { p.name = name; p.code = code.isEmpty ? nil : code }
         else {
-            let p = Project(name: name, code: code.isEmpty ? nil : code)
+            let p = Project(name: name, code: code.isEmpty ? nil : code, userId: settings.userId)
             p.client = client
             context.insert(p)
         }

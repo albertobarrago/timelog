@@ -1,32 +1,33 @@
-# Timelog — Documentazione Tecnica
+# Timelog — Technical Documentation
 
-App di time tracking per iOS e macOS con sincronizzazione MongoDB Atlase.
+Time tracking app for iOS and macOS with MongoDB Atlas synchronisation.
 
-## Indice
+## Index
 
-| File | Contenuto |
-|------|-----------|
-| [01-architettura.md](01-architettura.md) | Struttura monorepo, layer, dipendenze |
-| [02-modello-dati.md](02-modello-dati.md) | Entità SwiftData, relazioni, persistenza |
-| [03-flussi.md](03-flussi.md) | Tracking, Pomodoro, Notifiche, Live Activity |
-| [04-sync-mongodb.md](04-sync-mongodb.md) | Architettura sync, connessione, upsert |
+| File | Contents |
+|------|----------|
+| [01-architettura.md](01-architettura.md) | Monorepo structure, layers, dependencies |
+| [02-modello-dati.md](02-modello-dati.md) | SwiftData entities, relationships, persistence |
+| [03-flussi.md](03-flussi.md) | Tracking, Pomodoro, Notifications, Live Activity |
+| [04-sync-mongodb.md](04-sync-mongodb.md) | Sync architecture, connection, upsert strategy |
+| [05-self-hosting.md](05-self-hosting.md) | Self-hosting guide: Atlas setup, Vercel deploy, user migration |
 
 ## Stack
 
-| Livello | Tecnologia |
-|---------|------------|
+| Layer | Technology |
+|-------|------------|
 | UI | SwiftUI |
 | State | `@Observable` (Swift 5.9+) |
-| Persistenza locale | SwiftData |
-| Sincronizzazione cloud | MongoDB Atlas via MongoKitten |
-| Credenziali | Keychain |
-| Notifiche | UNUserNotificationCenter |
+| Local persistence | SwiftData |
+| Cloud sync | MongoDB Atlas via MongoKitten |
+| Credentials | Keychain |
+| Notifications | UNUserNotificationCenter |
 | Live Activity | ActivityKit (iOS only) |
 | Widget | WidgetKit |
 
-## Requisiti
+## Requirements
 
 - iOS 17+ / macOS 14+
-- Xcode 26+
+- Xcode 16+
 - Swift 6.0
-- Account MongoDB Atlas (opzionale, solo per sync macOS)
+- MongoDB Atlas account (optional, macOS sync only)

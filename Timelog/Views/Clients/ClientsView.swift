@@ -15,13 +15,14 @@ private enum ClientSheet: Identifiable {
 
 struct ClientsView: View {
     @Environment(\.modelContext) private var context
-    @Query(filter: #Predicate<Client> { $0.deletedAt == nil }, sort: \Client.name) private var clients: [Client]
+    @Environment(SettingsStore.self) private var settings
+    @Query(filter: #Predicate<Client> { $0.deletedAt == nil }, sort: \Client.name) private var allClients: [Client]
 
     @State private var activeSheet: ClientSheet?
     @State private var showArchived = false
 
     private var visibleClients: [Client] {
-        showArchived ? clients : clients.filter { !$0.isArchived }
+        allClients.filter { $0.userId == settings.userId && (showArchived || !$0.isArchived) }
     }
 
     var body: some View {

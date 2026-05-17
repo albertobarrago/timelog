@@ -5,6 +5,7 @@ import SwiftData
 struct ProjectFormView: View {
     @Environment(\.modelContext) private var context
     @Environment(\.dismiss) private var dismiss
+    @Environment(SettingsStore.self) private var settings
 
     var client: Client
     var project: Project?
@@ -49,7 +50,7 @@ struct ProjectFormView: View {
             p.name = name
             p.code = code.isEmpty ? nil : code
         } else {
-            let p = Project(name: name, code: code.isEmpty ? nil : code)
+            let p = Project(name: name, code: code.isEmpty ? nil : code, userId: settings.userId)
             p.client = client
             context.insert(p)
         }

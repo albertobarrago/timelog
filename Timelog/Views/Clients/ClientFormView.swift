@@ -11,6 +11,7 @@ private let presetColorHexes = [
 struct ClientFormView: View {
     @Environment(\.modelContext) private var context
     @Environment(\.dismiss) private var dismiss
+    @Environment(SettingsStore.self) private var settings
 
     var client: Client?
 
@@ -79,7 +80,7 @@ struct ClientFormView: View {
             c.name = name
             c.colorHex = colorHex
         } else {
-            context.insert(Client(name: name, colorHex: colorHex))
+            context.insert(Client(name: name, colorHex: colorHex, userId: settings.userId))
         }
     }
 }

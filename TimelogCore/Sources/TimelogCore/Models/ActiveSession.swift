@@ -9,14 +9,16 @@ public final class ActiveSession {
     public var notes: String?
     public var notificationID: String
     public var mongoId: String?
+    public var userId: String = ""
 
-    public init(client: Client? = nil, project: Project? = nil, notes: String? = nil) {
+    public init(client: Client? = nil, project: Project? = nil, notes: String? = nil, userId: String = "") {
         self.startDate = .now
         self.client = client
         self.project = project
         self.notes = notes
         self.notificationID = UUID().uuidString
         self.mongoId = Client.newMongoId()
+        self.userId = userId
     }
 
     public var elapsedDisplay: String {
@@ -39,7 +41,8 @@ public final class ActiveSession {
             durationMinutes: durationMinutes,
             notes: notes,
             client: client,
-            project: project
+            project: project,
+            userId: userId
         )
     }
 }

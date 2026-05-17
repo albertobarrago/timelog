@@ -28,21 +28,29 @@ struct StopSessionMacView: View {
             Text("Stop Tracking")
                 .font(.headline)
 
-            if let client = session.client {
-                LabeledContent("Client", value: client.name)
-            }
-            if let project = session.project {
-                LabeledContent("Project", value: project.name)
-            }
-            LabeledContent("Started") {
-                Text(session.startDate, style: .time)
+            GroupBox {
+                VStack(spacing: 6) {
+                    if let client = session.client {
+                        LabeledContent("Client", value: client.name)
+                    }
+                    if let project = session.project {
+                        LabeledContent("Project", value: project.name)
+                    }
+                    LabeledContent("Started") {
+                        Text(session.startDate, style: .time)
+                    }
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
             }
 
-            Divider()
+            GroupBox(String(localized: "Duration")) {
+                DurationPickerMac(hours: $hours, minutes: $minutes)
+            }
 
-            DurationPickerMac(hours: $hours, minutes: $minutes)
-
-            TextField("Notes (optional)", text: $notes)
+            GroupBox(String(localized: "Notes")) {
+                TextField("Optional", text: $notes)
+                    .frame(maxWidth: .infinity)
+            }
 
             HStack {
                 Button("Discard", role: .destructive) { showDiscardAlert = true }
@@ -62,7 +70,7 @@ struct StopSessionMacView: View {
             }
         }
         .padding()
-        .frame(width: 320)
+        .frame(width: 340)
     }
 
     private func dismissSelf() {

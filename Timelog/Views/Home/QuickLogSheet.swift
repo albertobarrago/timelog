@@ -5,8 +5,11 @@ import SwiftData
 struct QuickLogSheet: View {
     @Environment(\.modelContext) private var context
     @Environment(\.dismiss) private var dismiss
+    @Environment(SettingsStore.self) private var settings
     @Query(filter: #Predicate<Client> { !$0.isArchived && $0.deletedAt == nil }, sort: \Client.name)
-    private var clients: [Client]
+    private var allClients: [Client]
+    @Query(filter: #Predicate<Project> { !$0.isArchived && $0.deletedAt == nil }, sort: \Project.name)
+    private var allProjects: [Project]
 
     var entry: TimeEntry?
 
@@ -17,10 +20,10 @@ struct QuickLogSheet: View {
     @State private var minutes = 30
     @State private var notes = ""
 
+    private var clients: [Client] { allClients.filter { $0.userId == settings.userId } }
     private var availableProjects: [Project] {
-        (selectedClient?.projects ?? [])
-            .filter { !$0.isArchived }
-            .sorted { $0.name < $1.name }
+        guard let client = selectedClient else { return [] }
+        return allProjects.filter { $0.client?.persistentModelID == client.persistentModelID }
     }
 
     var body: some View {
@@ -106,7 +109,8 @@ struct QuickLogSheet: View {
             let e = TimeEntry(
                 date: date, durationMinutes: total,
                 notes: notes.isEmpty ? nil : notes,
-                client: selectedClient, project: selectedProject
+                client: selectedClient, project: selectedProject,
+                userId: settings.userId
             )
             context.insert(e)
         }

@@ -6,6 +6,7 @@ import UIKit
 
 private struct RestSyncSetup: ViewModifier {
     @Environment(\.modelContext) private var modelContext
+    @Environment(SettingsStore.self) private var settings
     @Query private var clients:  [Client]
     @Query private var projects: [Project]
     @Query private var entries:  [TimeEntry]
@@ -22,6 +23,7 @@ private struct RestSyncSetup: ViewModifier {
     }
 
     private func setup() {
+        RestSyncService.shared.userId = settings.userId
         RestSyncService.shared.loadConfigFromFile()
         let container = modelContext.container
         RestSyncService.shared.setDataProvider { [container] in

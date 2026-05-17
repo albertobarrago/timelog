@@ -40,6 +40,7 @@ Both apps share business logic via **TimelogCore**, a local Swift Package in the
 | **Timer** | Stopwatch or Pomodoro with ring progress and lock-screen notification |
 | **Settings** | Pomodoro intervals, daily reminders, smart tracking config, sync status |
 | **Language** | English and Italian — follows the system locale automatically |
+| **Multi-user** | Each person picks a nickname on first launch — data is fully isolated per user on a shared cluster |
 
 ### Smart Tracking
 Tap ▶ to start a session when you begin working. Stop it when done — duration is logged automatically. Multiple sessions can run simultaneously. Forgot to stop? You get a notification at your configured end-of-day time.
@@ -59,6 +60,7 @@ Active sessions and the running timer appear on the lock screen and in the Dynam
 - **Clients & Projects** — `NavigationSplitView` with macOS `Table`, inline create/edit forms
 - **Timer** — full Pomodoro / stopwatch window, Space to start/pause
 - **MongoDB sync** — push/pull via MongoKitten to your Atlas cluster; connection string stored in Keychain
+- **Multi-user** — each team member picks a nickname on first launch; data is isolated per user, one shared cluster
 - **Settings window** — Pomodoro config, smart tracking end-of-day threshold (`⌘,`)
 - **Localization** — English and Italian; system locale followed automatically
 
@@ -79,6 +81,7 @@ Mac    ──► MongoKitten ─────────────────
 - **iOS**: `RestSyncService` — pure `URLSession`, zero external dependencies, credentials auto-loaded from a gitignored bundle file
 - **macOS**: `MongoSyncService` — direct MongoDB wire protocol via MongoKitten
 - **Server**: two Vercel serverless functions (`GET /api/pull`, `POST /api/sync`), auth via `X-API-Key`
+- **User isolation**: every document carries a `userId` field (the user's nickname); each device only pulls and pushes its own records
 - **API docs**: live Swagger UI at your Vercel deployment URL
 
 ---

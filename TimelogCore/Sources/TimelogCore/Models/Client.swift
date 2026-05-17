@@ -7,14 +7,16 @@ public final class Client {
     public var colorHex: String
     public var isArchived: Bool
     public var mongoId: String?
+    public var userId: String = ""
     @Relationship(deleteRule: .cascade) public var projects: [Project] = []
     public var deletedAt: Date? = nil
 
-    public init(name: String, colorHex: String = "#007AFF", isArchived: Bool = false) {
+    public init(name: String, colorHex: String = "#007AFF", isArchived: Bool = false, userId: String = "") {
         self.name = name
         self.colorHex = colorHex
         self.isArchived = isArchived
         self.mongoId = Self.newMongoId()
+        self.userId = userId
     }
 
     public static func newMongoId() -> String {

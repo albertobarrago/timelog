@@ -7,14 +7,16 @@ public final class Project {
     public var code: String?
     public var isArchived: Bool
     public var mongoId: String?
+    public var userId: String = ""
     public var client: Client?
     @Relationship(deleteRule: .nullify, inverse: \TimeEntry.project) public var entries: [TimeEntry] = []
     public var deletedAt: Date? = nil
 
-    public init(name: String, code: String? = nil, isArchived: Bool = false) {
+    public init(name: String, code: String? = nil, isArchived: Bool = false, userId: String = "") {
         self.name = name
         self.code = code
         self.isArchived = isArchived
         self.mongoId = Client.newMongoId()
+        self.userId = userId
     }
 }

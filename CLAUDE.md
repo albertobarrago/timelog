@@ -1,113 +1,102 @@
 # Timelog — Project Context for Claude
 
-## Flusso di lavoro
-- **Prima di ogni implementazione**, presenta un piano con i passaggi e attendi conferma esplicita
-- Il piano deve indicare: quali file si toccano, cosa si cambia e perché
-- Eccezioni: correzioni di singola riga ovvie e senza ambiguità possono procedere direttamente
+## What this project is
 
-## Project Context
-- Primary projects are native SwiftUI apps (Timelog for iOS/macOS) and a custom statusbar script — NOT Flutter, NOT the Markasso project unless explicitly named
-- When user says 'status bar', they mean their custom shell script statusline, not Claude Code's built-in one or any project's UI
+Two native SwiftUI time tracking apps (iOS + macOS) sharing a local Swift package (`TimelogCore`). Business logic lives in the package; apps contain only Views.
 
-## Git & Commits
-- **Mai aggiungere Claude come co-autore**, contributor, o credito in commit, README, o sezioni About — salvo esplicita richiesta
-- **Commit locali OK** — chiedere sempre conferma prima di `git push` verso il remote
-
-## SwiftUI/Swift Conventions
-- Per ternary expressions che ritornano `ButtonStyle` diversi, usare `@ViewBuilder` per evitare errori di type inference
-- Quando si aggiungono feature di sync/data, implementare **sempre sia push che pull**
-- Referenziare sempre `modelContext` via `@Environment` — non assumere che sia in scope
-- Verificare il targeting multipiattaforma (iOS + macOS) quando si creano nuovi target o file Xcode
-
-## Struttura monorepo
-
-Questo repo contiene **due app** e **un package condiviso**. Vanno sempre tenuti di pari passo.
+## Monorepo structure
 
 ```
 TimeLog/
-├── TimeLog.xcworkspace        ← apri SEMPRE questo, non i .xcodeproj singoli
-├── Timelog.xcodeproj          ← app iOS
-├── TimelogMac.xcodeproj       ← app macOS nativa
-├── TimelogCore/               ← Swift Package locale condiviso da entrambe
+├── TimeLog.xcworkspace        ← always open this, not individual .xcodeproj files
+├── Timelog.xcodeproj          ← iOS app
+├── TimelogMac.xcodeproj       ← native macOS app
+├── TimelogCore/               ← shared local Swift Package
 │   └── Sources/TimelogCore/
 │       ├── Models/            ← Client, Project, TimeEntry, ActiveSession
 │       ├── ViewModels/        ← TimerViewModel
 │       ├── Stores/            ← SettingsStore
 │       ├── Helpers/           ← KeychainHelper, NotificationManager
 │       └── Extensions/        ← Color+Hex, Int+Duration
-├── Timelog/                   ← sorgenti iOS (solo Views)
-├── TimelogMac/                ← sorgenti macOS (solo Views)
+├── Timelog/                   ← iOS sources (Views only)
+├── TimelogMac/                ← macOS sources (Views only)
 └── TimelogWidgetExtension/    ← Live Activity widget (iOS only)
 ```
 
-## Regole fondamentali
+## Core rules
 
-- **Business logic → TimelogCore**. Modelli, stores, helpers, ViewModels vivono nel package. Le app contengono solo Views.
-- **Tipi pubblici**. Tutto in TimelogCore deve avere `public` su class/struct/enum, properties, init e metodi.
-- **Piattaforme**. `#if os(iOS)` per ActivityKit e UIKit haptics. `#if os(macOS)` per AppKit. Non usare `#if targetEnvironment(macCatalyst)` — il progetto iOS è iOS puro, nessun Catalyst.
-- **Un solo ModelContainer** nell'app macOS (`TimelogMacApp`), condiviso tra WindowGroup e MenuBarExtra tramite `static let container`.
-- **Non pushare mai senza chiedere** all'utente.
+- **Business logic → TimelogCore.** Models, stores, helpers, ViewModels live in the package. Apps contain only Views.
+- **Public types.** Everything in TimelogCore needs `public` on class/struct/enum, properties, inits and methods.
+- **Platforms.** `#if os(iOS)` for ActivityKit and UIKit haptics. `#if os(macOS)` for AppKit. Never use `#if targetEnvironment(macCatalyst)` — the iOS project is pure iOS, no Catalyst.
+- **Single ModelContainer** in the macOS app (`TimelogMacApp`), shared between WindowGroup and MenuBarExtra via `static let container`.
 
-## App iOS (`Timelog.xcodeproj`)
+## iOS app (`Timelog.xcodeproj`)
 
 - Target: iPhone + iPad, iOS 17+
-- Nessun Mac Catalyst
-- Live Activity su lock screen + Dynamic Island (`TimelogWidgetExtensionExtension`)
-- Widget extension versione (`CFBundleVersion`) deve sempre coincidere con la main app
+- No Mac Catalyst
+- Live Activity on lock screen + Dynamic Island (`TimelogWidgetExtensionExtension`)
+- Widget extension `CFBundleVersion` must always match the main app
 - Tab order: Today → Clients → Timer → Settings
 
-## App macOS (`TimelogMac.xcodeproj`)
+## macOS app (`TimelogMac.xcodeproj`)
 
-- Target: macOS 14+ nativo
-- `MenuBarExtra` → icona nella menu bar di sistema (sempre visibile)
-- `WindowGroup` → finestra principale con `NavigationSplitView` (sidebar: Today / Clients / Timer / Settings)
-- `Settings` scene → accessibile via `⌘,`
-- Toolbar items nei detail view, **non** sul `NavigationSplitView` root
-- `columnVisibility` come `@State` (non `.constant`) per permettere il toggle sidebar
+- Target: native macOS 14+
+- `MenuBarExtra` → system menu bar icon (always visible)
+- `WindowGroup` → main window with `NavigationSplitView` (sidebar: Today / Clients / Tracking / Settings)
+- `Settings` scene → accessible via `⌘,`
+- Toolbar items in detail views, **not** on the `NavigationSplitView` root
+- `columnVisibility` as `@State` (not `.constant`) to allow sidebar toggle
 
 ## Package TimelogCore
 
 - `Package.swift`: platforms `.iOS(.v17)`, `.macOS(.v14)`
-- Tutto `public` — se aggiungi un tipo nuovo ricordati di mettere `public init()`
-- Conditional compilation per piattaforme specifiche:
+- Everything `public` — if you add a new type remember to add `public init()`
+- Conditional compilation for platform-specific code:
   - ActivityKit → `#if os(iOS) && !targetEnvironment(macCatalyst)`
-  - UIKit haptics → `#if os(iOS)` (anche la firma della funzione, non solo il body)
+  - UIKit haptics → `#if os(iOS)` (on the function signature too, not just the body)
   - AppKit → `#if canImport(AppKit) && !targetEnvironment(macCatalyst)`
-
-## Commit e git
-
-- **Mai pushare senza chiedere** all'utente
-- Nessun `Co-Authored-By` nei commit message
-- I due `.xcodeproj` e `TimelogCore/` sono tutti nello stesso repo e nello stesso commit quando cambiano insieme
 
 ## Package TimelogSync
 
-- Contiene `MongoSyncService` — sync bidirezionale SwiftData ↔ MongoDB Atlas
-- `pullAll(into:)` scarica tutto da MongoDB → SwiftData all'avvio (multi-device, multi-utente)
-- Auto-push tramite `NSManagedObjectContextDidSaveNotification` con debounce 2 secondi
-- macOS: implementazione completa con MongoKitten 7.9+
-- iOS: stub no-op (stessa firma pubblica, nessun codice)
-- Connection string: `~/.config/timelog/mongo.local` → Keychain (mai nel repo)
+- Contains `MongoSyncService` — bidirectional SwiftData ↔ MongoDB Atlas sync
+- `pullAll(into:)` downloads everything from MongoDB → SwiftData on launch (multi-device, multi-user)
+- Auto-push via `NSManagedObjectContextDidSaveNotification` with 2-second debounce
+- macOS: full implementation with MongoKitten 7.9+
+- iOS: no-op stub (same public signature, no code)
+- Connection string: `~/.config/timelog/mongo.local` → Keychain (never in the repo)
 
-## Qualità da App Store / pubblicazione
+## SwiftUI / Swift conventions
 
-Questo progetto è destinato alla pubblicazione. Rispettare sempre:
+- For ternary expressions returning different `ButtonStyle` types, use `@ViewBuilder` to avoid type-inference errors
+- When adding sync/data features, always implement **both push and pull**
+- Always reference `modelContext` via `@Environment` — never assume it is in scope
+- When querying related objects from a `@State`-held model, use a separate `@Query` filtered by `persistentModelID` rather than accessing the relationship directly (SwiftData relationships on `@State` objects are not always reactive)
+- Verify multi-platform targeting (iOS + macOS) when creating new Xcode targets or files
 
-- **Accessibilità**: ogni elemento interattivo deve avere `.accessibilityLabel` significativo; non usare solo colore per comunicare stato
-- **Localizzazione**: usare `String(localized:)` o `LocalizedStringKey` per tutte le stringhe UI; non stringhe hardcoded in italiano/inglese mescolate
-- **Privacy**: nessun dato utente in log, nessuna analytics senza consenso, connection string mai in chiaro nel codice
-- **Sicurezza**: credenziali solo in Keychain, mai in `UserDefaults` o `@AppStorage`
-- **Performance**: nessun fetch SwiftData nel `body` delle view — usare `@Query`; operazioni pesanti in `Task` asincrono
-- **Crash safety**: `try!` e `fatalError` solo per errori di programmazione (es. ModelContainer init); mai per dati utente o network
-- **UI nativa macOS**: usare `LabeledContent`, `Form.grouped`, toolbar items, `NavigationSplitView` — non portare pattern iOS su macOS
-- **UI nativa iOS**: usare sheet, swipe actions, `TabView` — non portare pattern macOS su iOS
-- **Versioning**: `CFBundleShortVersionString` (marketing) e `CFBundleVersion` (build) devono essere consistenti tra app e widget extension
+## Git
 
-## Stack tecnico
+- The two `.xcodeproj` files and `TimelogCore/` are all in the same repo and should be committed together when they change together
+- Never push without asking the user first
+
+## App Store / publication quality
+
+This project targets App Store publication. Always respect:
+
+- **Accessibility**: every interactive element must have a meaningful `.accessibilityLabel`; never use colour alone to communicate state
+- **Localisation**: use `String(localized:)` or `LocalizedStringKey` for all UI strings; no hardcoded mixed Italian/English strings
+- **Privacy**: no user data in logs, no analytics without consent, connection strings never in plain text in code
+- **Security**: credentials only in Keychain, never in `UserDefaults` or `@AppStorage`
+- **Performance**: no SwiftData fetches in view `body` — use `@Query`; heavy operations in async `Task`
+- **Crash safety**: `try!` and `fatalError` only for programming errors (e.g. ModelContainer init); never for user data or network
+- **Native macOS UI**: use `LabeledContent`, `Form.grouped`, toolbar items, `NavigationSplitView` — do not port iOS patterns to macOS
+- **Native iOS UI**: use sheets, swipe actions, `TabView` — do not port macOS patterns to iOS
+- **Versioning**: `CFBundleShortVersionString` (marketing) and `CFBundleVersion` (build) must be consistent between app and widget extension
+
+## Tech stack
 
 - SwiftUI + SwiftData + `@Observable`
-- Keychain per API key Wethod e MongoDB connection string
-- `UNUserNotificationCenter` per reminder giornalieri, alert sessioni aperte, fine fase Pomodoro
-- `ActivityKit` per Live Activity iOS
-- `MenuBarExtra` per status bar macOS
-- `MongoKitten` per sync MongoDB Atlas (macOS only)
+- Keychain for API keys and MongoDB connection string
+- `UNUserNotificationCenter` for daily reminders, open session alerts, Pomodoro phase end
+- `ActivityKit` for iOS Live Activity
+- `MenuBarExtra` for macOS menu bar
+- `MongoKitten` for MongoDB Atlas sync (macOS only)

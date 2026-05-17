@@ -1,22 +1,22 @@
-# Sincronizzazione
+# Synchronisation
 
-Il progetto usa due implementazioni di sync distinte, una per piattaforma, entramben nello stesso package `TimelogSync`.
+The project uses two separate sync implementations, one per platform, both in the `TimelogSync` package.
 
-| Piattaforma | Servizio | Protocollo |
-|-------------|----------|------------|
+| Platform | Service | Protocol |
+|----------|---------|----------|
 | iOS | `RestSyncService` | URLSession → Vercel Functions → MongoDB Atlas |
-| macOS | `MongoSyncService` | MongoKitten → MongoDB Atlas (wire protocol diretto) |
+| macOS | `MongoSyncService` | MongoKitten → MongoDB Atlas (direct wire protocol) |
 
 ---
 
 ## iOS — RestSyncService
 
-### Architettura
+### Architecture
 
 ```mermaid
 flowchart TD
-    subgraph iOS["App iOS"]
-        SD[("SwiftData\nSQLite locale")]
+    subgraph iOS["iOS App"]
+        SD[("SwiftData\nlocal SQLite")]
         KCH[("Keychain\nrest_sync_server_url\nrest_sync_api_key")]
         File["SyncConfig.local\n(bundle, gitignored)"]
         RSS["RestSyncService\n@Observable @MainActor"]
@@ -29,10 +29,10 @@ flowchart TD
 
     MDB[("MongoDB Atlas")]
 
-    File -->|"loadConfigFromFile()\nse Keychain è vuota"| KCH
+    File -->|"loadConfigFromFile()\nif Keychain empty"| KCH
     KCH --> RSS
 
-    MDB -->|"pullAll(into:)\navvio app"| Pull
+    MDB -->|"pullAll(into:)\non app launch"| Pull
     Pull -->|"{ clients, projects, entries }"| RSS
     RSS -->|"delete-all + re-insert"| SD
 
@@ -41,51 +41,53 @@ flowchart TD
     Sync -->|"upsert"| MDB
 ```
 
-### Sequenza all'avvio
+### Launch sequence
 
-1. `loadConfigFromFile()` — legge `SyncConfig.local` dal bundle (URL + API_KEY), salva in Keychain se non già configurato
-2. `setDataProvider` — registra la closure per fetchare tutti i dati da `container.mainContext`
-3. `isPulling = true` — blocca il push durante il pull per evitare loop
+1. `loadConfigFromFile()` — reads `SyncConfig.local` from the bundle (URL + API_KEY), saves to Keychain if not already configured
+2. `setDataProvider` — registers the closure that fetches all data from `container.mainContext`
+3. `isPulling = true` — blocks push during pull to prevent loops
 4. `pullAll(into:)`:
-   - GET `/api/pull` con header `X-API-Key`
-   - Post `willWipeDataNotification` → attende 150ms (lascia silenziare le view)
-   - Cancella TimeEntry, poi Project, poi Client da SwiftData
-   - Reinserisce da zero nell'ordine clients → projects → entries, linkando le relazioni in memoria
-5. `isPulling = false` — `SyncFlashOverlay` mostra flash verde + haptic
+   - GET `/api/pull` with `X-API-Key` header
+   - Post `willWipeDataNotification` → waits 150ms (lets views silence animations)
+   - Delete TimeEntry, then Project, then Client from SwiftData
+   - Re-insert from scratch in order: clients → projects → entries, linking relationships in memory
+5. `isPulling = false` — `SyncFlashOverlay` shows green flash + haptic
 
 ### Auto-push
 
-`onChange` su clients/projects/entries → `triggerSync()` (solo se `!isPulling`) → debounce 2s → POST `/api/sync`
+`onChange` on clients/projects/entries → `triggerSync()` (only if `!isPulling`) → debounce 2s → POST `/api/sync`
 
-### Configurazione
+> **userId filtering (RestSyncService)**: DTOs sent to and received from Vercel Functions include `userId`. On pull, `RestSyncService` filters the returned records client-side, keeping only those where `userId == settings.userId` (or where `userId` is absent/empty for legacy records). On push, each serialised document includes the current `settings.userId`.
+
+### Configuration
 
 ```bash
-# Timelog/SyncConfig.local (gitignored, incluso nel bundle iOS)
+# Timelog/SyncConfig.local (gitignored, included in iOS bundle)
 URL=https://your-app.vercel.app
 API_KEY=your-secret-key
 ```
 
-### Stati osservabili
+### Observable state
 
-| Proprietà | Tipo | Significato |
-|-----------|------|-------------|
-| `isSyncing` | `Bool` | Pull o push in corso |
-| `lastSyncDate` | `Date?` | Timestamp ultimo sync riuscito |
-| `lastError` | `String?` | Ultimo errore (nil se OK) |
-| `isConfigured` | `Bool` | URL e API key presenti in Keychain |
+| Property | Type | Meaning |
+|----------|------|---------|
+| `isSyncing` | `Bool` | Pull or push in progress |
+| `lastSyncDate` | `Date?` | Timestamp of last successful sync |
+| `lastError` | `String?` | Last error (nil if OK) |
+| `isConfigured` | `Bool` | URL and API key present in Keychain |
 
 ---
 
 ## macOS — MongoSyncService
 
-### Architettura
+### Architecture
 
 ```mermaid
 flowchart TD
-    subgraph macOS["App macOS"]
-        SD[("SwiftData\nSQLite locale")]
+    subgraph macOS["macOS App"]
+        SD[("SwiftData\nlocal SQLite")]
         KCH[("Keychain\nmongo_connection_string")]
-        File["~/.config/timelog/mongo.local\n(fuori dal repo, solo dev)"]
+        File["~/.config/timelog/mongo.local\n(outside repo, dev only)"]
         MSS["MongoSyncService\n@Observable @MainActor"]
     end
 
@@ -96,11 +98,11 @@ flowchart TD
         C3["time_entries"]
     end
 
-    File -->|"loadConnectionStringFromFile()\nse Keychain è vuota"| KCH
+    File -->|"loadConnectionStringFromFile()\nif Keychain empty"| KCH
     KCH -->|"connect()"| MSS
 
-    MongoDB -->|"pullAll(into:)\nse SwiftData vuoto"| MSS
-    MSS -->|"upsert in SwiftData"| SD
+    MongoDB -->|"pullAll(into:)\nif SwiftData empty"| MSS
+    MSS -->|"upsert into SwiftData"| SD
 
     SD -->|"NSManagedObjectContextDidSave\n+ triggerSync()"| MSS
     MSS -->|"upsertEncoded — push"| MongoDB
@@ -108,80 +110,84 @@ flowchart TD
     C1 & C2 & C3 --- DB
 ```
 
-### Sequenza all'avvio
+### Launch sequence
 
-1. `loadConnectionStringFromFile()` — legge `~/.config/timelog/mongo.local`, salva in Keychain se vuota
-2. `connect()` — apre la connessione wire protocol con MongoKitten
-3. `pullAll(into:)` — eseguito **solo se SwiftData è vuoto** (primo avvio o dopo reset manuale), per evitare il flash di empty state
-4. `triggerSync()` — push immediato dei dati locali verso Atlas
+1. `loadConnectionStringFromFile()` — reads `~/.config/timelog/mongo.local`, saves to Keychain if empty
+2. `connect()` — opens the wire-protocol connection via MongoKitten
+3. `pullAll(into:)` — executed **only if SwiftData is empty** (first launch or after manual reset), to avoid an empty-state flash
+4. `triggerSync()` — immediate push of local data to Atlas
 
 ### Auto-push
 
-`onChange` su clients/projects/entries → `triggerSync()` → debounce 2s → `upsertEncoded` su tutte e tre le collection
+`onChange` on clients/projects/entries → `triggerSync()` → debounce 2s → `upsertEncoded` on all three collections
 
-### Configurazione
+> **userId filtering (MongoSyncService)**: all MongoDB queries include a `"userId" == userId` filter at the driver level, so only the current user's documents are fetched. Each document pushed via `upsertEncoded` includes the `userId` field. This means MongoSyncService never reads or overwrites another user's data even on a shared Atlas cluster.
+
+### Configuration
 
 ```bash
 mkdir -p ~/.config/timelog
 echo "mongodb+srv://user:password@cluster.mongodb.net" > ~/.config/timelog/mongo.local
 ```
 
-**Priorità di lettura:**
+**Read priority:**
 ```
-~/.config/timelog/mongo.local  (solo se Keychain è vuota)
+~/.config/timelog/mongo.local  (only if Keychain is empty)
          ↓
   Keychain "mongo_connection_string"
          ↓
     MongoSyncService.db
 ```
 
-### Stati osservabili
+### Observable state
 
-| Proprietà | Tipo | Significato |
-|-----------|------|-------------|
-| `isSyncing` | `Bool` | Pull o push in corso |
-| `lastSyncDate` | `Date?` | Timestamp ultimo pull o push riuscito |
-| `lastError` | `String?` | Ultimo errore (nil se OK) |
+| Property | Type | Meaning |
+|----------|------|---------|
+| `isSyncing` | `Bool` | Pull or push in progress |
+| `lastSyncDate` | `Date?` | Timestamp of last successful pull or push |
+| `lastError` | `String?` | Last error (nil if OK) |
 
 ---
 
-## Struttura documenti MongoDB (condivisa)
+## MongoDB document schema (shared)
 
-I documenti sono identici indipendentemente da chi li ha scritti (iOS via Vercel, macOS via MongoKitten).
+Documents are identical regardless of which platform wrote them (iOS via Vercel, macOS via MongoKitten).
 
 ### `clients`
 ```json
-{ "_id": ObjectId("..."), "name": "Acme", "colorHex": "#FF5733", "isArchived": false, "deletedAt": null }
+{ "_id": ObjectId("..."), "name": "Acme", "colorHex": "#FF5733", "isArchived": false, "userId": "alice", "deletedAt": null }
 ```
 
 ### `projects`
 ```json
-{ "_id": ObjectId("..."), "name": "Website", "code": "PRJ-01", "isArchived": false, "clientMongoId": "64abc...", "deletedAt": null }
+{ "_id": ObjectId("..."), "name": "Website", "code": "PRJ-01", "isArchived": false, "clientMongoId": "64abc...", "userId": "alice", "deletedAt": null }
 ```
 
 ### `time_entries`
 ```json
-{ "_id": ObjectId("..."), "date": "2025-05-15T09:00:00.000Z", "durationMinutes": 90, "notes": "...", "clientMongoId": "...", "projectMongoId": "...", "deletedAt": null }
+{ "_id": ObjectId("..."), "date": "2025-05-15T09:00:00.000Z", "durationMinutes": 90, "notes": "...", "clientMongoId": "...", "projectMongoId": "...", "userId": "alice", "deletedAt": null }
 ```
 
 ### `sessions` (ActiveSession)
 ```json
-{ "_id": ObjectId("..."), "startDate": "2025-05-15T09:00:00.000Z", "notes": "...", "clientMongoId": "...", "projectMongoId": "..." }
+{ "_id": ObjectId("..."), "startDate": "2025-05-15T09:00:00.000Z", "notes": "...", "clientMongoId": "...", "projectMongoId": "...", "userId": "alice" }
 ```
 
-> **Nota `deletedAt`**: il campo è `null` per i record attivi, valorizzato con la data di cancellazione per i record eliminati logicamente. Durante la sync, i record con `deletedAt != null` vengono rimossi dal SwiftData locale dopo il pull.
+> **`deletedAt` note**: the field is `null` for active records, set to the deletion date for logically deleted records. During sync, records with `deletedAt != null` are removed from local SwiftData after pull.
+
+> **`userId` note**: every document written by either platform includes a `userId` field containing the owner's nickname (from `SettingsStore.userId`). This enables multiple users to share a single MongoDB database without their data colliding. Legacy documents with a missing or empty `userId` are treated as nil-tolerant by `RestSyncService` (iOS) and are still visible to the user; `MongoSyncService` (macOS) filters at query time so they are simply not returned. A compound index on `{ userId: 1, _id: 1 }` is recommended for each collection to keep per-user queries efficient.
 
 ---
 
-## Strategia MongoId
+## MongoId strategy
 
-Ogni entità SwiftData ha un campo `mongoId: String?` usato come chiave di sincronizzazione in entrambe le implementazioni.
+Every SwiftData entity has a `mongoId: String?` field used as the sync key by both implementations.
 
 | Scenario | iOS (RestSyncService) | macOS (MongoSyncService) |
 |----------|-----------------------|--------------------------|
-| Pull — documento trovato per mongoId | Aggiorna i campi in-place | Aggiorna i campi in-place |
-| Pull — documento non trovato | Crea nuova entità con mongoId = `_id` del server | Crea nuova entità con mongoId = `_id` del server |
-| Push — `mongoId` presente | Usa come `_id` per l'upsert | Usa come `ObjectId` per l'upsert |
-| Push — `mongoId` assente | Lascia vuoto (`""`) — il server genera un nuovo `_id` | Genera un nuovo `ObjectId` valido |
+| Pull — document found by mongoId | Update fields in-place | Update fields in-place |
+| Pull — document not found | Create new entity with mongoId = server `_id` | Create new entity with mongoId = server `_id` |
+| Push — `mongoId` present | Use as `_id` for upsert | Use as `ObjectId` for upsert |
+| Push — `mongoId` absent | Leave empty (`""`) — server generates a new `_id` | Generate a new valid `ObjectId` |
 
-> **Nota iOS**: il pull è un rimpiazzo completo (delete-all + re-insert), non un upsert incrementale. Questo garantisce coerenza senza dover gestire conflitti di merge.
+> **iOS note**: pull is a full replacement (delete-all + re-insert), not an incremental upsert. This guarantees consistency without having to handle merge conflicts.

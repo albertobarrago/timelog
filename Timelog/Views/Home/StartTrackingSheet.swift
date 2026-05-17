@@ -13,10 +13,12 @@ struct StartTrackingSheet: View {
     @State private var selectedProject: Project?
     @State private var notes = ""
 
+    @Query(filter: #Predicate<Project> { !$0.isArchived && $0.deletedAt == nil }, sort: \Project.name)
+    private var allProjects: [Project]
+
     private var availableProjects: [Project] {
-        (selectedClient?.projects ?? [])
-            .filter { !$0.isArchived }
-            .sorted { $0.name < $1.name }
+        guard let client = selectedClient else { return [] }
+        return allProjects.filter { $0.client?.persistentModelID == client.persistentModelID }
     }
 
     var body: some View {
@@ -59,7 +61,8 @@ struct StartTrackingSheet: View {
         let session = ActiveSession(
             client: selectedClient,
             project: selectedProject,
-            notes: notes.isEmpty ? nil : notes
+            notes: notes.isEmpty ? nil : notes,
+            userId: settings.userId
         )
         context.insert(session)
         NotificationManager.shared.scheduleSessionOverdue(
