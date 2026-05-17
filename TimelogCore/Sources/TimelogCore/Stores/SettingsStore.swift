@@ -3,6 +3,8 @@ import Observation
 
 @Observable
 public final class SettingsStore {
+    public var userId: String = "" { didSet { save() } }
+
     public var pomodoroWork: Int = 25 { didSet { save() } }
     public var pomodoroShortBreak: Int = 5 { didSet { save() } }
     public var pomodoroLongBreak: Int = 15 { didSet { save() } }
@@ -29,6 +31,7 @@ public final class SettingsStore {
             isLoading = false
             applyReminders()
         }
+        userId = defaults.string(forKey: "user_id") ?? ""
         let w = defaults.integer(forKey: "pomodoro_work")
         let s = defaults.integer(forKey: "pomodoro_short")
         let l = defaults.integer(forKey: "pomodoro_long")
@@ -47,6 +50,7 @@ public final class SettingsStore {
 
     public func save() {
         guard !isLoading else { return }
+        defaults.set(userId,             forKey: "user_id")
         defaults.set(pomodoroWork,       forKey: "pomodoro_work")
         defaults.set(pomodoroShortBreak, forKey: "pomodoro_short")
         defaults.set(pomodoroLongBreak,  forKey: "pomodoro_long")
