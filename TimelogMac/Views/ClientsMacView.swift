@@ -155,6 +155,8 @@ struct ProjectsMacView: View {
                         ProjectMacRow(project: proj)
                             .contentShape(Rectangle())
                             .onTapGesture { projectToEdit = proj }
+                            .accessibilityAddTraits(.isButton)
+                            .accessibilityHint(String(localized: "Click to edit project"))
                             .contextMenu {
                                 Button("Edit") { projectToEdit = proj }
                                 Button(proj.isArchived ? "Unarchive" : "Archive") {
@@ -285,6 +287,26 @@ struct ClientMacFormView: View {
                 }
             }
             .onTapGesture { colorHex = hex }
+            .accessibilityLabel(colorName(for: hex))
+            .accessibilityAddTraits(selected ? [.isButton, .isSelected] : .isButton)
+    }
+
+    private func colorName(for hex: String) -> String {
+        switch hex.uppercased() {
+        case "#FF3B30": return String(localized: "Red")
+        case "#FF9500": return String(localized: "Orange")
+        case "#FFCC00": return String(localized: "Yellow")
+        case "#34C759": return String(localized: "Green")
+        case "#30B0C7": return String(localized: "Teal")
+        case "#007AFF": return String(localized: "Blue")
+        case "#5856D6": return String(localized: "Indigo")
+        case "#AF52DE": return String(localized: "Purple")
+        case "#FF2D55": return String(localized: "Pink")
+        case "#A2845E": return String(localized: "Brown")
+        case "#8E8E93": return String(localized: "Gray")
+        case "#32ADE6": return String(localized: "Light Blue")
+        default:        return String(localized: "Custom color")
+        }
     }
 
     private func save() {

@@ -67,6 +67,8 @@ struct TodayMacView: View {
                             EntryMacRow(entry: entry)
                                 .contentShape(Rectangle())
                                 .onTapGesture { entryToEdit = entry }
+                                .accessibilityAddTraits(.isButton)
+                                .accessibilityHint(String(localized: "Click to edit entry"))
                                 .contextMenu {
                                     Button("Edit") { entryToEdit = entry }
                                     Divider()
@@ -148,10 +150,12 @@ struct ActiveSessionMacRow: View {
                 }
                 .buttonStyle(.plain)
                 .help("Stop and log")
+                .accessibilityLabel(String(localized: "Stop and log session"))
             } else {
                 Image(systemName: "stop.circle.fill")
                     .foregroundStyle(.red)
                     .imageScale(.large)
+                    .accessibilityHidden(true)
             }
         }
         .padding(.vertical, 2)

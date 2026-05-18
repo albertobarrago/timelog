@@ -49,6 +49,7 @@ struct ProjectListView: View {
         .toolbar {
             ToolbarItem(placement: .primaryAction) {
                 Button { activeSheet = .add } label: { Image(systemName: "plus") }
+                    .accessibilityLabel(String(localized: "Add project"))
             }
         }
         .sheet(item: $activeSheet) { sheet in

@@ -216,6 +216,7 @@ private struct NicknameRevealRow: View {
                         .foregroundStyle(.secondary)
                 }
                 .buttonStyle(.plain)
+                .accessibilityLabel(revealed ? String(localized: "Hide nickname") : String(localized: "Show nickname"))
             }
         }
     }
@@ -298,7 +299,22 @@ private struct DayPickerMac: View {
                         .foregroundStyle(on ? .white : .primary)
                 }
                 .buttonStyle(.plain)
+                .accessibilityLabel(fullDayName(for: day.label))
+                .accessibilityAddTraits(on ? [.isButton, .isSelected] : .isButton)
             }
+        }
+    }
+
+    private func fullDayName(for label: String) -> String {
+        switch label {
+        case "M":  return String(localized: "Monday")
+        case "Tu": return String(localized: "Tuesday")
+        case "W":  return String(localized: "Wednesday")
+        case "Th": return String(localized: "Thursday")
+        case "F":  return String(localized: "Friday")
+        case "Sa": return String(localized: "Saturday")
+        case "Su": return String(localized: "Sunday")
+        default:   return label
         }
     }
 }
