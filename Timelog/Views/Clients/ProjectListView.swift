@@ -2,18 +2,29 @@ import TimelogCore
 import SwiftUI
 import SwiftData
 
+private enum ProjectSheet: Identifiable {
+    case add
+    case edit(Project)
+    var id: String {
+        switch self {
+        case .add: return "add"
+        case .edit(let p): return "edit-\(p.persistentModelID)"
+        }
+    }
+}
+
 struct ProjectListView: View {
     @Environment(\.modelContext) private var context
     var client: Client
 
-    @State private var showingAddProject = false
-    @State private var projectToEdit: Project?
+    @Query(sort: \Project.name) private var allProjects: [Project]
+    @State private var activeSheet: ProjectSheet?
 
     private var activeProjects: [Project] {
-        client.projects.filter { !$0.isArchived }.sorted { $0.name < $1.name }
+        allProjects.filter { $0.client?.persistentModelID == client.persistentModelID && !$0.isArchived }
     }
     private var archivedProjects: [Project] {
-        client.projects.filter { $0.isArchived }.sorted { $0.name < $1.name }
+        allProjects.filter { $0.client?.persistentModelID == client.persistentModelID && $0.isArchived }
     }
 
     var body: some View {
@@ -37,11 +48,17 @@ struct ProjectListView: View {
         .navigationTitle(client.name)
         .toolbar {
             ToolbarItem(placement: .primaryAction) {
-                Button { showingAddProject = true } label: { Image(systemName: "plus") }
+                Button { activeSheet = .add } label: { Image(systemName: "plus") }
             }
         }
-        .sheet(isPresented: $showingAddProject) { ProjectFormView(client: client) }
-        .sheet(item: $projectToEdit) { ProjectFormView(client: client, project: $0) }
+        .sheet(item: $activeSheet) { sheet in
+            switch sheet {
+            case .add:
+                ProjectFormView(client: client)
+            case .edit(let p):
+                ProjectFormView(client: client, project: p)
+            }
+        }
     }
 
     @ViewBuilder
@@ -62,7 +79,7 @@ struct ProjectListView: View {
             Button(role: .destructive) { project.deletedAt = .now } label: {
                 Label("Delete", systemImage: "trash")
             }
-            Button { projectToEdit = project } label: {
+            Button { activeSheet = .edit(project) } label: {
                 Label("Edit", systemImage: "pencil")
             }
         }

@@ -45,7 +45,8 @@ struct StartTrackingSheet: View {
                 }
             }
             .formStyle(.grouped)
-            .navigationTitle("Start Tracking")
+            .navigationTitle(String(localized: "Start Tracking"))
+            .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Cancel") { dismiss() }
