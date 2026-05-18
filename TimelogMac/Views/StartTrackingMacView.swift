@@ -84,6 +84,7 @@ struct StartTrackingMacView: View {
             endHour: settings.trackingEndHour,
             endMinute: settings.trackingEndMinute
         )
+        try? context.save()
         dismissSelf()
     }
 }

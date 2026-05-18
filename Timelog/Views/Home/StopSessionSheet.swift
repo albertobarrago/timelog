@@ -71,6 +71,7 @@ struct StopSessionSheet: View {
         context.insert(entry)
         NotificationManager.shared.cancelSession(id: session.notificationID)
         context.delete(session)
+        try? context.save()
         #if os(iOS)
         UINotificationFeedbackGenerator().notificationOccurred(.success)
         #endif

@@ -74,6 +74,7 @@ struct StartTrackingSheet: View {
             endHour: settings.trackingEndHour,
             endMinute: settings.trackingEndMinute
         )
+        try? context.save()
         dismiss()
     }
 }
