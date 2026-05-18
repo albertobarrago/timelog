@@ -122,7 +122,7 @@ private struct CompactTimerRow: View {
             }
             .toggleStyle(.button)
             .controlSize(.small)
-            .onChange(of: vm.pomodoroEnabled) { vm.reset() }
+            .onChange(of: vm.pomodoroEnabled, initial: false) { _, _ in vm.reset() }
 
             Button { vm.reset() } label: {
                 Image(systemName: "arrow.counterclockwise")

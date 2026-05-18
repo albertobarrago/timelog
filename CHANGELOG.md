@@ -7,6 +7,12 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+### Fixed
+- **Widget non si aggiornava rapidamente dopo stop/start sessione** (iOS) — aggiunto `try? context.save()` in `StopSessionSheet` e `StartTrackingSheet`; la `@Query` di `HomeView` riceve dati aggiornati prima di scrivere lo snapshot su App Group UserDefaults
+- **Sessione ancora attiva dopo stop + navigazione** (iOS + macOS) — stesso `context.save()` esplicito risolve il lag di autosave di SwiftData; aggiunto anche in `StartTrackingMacView`
+- **Pomodoro si resettava aprendo il MenuBarExtra** (macOS) — `.onChange(of: vm.pomodoroEnabled)` in `CompactTimerRow` e `TimerView` ora usa `initial: false`; non scatta più alla prima render del popup
+- **Stato timer perso al riavvio dell'app** (iOS + macOS) — `TimerViewModel` persiste `elapsed`, `isRunning`, `pomodoroEnabled`, `phase` e `completedPomodoros` in `UserDefaults`; al riavvio lo stato viene ripristinato e il drift temporale calcolato automaticamente se il timer era in corsa
+
 ### Added
 - **Localizzazione EN / IT** — infrastruttura `.xcstrings` (Xcode 15+) per iOS e macOS; ~130 chiavi iOS, ~127 chiavi macOS, tutte tradotte in italiano
 - `it` aggiunto a `knownRegions` in entrambi i `.xcodeproj`

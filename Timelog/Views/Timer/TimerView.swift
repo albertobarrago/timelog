@@ -65,7 +65,7 @@ struct TimerView: View {
                             .font(.title)
                     }
                     .toggleStyle(.button)
-                    .onChange(of: vm.pomodoroEnabled) { vm.reset() }
+                    .onChange(of: vm.pomodoroEnabled, initial: false) { _, _ in vm.reset() }
                 }
 
                 Spacer()

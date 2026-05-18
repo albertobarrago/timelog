@@ -32,7 +32,9 @@ public final class TimerViewModel {
     public var longBreakMinutes = 15
     public var pomodorosBeforeLong = 4
 
-    public init() {}
+    public init() {
+        restoreState()
+    }
 
     public func applySettings(_ store: SettingsStore) {
         workMinutes = store.pomodoroWork
@@ -83,6 +85,7 @@ public final class TimerViewModel {
         if pomodoroEnabled {
             NotificationManager.shared.schedulePomodoroEnd(phase: phase.label, in: phaseTotal - elapsed, completedCount: completedPomodoros)
         }
+        saveState()
         #if os(iOS) && !targetEnvironment(macCatalyst)
         startLiveActivity()
         #endif
@@ -92,10 +95,8 @@ public final class TimerViewModel {
     }
 
     public func pause() {
-        isRunning = false
-        timer?.invalidate()
-        timer = nil
-        NotificationManager.shared.cancelPomodoroNotification()
+        stopTimer()
+        saveState()
         #if os(iOS) && !targetEnvironment(macCatalyst)
         updateLiveActivity()
         #endif
@@ -105,10 +106,11 @@ public final class TimerViewModel {
     }
 
     public func reset() {
-        pause()
+        stopTimer()
         elapsed = 0
         phase = .work
         completedPomodoros = 0
+        saveState()
         #if os(iOS) && !targetEnvironment(macCatalyst)
         endLiveActivity()
         #endif
@@ -126,7 +128,7 @@ public final class TimerViewModel {
     }
 
     func phaseComplete() {
-        pause()
+        stopTimer()
         elapsed = 0
         if phase == .work {
             completedPomodoros += 1
@@ -134,9 +136,73 @@ public final class TimerViewModel {
         } else {
             phase = .work
         }
+        saveState()
         #if os(iOS) && !targetEnvironment(macCatalyst)
         updateLiveActivity()
         #endif
+        #if os(iOS)
+        haptic(.light)
+        #endif
+    }
+
+    private func stopTimer() {
+        isRunning = false
+        timer?.invalidate()
+        timer = nil
+        NotificationManager.shared.cancelPomodoroNotification()
+    }
+
+    // MARK: - Persistence
+
+    private enum Key {
+        static let isRunning = "timerVM.isRunning"
+        static let elapsed = "timerVM.elapsed"
+        static let pomodoroEnabled = "timerVM.pomodoroEnabled"
+        static let phase = "timerVM.phase"
+        static let completedPomodoros = "timerVM.completedPomodoros"
+        static let savedAt = "timerVM.savedAt"
+    }
+
+    private func restoreState() {
+        let ud = UserDefaults.standard
+        guard ud.object(forKey: Key.savedAt) != nil else { return }
+        pomodoroEnabled = ud.bool(forKey: Key.pomodoroEnabled)
+        phase = Self.phase(from: ud.integer(forKey: Key.phase))
+        completedPomodoros = ud.integer(forKey: Key.completedPomodoros)
+        let savedElapsed = ud.double(forKey: Key.elapsed)
+        let wasRunning = ud.bool(forKey: Key.isRunning)
+        let savedAt = ud.double(forKey: Key.savedAt)
+        if wasRunning && savedAt > 0 {
+            elapsed = savedElapsed + max(0, Date().timeIntervalSince1970 - savedAt)
+        } else {
+            elapsed = savedElapsed
+        }
+    }
+
+    private func saveState() {
+        let ud = UserDefaults.standard
+        ud.set(isRunning, forKey: Key.isRunning)
+        ud.set(elapsed, forKey: Key.elapsed)
+        ud.set(pomodoroEnabled, forKey: Key.pomodoroEnabled)
+        ud.set(Self.int(from: phase), forKey: Key.phase)
+        ud.set(completedPomodoros, forKey: Key.completedPomodoros)
+        ud.set(Date().timeIntervalSince1970, forKey: Key.savedAt)
+    }
+
+    private static func phase(from raw: Int) -> PomodoroPhase {
+        switch raw {
+        case 1: .shortBreak
+        case 2: .longBreak
+        default: .work
+        }
+    }
+
+    private static func int(from phase: PomodoroPhase) -> Int {
+        switch phase {
+        case .work: 0
+        case .shortBreak: 1
+        case .longBreak: 2
+        }
     }
 
     #if os(iOS)
