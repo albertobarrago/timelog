@@ -26,36 +26,37 @@ struct StopSessionSheet: View {
     var body: some View {
         NavigationStack {
             Form {
-                Section {
+                Section(String(localized: "Session")) {
                     if let client = session.client {
-                        LabeledContent("Client", value: client.name)
+                        LabeledContent(String(localized: "Client"), value: client.name)
                     }
                     if let project = session.project {
-                        LabeledContent("Project", value: project.name)
+                        LabeledContent(String(localized: "Project"), value: project.name)
                     }
-                    LabeledContent("Started") {
+                    LabeledContent(String(localized: "Started")) {
                         Text(session.startDate, style: .time)
                     }
                 }
 
-                Section("Duration") {
+                Section(String(localized: "Duration")) {
                     Stepper("\(hours)h", value: $hours, in: 0...23)
                     Stepper("\(minutes)m", value: $minutes, in: 0...59)
                 }
 
-                Section("Notes") {
-                    TextField("Optional", text: $notes, axis: .vertical)
+                Section(String(localized: "Notes")) {
+                    TextField(String(localized: "Optional"), text: $notes, axis: .vertical)
                         .lineLimit(3...6)
                 }
             }
             .formStyle(.grouped)
-            .navigationTitle("Stop Tracking")
+            .navigationTitle(String(localized: "Stop Tracking"))
+            .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("Cancel") { dismiss() }
+                    Button(String(localized: "Cancel")) { dismiss() }
                 }
                 ToolbarItem(placement: .confirmationAction) {
-                    Button("Log") { stop() }
+                    Button(String(localized: "Log")) { stop() }
                         .disabled(hours == 0 && minutes == 0)
                 }
             }

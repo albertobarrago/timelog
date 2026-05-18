@@ -70,7 +70,8 @@ struct QuickLogSheet: View {
                 }
             }
             .formStyle(.grouped)
-            .navigationTitle(entry == nil ? "Log Time" : "Edit Entry")
+            .navigationTitle(entry == nil ? String(localized: "Log Time") : String(localized: "Edit Entry"))
+            .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Cancel") { dismiss() }
