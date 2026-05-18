@@ -96,6 +96,7 @@ struct MenuBarView: View {
                     .buttonStyle(.bordered)
                     .controlSize(.small)
                     .help("Show/hide Timelog window")
+                    .accessibilityLabel(String(localized: "Toggle Timelog window"))
                 }
                 .padding(.horizontal, 12)
                 .padding(.vertical, 8)
@@ -123,6 +124,7 @@ private struct CompactTimerRow: View {
             .toggleStyle(.button)
             .controlSize(.small)
             .onChange(of: vm.pomodoroEnabled, initial: false) { _, _ in vm.reset() }
+            .accessibilityLabel(String(localized: "Pomodoro mode"))
 
             Button { vm.reset() } label: {
                 Image(systemName: "arrow.counterclockwise")
@@ -130,6 +132,7 @@ private struct CompactTimerRow: View {
             .buttonStyle(.plain)
             .foregroundStyle(.secondary)
             .disabled(!vm.isRunning && vm.elapsed == 0)
+            .accessibilityLabel(String(localized: "Reset timer"))
 
             Button { vm.toggle() } label: {
                 Image(systemName: vm.isRunning ? "pause.circle.fill" : "play.circle.fill")
@@ -138,6 +141,7 @@ private struct CompactTimerRow: View {
             }
             .buttonStyle(.plain)
             .keyboardShortcut(.space, modifiers: [])
+            .accessibilityLabel(vm.isRunning ? String(localized: "Pause timer") : String(localized: "Start timer"))
         }
     }
 }
@@ -177,6 +181,7 @@ private struct MenuSessionRow: View {
             }
             .buttonStyle(.plain)
             .help("Stop and log")
+            .accessibilityLabel(String(localized: "Stop and log session"))
         }
         .padding(.horizontal, 12)
         .padding(.vertical, 4)

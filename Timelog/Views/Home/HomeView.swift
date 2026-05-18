@@ -58,6 +58,8 @@ struct HomeView: View {
                                     ActiveSessionRow(session: session)
                                         .contentShape(Rectangle())
                                         .onTapGesture { activeSheet = .stopSession(session) }
+                                        .accessibilityAddTraits(.isButton)
+                                        .accessibilityHint(String(localized: "Tap to stop session"))
                                         .swipeActions(edge: .trailing) {
                                             Button(role: .destructive) {
                                                 NotificationManager.shared.cancelSession(id: session.notificationID)
@@ -74,6 +76,8 @@ struct HomeView: View {
                             EntryRow(entry: entry)
                                 .contentShape(Rectangle())
                                 .onTapGesture { activeSheet = .editEntry(entry) }
+                                .accessibilityAddTraits(.isButton)
+                                .accessibilityHint(String(localized: "Tap to edit"))
                                 .swipeActions(edge: .trailing) {
                                     Button(role: .destructive) {
                                         entry.deletedAt = .now
@@ -92,16 +96,19 @@ struct HomeView: View {
                     Button { activeSheet = .history } label: {
                         Image(systemName: "calendar")
                     }
+                    .accessibilityLabel(String(localized: "History"))
                 }
                 ToolbarItem(placement: .primaryAction) {
                     Button { activeSheet = .startTracking } label: {
                         Image(systemName: "play.circle")
                     }
+                    .accessibilityLabel(String(localized: "Start tracking"))
                 }
                 ToolbarItem(placement: .primaryAction) {
                     Button { activeSheet = .quickLog } label: {
                         Image(systemName: "plus")
                     }
+                    .accessibilityLabel(String(localized: "Log time"))
                 }
                 #if targetEnvironment(macCatalyst)
                 ToolbarItem(placement: .secondaryAction) {
@@ -199,6 +206,7 @@ private struct ActiveSessionRow: View {
             Image(systemName: "stop.circle.fill")
                 .foregroundStyle(.red)
                 .font(.title3)
+                .accessibilityHidden(true)
         }
         .padding(.vertical, 2)
     }

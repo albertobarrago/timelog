@@ -16,5 +16,6 @@ struct TimerQuickToggle: View {
             }
         }
         .help(vm.isRunning ? "Pause timer" : "Start timer")
+        .accessibilityLabel(vm.isRunning ? String(localized: "Pause timer") : String(localized: "Start timer"))
     }
 }

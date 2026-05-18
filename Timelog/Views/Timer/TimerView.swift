@@ -47,6 +47,7 @@ struct TimerView: View {
                             .foregroundStyle(.secondary)
                     }
                     .buttonStyle(.plain)
+                    .accessibilityLabel(String(localized: "Reset timer"))
 
                     Button {
                         vm.toggle()
@@ -56,6 +57,7 @@ struct TimerView: View {
                             .symbolRenderingMode(.hierarchical)
                     }
                     .buttonStyle(.plain)
+                    .accessibilityLabel(vm.isRunning ? String(localized: "Pause timer") : String(localized: "Start timer"))
                     #if targetEnvironment(macCatalyst)
                     .keyboardShortcut(.space, modifiers: [])
                     #endif
@@ -66,6 +68,7 @@ struct TimerView: View {
                     }
                     .toggleStyle(.button)
                     .onChange(of: vm.pomodoroEnabled, initial: false) { _, _ in vm.reset() }
+                    .accessibilityLabel(String(localized: "Pomodoro mode"))
                 }
 
                 Spacer()

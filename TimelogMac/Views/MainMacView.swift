@@ -61,6 +61,7 @@ struct MainMacView: View {
                     .contentShape(Rectangle())
                 }
                 .buttonStyle(.plain)
+                .accessibilityLabel(String(localized: "Settings"))
                 .foregroundStyle(selection == .settings ? .primary : .secondary)
                 .padding(.horizontal, 8)
                 .padding(.vertical, 8)

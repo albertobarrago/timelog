@@ -80,6 +80,7 @@ struct ClientsView: View {
             .toolbar {
                 ToolbarItem(placement: .primaryAction) {
                     Button { activeSheet = .add } label: { Image(systemName: "plus") }
+                        .accessibilityLabel(String(localized: "Add client"))
                 }
                 ToolbarItem(placement: .secondaryAction) {
                     Button {
