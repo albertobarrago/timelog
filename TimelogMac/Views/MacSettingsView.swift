@@ -26,6 +26,10 @@ struct MacSettingsView: View {
                 Stepper("Long break: \(store.pomodoroLongBreak) min",
                         value: $store.pomodoroLongBreak, in: 1...60)
                     .onChange(of: store.pomodoroLongBreak) { timerVM.applySettings(store) }
+                Toggle(String(localized: "Auto-advance phases"), isOn: $store.pomodoroAutoAdvance)
+                    .onChange(of: store.pomodoroAutoAdvance) { timerVM.applySettings(store) }
+                Toggle(String(localized: "Sound effects"), isOn: $store.pomodoroSoundEnabled)
+                    .onChange(of: store.pomodoroSoundEnabled) { timerVM.applySettings(store) }
             }
 
             // MARK: Reminders

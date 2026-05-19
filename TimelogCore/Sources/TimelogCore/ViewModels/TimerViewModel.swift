@@ -6,6 +6,9 @@ import UIKit
 #if os(iOS) && !targetEnvironment(macCatalyst)
 import ActivityKit
 #endif
+#if canImport(AppKit) && !targetEnvironment(macCatalyst)
+import AppKit
+#endif
 
 public enum PomodoroPhase {
     case work, shortBreak, longBreak
@@ -31,6 +34,8 @@ public final class TimerViewModel {
     public var shortBreakMinutes = 5
     public var longBreakMinutes = 15
     public var pomodorosBeforeLong = 4
+    public var pomodoroSoundEnabled = true
+    public var pomodoroAutoAdvance = false
 
     public init() {
         restoreState()
@@ -40,6 +45,8 @@ public final class TimerViewModel {
         workMinutes = store.pomodoroWork
         shortBreakMinutes = store.pomodoroShortBreak
         longBreakMinutes = store.pomodoroLongBreak
+        pomodoroSoundEnabled = store.pomodoroSoundEnabled
+        pomodoroAutoAdvance = store.pomodoroAutoAdvance
     }
 
     private var timer: Timer?
@@ -136,6 +143,10 @@ public final class TimerViewModel {
         } else {
             phase = .work
         }
+        NotificationManager.shared.notifyPhaseTransition(to: phase.label, completedCount: completedPomodoros)
+        #if canImport(AppKit) && !targetEnvironment(macCatalyst)
+        if pomodoroSoundEnabled { playPhaseSound(for: phase) }
+        #endif
         saveState()
         #if os(iOS) && !targetEnvironment(macCatalyst)
         updateLiveActivity()
@@ -143,7 +154,20 @@ public final class TimerViewModel {
         #if os(iOS)
         haptic(.light)
         #endif
+        if pomodoroAutoAdvance { start() }
     }
+
+    #if canImport(AppKit) && !targetEnvironment(macCatalyst)
+    private func playPhaseSound(for phase: PomodoroPhase) {
+        let name: String
+        switch phase {
+        case .shortBreak: name = "Glass"
+        case .longBreak:  name = "Hero"
+        case .work:       name = "Purr"
+        }
+        NSSound(named: .init(name))?.play()
+    }
+    #endif
 
     private func stopTimer() {
         isRunning = false
