@@ -6,6 +6,9 @@ import UIKit
 #if os(iOS) && !targetEnvironment(macCatalyst)
 import ActivityKit
 #endif
+#if canImport(AppKit) && !targetEnvironment(macCatalyst)
+import AppKit
+#endif
 
 public enum PomodoroPhase {
     case work, shortBreak, longBreak
@@ -31,6 +34,8 @@ public final class TimerViewModel {
     public var shortBreakMinutes = 5
     public var longBreakMinutes = 15
     public var pomodorosBeforeLong = 4
+    public var pomodoroSoundEnabled = true
+    public var pomodoroAutoAdvance = false
 
     public init() {
         restoreState()
@@ -40,6 +45,8 @@ public final class TimerViewModel {
         workMinutes = store.pomodoroWork
         shortBreakMinutes = store.pomodoroShortBreak
         longBreakMinutes = store.pomodoroLongBreak
+        pomodoroSoundEnabled = store.pomodoroSoundEnabled
+        pomodoroAutoAdvance = store.pomodoroAutoAdvance
     }
 
     private var timer: Timer?
@@ -109,7 +116,6 @@ public final class TimerViewModel {
         stopTimer()
         elapsed = 0
         phase = .work
-        completedPomodoros = 0
         saveState()
         #if os(iOS) && !targetEnvironment(macCatalyst)
         endLiveActivity()
@@ -136,6 +142,10 @@ public final class TimerViewModel {
         } else {
             phase = .work
         }
+        NotificationManager.shared.notifyPhaseTransition(to: phase.label, completedCount: completedPomodoros)
+        #if canImport(AppKit) && !targetEnvironment(macCatalyst)
+        if pomodoroSoundEnabled { playPhaseSound(for: phase) }
+        #endif
         saveState()
         #if os(iOS) && !targetEnvironment(macCatalyst)
         updateLiveActivity()
@@ -143,7 +153,20 @@ public final class TimerViewModel {
         #if os(iOS)
         haptic(.light)
         #endif
+        if pomodoroAutoAdvance { start() }
     }
+
+    #if canImport(AppKit) && !targetEnvironment(macCatalyst)
+    private func playPhaseSound(for phase: PomodoroPhase) {
+        let name: String
+        switch phase {
+        case .shortBreak: name = "Glass"
+        case .longBreak:  name = "Hero"
+        case .work:       name = "Purr"
+        }
+        NSSound(named: .init(name))?.play()
+    }
+    #endif
 
     private func stopTimer() {
         isRunning = false
@@ -161,6 +184,7 @@ public final class TimerViewModel {
         static let phase = "timerVM.phase"
         static let completedPomodoros = "timerVM.completedPomodoros"
         static let savedAt = "timerVM.savedAt"
+        static let savedDate = "timerVM.savedDate"
     }
 
     private func restoreState() {
@@ -168,7 +192,8 @@ public final class TimerViewModel {
         guard ud.object(forKey: Key.savedAt) != nil else { return }
         pomodoroEnabled = ud.bool(forKey: Key.pomodoroEnabled)
         phase = Self.phase(from: ud.integer(forKey: Key.phase))
-        completedPomodoros = ud.integer(forKey: Key.completedPomodoros)
+        let savedDate = ud.string(forKey: Key.savedDate) ?? ""
+        completedPomodoros = savedDate == Self.todayString() ? ud.integer(forKey: Key.completedPomodoros) : 0
         let savedElapsed = ud.double(forKey: Key.elapsed)
         let wasRunning = ud.bool(forKey: Key.isRunning)
         let savedAt = ud.double(forKey: Key.savedAt)
@@ -187,6 +212,12 @@ public final class TimerViewModel {
         ud.set(Self.int(from: phase), forKey: Key.phase)
         ud.set(completedPomodoros, forKey: Key.completedPomodoros)
         ud.set(Date().timeIntervalSince1970, forKey: Key.savedAt)
+        ud.set(Self.todayString(), forKey: Key.savedDate)
+    }
+
+    private static func todayString() -> String {
+        let c = Calendar.current.dateComponents([.year, .month, .day], from: Date())
+        return "\(c.year!)-\(c.month!)-\(c.day!)"
     }
 
     private static func phase(from raw: Int) -> PomodoroPhase {

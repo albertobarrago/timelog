@@ -116,7 +116,7 @@ struct TimerViewModelTests {
 
     // MARK: reset
 
-    @Test func resetClearsState() {
+    @Test func resetClearsTimerButPreservesCount() {
         let vm = TimerViewModel()
         vm.elapsed = 300
         vm.phase = .shortBreak
@@ -124,7 +124,7 @@ struct TimerViewModelTests {
         vm.reset()
         #expect(vm.elapsed == 0)
         #expect(vm.phase == .work)
-        #expect(vm.completedPomodoros == 0)
+        #expect(vm.completedPomodoros == 2)
         #expect(vm.isRunning == false)
     }
 }

@@ -1,5 +1,6 @@
 import SwiftUI
 import SwiftData
+import UserNotifications
 import TimelogCore
 import TimelogSync
 import AppKit
@@ -39,6 +40,15 @@ private struct MongoSyncSetup: ViewModifier {
     }
 }
 
+final class AppNotificationDelegate: NSObject, UNUserNotificationCenterDelegate {
+    func userNotificationCenter(
+        _ center: UNUserNotificationCenter,
+        willPresent notification: UNNotification
+    ) async -> UNNotificationPresentationOptions {
+        return [.banner, .sound]
+    }
+}
+
 final class AppDelegate: NSObject, NSApplicationDelegate {
     func applicationShouldTerminate(_ sender: NSApplication) -> NSApplication.TerminateReply {
         let ctx = TimelogMacApp.container.mainContext
@@ -60,6 +70,7 @@ struct TimelogMacApp: App {
     @NSApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
     @State private var settings = SettingsStore()
     @State private var timerVM = TimerViewModel()
+    private let notificationDelegate = AppNotificationDelegate()
 
     static let container: ModelContainer = {
         let schema = Schema([Client.self, Project.self, TimeEntry.self, ActiveSession.self])
@@ -83,6 +94,7 @@ struct TimelogMacApp: App {
                 .environment(settings)
                 .environment(timerVM)
                 .onAppear {
+                    UNUserNotificationCenter.current().delegate = notificationDelegate
                     timerVM.applySettings(settings)
                     NotificationManager.shared.requestPermission()
                     settings.applyReminders()

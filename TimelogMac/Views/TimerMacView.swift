@@ -65,6 +65,8 @@ struct TimerMacView: View {
             }
             .pickerStyle(.segmented)
             .frame(width: 260)
+            .onChange(of: vm.pomodoroEnabled, initial: false) { vm.reset() }
+
 
             Spacer()
 

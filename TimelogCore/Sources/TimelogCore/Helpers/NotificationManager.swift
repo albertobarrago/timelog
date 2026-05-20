@@ -114,4 +114,27 @@ public final class NotificationManager {
     public func cancelPomodoroNotification() {
         UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: ["pomodoro_phase"])
     }
+
+    public func notifyPhaseTransition(to phase: String, completedCount: Int) {
+        let content = UNMutableNotificationContent()
+        content.sound = .default
+        switch phase {
+        case "Focus":
+            content.title = "Si riparte!"
+            content.body = "Pausa finita — focus mode attivata. Un pomodoro alla volta."
+        case "Short Break":
+            content.title = "Focus #\(completedCount) completato!"
+            content.body = "Guarda fuori dalla finestra per 20 secondi. I tuoi occhi ti ringrazieranno."
+        case "Long Break":
+            content.title = "Ottimo lavoro! \(completedCount) pomodori completati."
+            content.body = "Meriti una pausa lunga. Alzati e stiracchiati."
+        default:
+            content.title = "\(phase) started"
+            content.body = ""
+        }
+        let trigger = UNTimeIntervalNotificationTrigger(timeInterval: 0.5, repeats: false)
+        let request = UNNotificationRequest(identifier: "pomodoro_transition", content: content, trigger: trigger)
+        UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: ["pomodoro_transition"])
+        UNUserNotificationCenter.current().add(request)
+    }
 }

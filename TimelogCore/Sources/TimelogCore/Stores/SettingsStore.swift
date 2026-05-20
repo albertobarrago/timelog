@@ -8,6 +8,8 @@ public final class SettingsStore {
     public var pomodoroWork: Int = 25 { didSet { save() } }
     public var pomodoroShortBreak: Int = 5 { didSet { save() } }
     public var pomodoroLongBreak: Int = 15 { didSet { save() } }
+    public var pomodoroSoundEnabled: Bool = true { didSet { save() } }
+    public var pomodoroAutoAdvance: Bool = false { didSet { save() } }
 
     public var reminderEnabled: Bool = false { didSet { save(); if !isLoading { applyReminders() } } }
     public var reminderHour: Int = 17 { didSet { save(); if !isLoading { applyReminders() } } }
@@ -38,6 +40,8 @@ public final class SettingsStore {
         pomodoroWork = w > 0 ? w : 25
         pomodoroShortBreak = s > 0 ? s : 5
         pomodoroLongBreak = l > 0 ? l : 15
+        pomodoroSoundEnabled = defaults.object(forKey: "pomodoro_sound") != nil ? defaults.bool(forKey: "pomodoro_sound") : true
+        pomodoroAutoAdvance = defaults.bool(forKey: "pomodoro_auto_advance")
         reminderEnabled = defaults.bool(forKey: "reminder_enabled")
         reminderHour   = defaults.object(forKey: "reminder_hour")   != nil ? defaults.integer(forKey: "reminder_hour")   : 17
         reminderMinute = defaults.object(forKey: "reminder_minute") != nil ? defaults.integer(forKey: "reminder_minute") : 0
@@ -51,9 +55,11 @@ public final class SettingsStore {
     public func save() {
         guard !isLoading else { return }
         defaults.set(userId,             forKey: "user_id")
-        defaults.set(pomodoroWork,       forKey: "pomodoro_work")
-        defaults.set(pomodoroShortBreak, forKey: "pomodoro_short")
-        defaults.set(pomodoroLongBreak,  forKey: "pomodoro_long")
+        defaults.set(pomodoroWork,         forKey: "pomodoro_work")
+        defaults.set(pomodoroShortBreak,   forKey: "pomodoro_short")
+        defaults.set(pomodoroLongBreak,    forKey: "pomodoro_long")
+        defaults.set(pomodoroSoundEnabled, forKey: "pomodoro_sound")
+        defaults.set(pomodoroAutoAdvance,  forKey: "pomodoro_auto_advance")
         defaults.set(reminderEnabled,    forKey: "reminder_enabled")
         defaults.set(reminderHour,       forKey: "reminder_hour")
         defaults.set(reminderMinute,     forKey: "reminder_minute")
