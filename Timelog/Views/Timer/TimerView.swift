@@ -4,6 +4,8 @@ import SwiftUI
 struct TimerView: View {
     @Environment(SettingsStore.self) private var settings
     @Environment(TimerViewModel.self) private var vm
+    @State private var showModeChangeConfirm = false
+    @State private var pendingPomodoroEnabled = false
 
     var body: some View {
         @Bindable var vm = vm
@@ -62,12 +64,22 @@ struct TimerView: View {
                     .keyboardShortcut(.space, modifiers: [])
                     #endif
 
-                    Toggle(isOn: $vm.pomodoroEnabled) {
+                    Toggle(isOn: Binding(
+                        get: { vm.pomodoroEnabled },
+                        set: { newValue in
+                            if vm.elapsed > 0 || vm.isRunning {
+                                pendingPomodoroEnabled = newValue
+                                showModeChangeConfirm = true
+                            } else {
+                                vm.pomodoroEnabled = newValue
+                                vm.reset()
+                            }
+                        }
+                    )) {
                         Image(systemName: "timer")
                             .font(.title)
                     }
                     .toggleStyle(.button)
-                    .onChange(of: vm.pomodoroEnabled, initial: false) { _, _ in vm.reset() }
                     .accessibilityLabel(String(localized: "Pomodoro mode"))
                 }
 
@@ -77,6 +89,19 @@ struct TimerView: View {
             .frame(maxWidth: 480)
             .navigationTitle("Timer")
             .onAppear { vm.applySettings(settings) }
+            .confirmationDialog(
+                String(localized: "Switch mode"),
+                isPresented: $showModeChangeConfirm,
+                titleVisibility: .visible
+            ) {
+                Button(String(localized: "Reset and switch"), role: .destructive) {
+                    vm.pomodoroEnabled = pendingPomodoroEnabled
+                    vm.reset()
+                }
+                Button(String(localized: "Cancel"), role: .cancel) {}
+            } message: {
+                Text("The current session will be reset.")
+            }
         }
     }
 }
