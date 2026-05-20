@@ -149,6 +149,18 @@ public final class RestSyncService {
 
     public func triggerSync() { scheduleDebounced() }
 
+    public func triggerSyncNow() {
+        debounceTask?.cancel()
+        debounceTask = Task { [weak self] in
+            guard let self, let data = self.dataProvider?() else { return }
+            do {
+                try await self.push(clients: data.clients, projects: data.projects, entries: data.entries, sessions: data.sessions)
+            } catch {
+                self.lastError = error.localizedDescription
+            }
+        }
+    }
+
     public func stopAutoSync() { debounceTask?.cancel(); dataProvider = nil }
 
     private func scheduleDebounced() {

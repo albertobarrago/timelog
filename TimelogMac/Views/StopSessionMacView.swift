@@ -1,6 +1,7 @@
 import SwiftUI
 import SwiftData
 import TimelogCore
+import TimelogSync
 
 struct StopSessionMacView: View {
     var onDismiss: (() -> Void)? = nil
@@ -81,6 +82,7 @@ struct StopSessionMacView: View {
         NotificationManager.shared.cancelSession(id: session.notificationID)
         context.delete(session)
         try? context.save()
+        MongoSyncService.shared.triggerSyncNow()
         dismissSelf()
     }
 
@@ -93,6 +95,7 @@ struct StopSessionMacView: View {
         NotificationManager.shared.cancelSession(id: session.notificationID)
         context.delete(session)
         try? context.save()
+        MongoSyncService.shared.triggerSyncNow()
         dismissSelf()
     }
 }

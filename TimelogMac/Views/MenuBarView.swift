@@ -1,6 +1,7 @@
 import SwiftUI
 import SwiftData
 import TimelogCore
+import TimelogSync
 import AppKit
 
 struct MenuBarView: View {
@@ -54,6 +55,8 @@ struct MenuBarView: View {
                                 } onDiscard: {
                                     NotificationManager.shared.cancelSession(id: session.notificationID)
                                     context.delete(session)
+                                    try? context.save()
+                                    MongoSyncService.shared.triggerSyncNow()
                                 }
                             }
                         }

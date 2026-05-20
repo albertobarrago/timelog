@@ -1,4 +1,5 @@
 import TimelogCore
+import TimelogSync
 import SwiftUI
 import SwiftData
 #if os(iOS)
@@ -72,6 +73,7 @@ struct StopSessionSheet: View {
         NotificationManager.shared.cancelSession(id: session.notificationID)
         context.delete(session)
         try? context.save()
+        RestSyncService.shared.triggerSyncNow()
         #if os(iOS)
         UINotificationFeedbackGenerator().notificationOccurred(.success)
         #endif
