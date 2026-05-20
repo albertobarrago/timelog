@@ -108,6 +108,9 @@ struct MenuBarView: View {
 
 private struct CompactTimerRow: View {
     @Bindable var vm: TimerViewModel
+    @State private var showModeChangeConfirm = false
+    @State private var pendingPomodoroEnabled = false
+
     var body: some View {
         HStack(spacing: 12) {
             VStack(alignment: .leading, spacing: 1) {
@@ -118,12 +121,22 @@ private struct CompactTimerRow: View {
                     .monospacedDigit()
             }
             Spacer()
-            Toggle(isOn: $vm.pomodoroEnabled) {
+            Toggle(isOn: Binding(
+                get: { vm.pomodoroEnabled },
+                set: { newValue in
+                    if vm.elapsed > 0 || vm.isRunning {
+                        pendingPomodoroEnabled = newValue
+                        showModeChangeConfirm = true
+                    } else {
+                        vm.pomodoroEnabled = newValue
+                        vm.reset()
+                    }
+                }
+            )) {
                 Image(systemName: "timer")
             }
             .toggleStyle(.button)
             .controlSize(.small)
-            .onChange(of: vm.pomodoroEnabled, initial: false) { _, _ in vm.reset() }
             .accessibilityLabel(String(localized: "Pomodoro mode"))
 
             Button { vm.reset() } label: {
@@ -142,6 +155,19 @@ private struct CompactTimerRow: View {
             .buttonStyle(.plain)
             .keyboardShortcut(.space, modifiers: [])
             .accessibilityLabel(vm.isRunning ? String(localized: "Pause timer") : String(localized: "Start timer"))
+        }
+        .confirmationDialog(
+            String(localized: "Switch mode"),
+            isPresented: $showModeChangeConfirm,
+            titleVisibility: .visible
+        ) {
+            Button(String(localized: "Reset and switch"), role: .destructive) {
+                vm.pomodoroEnabled = pendingPomodoroEnabled
+                vm.reset()
+            }
+            Button(String(localized: "Cancel"), role: .cancel) {}
+        } message: {
+            Text("The current session will be reset.")
         }
     }
 }

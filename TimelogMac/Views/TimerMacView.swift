@@ -4,6 +4,8 @@ import TimelogCore
 struct TimerMacView: View {
     @Environment(TimerViewModel.self) private var vm
     @Environment(SettingsStore.self) private var settings
+    @State private var showModeChangeConfirm = false
+    @State private var pendingPomodoroEnabled = false
 
     var body: some View {
         @Bindable var vm = vm
@@ -29,19 +31,40 @@ struct TimerMacView: View {
         }
         .navigationTitle("Timer")
         .onAppear { vm.applySettings(settings) }
+        .confirmationDialog(
+            String(localized: "Switch mode"),
+            isPresented: $showModeChangeConfirm,
+            titleVisibility: .visible
+        ) {
+            Button(String(localized: "Reset and switch"), role: .destructive) {
+                vm.pomodoroEnabled = pendingPomodoroEnabled
+                vm.reset()
+            }
+            Button(String(localized: "Cancel"), role: .cancel) {}
+        } message: {
+            Text("The current session will be reset.")
+        }
     }
 
     private func header(vm: TimerViewModel) -> some View {
-        @Bindable var vm = vm
-
         return HStack(spacing: 16) {
-            Picker("Mode", selection: $vm.pomodoroEnabled) {
+            Picker("Mode", selection: Binding(
+                get: { vm.pomodoroEnabled },
+                set: { newValue in
+                    if vm.elapsed > 0 || vm.isRunning {
+                        pendingPomodoroEnabled = newValue
+                        showModeChangeConfirm = true
+                    } else {
+                        vm.pomodoroEnabled = newValue
+                        vm.reset()
+                    }
+                }
+            )) {
                 Label("Stopwatch", systemImage: "stopwatch").tag(false)
                 Label("Pomodoro", systemImage: "timer").tag(true)
             }
             .pickerStyle(.segmented)
             .frame(width: 260)
-            .onChange(of: vm.pomodoroEnabled) { vm.reset() }
 
             Spacer()
 
