@@ -1,6 +1,7 @@
 import SwiftUI
 import SwiftData
 import TimelogCore
+import TimelogSync
 
 struct TodayMacView: View {
     @Environment(\.modelContext) private var context
@@ -55,6 +56,7 @@ struct TodayMacView: View {
                                             NotificationManager.shared.cancelSession(id: session.notificationID)
                                             context.delete(session)
                                             try? context.save()
+                                            MongoSyncService.shared.triggerSyncNow()
                                         }
                                     }
                                 }

@@ -139,6 +139,18 @@ public final class MongoSyncService {
 
     public func triggerSync() { scheduleDebounced() }
 
+    public func triggerSyncNow() {
+        debounceTask?.cancel()
+        debounceTask = Task { [weak self] in
+            guard let self else { return }
+            if self.db == nil {
+                do { try await self.connect() } catch { self.lastError = error.localizedDescription; return }
+            }
+            guard let data = self.dataProvider?() else { return }
+            try? await self.syncAll(clients: data.clients, projects: data.projects, entries: data.entries, sessions: data.sessions)
+        }
+    }
+
     public func stopAutoSync() { debounceTask?.cancel(); dataProvider = nil }
 
     private func scheduleDebounced() {
@@ -336,6 +348,7 @@ public final class MongoSyncService {
     public func connect() async throws {}
     public func setDataProvider(_ provider: @escaping DataProvider) {}
     public func triggerSync() {}
+    public func triggerSyncNow() {}
     public func stopAutoSync() {}
     public func syncAll(clients: [Client], projects: [TimelogCore.Project], entries: [TimeEntry], sessions: [ActiveSession]) async throws {}
     public func pullAll(into context: ModelContext) async throws {}
