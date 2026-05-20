@@ -109,7 +109,6 @@ public final class TimerViewModel {
         stopTimer()
         elapsed = 0
         phase = .work
-        completedPomodoros = 0
         saveState()
         #if os(iOS) && !targetEnvironment(macCatalyst)
         endLiveActivity()
@@ -161,6 +160,7 @@ public final class TimerViewModel {
         static let phase = "timerVM.phase"
         static let completedPomodoros = "timerVM.completedPomodoros"
         static let savedAt = "timerVM.savedAt"
+        static let savedDate = "timerVM.savedDate"
     }
 
     private func restoreState() {
@@ -168,7 +168,8 @@ public final class TimerViewModel {
         guard ud.object(forKey: Key.savedAt) != nil else { return }
         pomodoroEnabled = ud.bool(forKey: Key.pomodoroEnabled)
         phase = Self.phase(from: ud.integer(forKey: Key.phase))
-        completedPomodoros = ud.integer(forKey: Key.completedPomodoros)
+        let savedDate = ud.string(forKey: Key.savedDate) ?? ""
+        completedPomodoros = savedDate == Self.todayString() ? ud.integer(forKey: Key.completedPomodoros) : 0
         let savedElapsed = ud.double(forKey: Key.elapsed)
         let wasRunning = ud.bool(forKey: Key.isRunning)
         let savedAt = ud.double(forKey: Key.savedAt)
@@ -187,6 +188,12 @@ public final class TimerViewModel {
         ud.set(Self.int(from: phase), forKey: Key.phase)
         ud.set(completedPomodoros, forKey: Key.completedPomodoros)
         ud.set(Date().timeIntervalSince1970, forKey: Key.savedAt)
+        ud.set(Self.todayString(), forKey: Key.savedDate)
+    }
+
+    private static func todayString() -> String {
+        let c = Calendar.current.dateComponents([.year, .month, .day], from: Date())
+        return "\(c.year!)-\(c.month!)-\(c.day!)"
     }
 
     private static func phase(from raw: Int) -> PomodoroPhase {
