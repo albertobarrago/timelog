@@ -2,6 +2,32 @@ import Charts
 import SwiftUI
 import TimelogCore
 
+// MARK: - Shared types
+
+enum BubblePeriod: String, CaseIterable, Identifiable {
+    case week    = "Week"
+    case month   = "Month"
+    case allTime = "All Time"
+    var id: String { rawValue }
+
+    var localizedLabel: String {
+        switch self {
+        case .week:    return String(localized: "Week")
+        case .month:   return String(localized: "Month")
+        case .allTime: return String(localized: "All Time")
+        }
+    }
+}
+
+struct ProjectBubble: Identifiable {
+    let id: String
+    let name: String
+    let color: Color
+    var minutes: Int
+}
+
+// MARK: - Donut Chart
+
 struct DonutChartView: View {
     let bubbles: [ProjectBubble]
 

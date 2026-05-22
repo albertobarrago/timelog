@@ -10,8 +10,7 @@ struct HistoryMacView: View {
     @State private var selectedDate = Date()
     @State private var entryToEdit: TimeEntry?
     @State private var bubblePeriod: BubblePeriod = .week
-    @State private var chartType: ChartType = .bubble
-    @State private var isChartExpanded = true
+    @State private var isChartExpanded = false
 
     // MARK: - Computed
 
@@ -142,31 +141,16 @@ struct HistoryMacView: View {
             // Accordion: hours per project
             Section {
                 DisclosureGroup(isExpanded: $isChartExpanded) {
-                    HStack(spacing: 8) {
-                        Picker("", selection: $chartType) {
-                            ForEach(ChartType.allCases) { t in
-                                Text(t.localizedLabel).tag(t)
-                            }
+                    Picker("", selection: $bubblePeriod) {
+                        ForEach(BubblePeriod.allCases) { p in
+                            Text(p.localizedLabel).tag(p)
                         }
-                        .pickerStyle(.segmented)
-                        .labelsHidden()
-                        .frame(maxWidth: 140)
-
-                        Picker("", selection: $bubblePeriod) {
-                            ForEach(BubblePeriod.allCases) { p in
-                                Text(p.localizedLabel).tag(p)
-                            }
-                        }
-                        .pickerStyle(.segmented)
-                        .labelsHidden()
                     }
+                    .pickerStyle(.segmented)
+                    .labelsHidden()
                     .padding(.top, 4)
 
-                    if chartType == .bubble {
-                        BubbleChartView(bubbles: projectBubbles)
-                    } else {
-                        DonutChartView(bubbles: projectBubbles)
-                    }
+                    DonutChartView(bubbles: projectBubbles)
                 } label: {
                     Text(String(localized: "Hours by project"))
                         .font(.caption.weight(.semibold))
