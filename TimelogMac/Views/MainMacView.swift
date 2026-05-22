@@ -94,6 +94,8 @@ struct MainMacView: View {
 private struct SyncStatusDot: View {
     private var sync: MongoSyncService { MongoSyncService.shared }
     @State private var pulse = false
+    @State private var showHint = false
+    @AppStorage("syncHintDismissed") private var hintDismissed: Bool = false
 
     var body: some View {
         ZStack {
@@ -110,6 +112,24 @@ private struct SyncStatusDot: View {
                 .frame(width: 7, height: 7)
         }
         .onAppear { pulse = true }
+        .onChange(of: sync.isUserEditing) { _, isEditing in
+            guard !isEditing, !hintDismissed else { return }
+            showHint = true
+        }
+        .popover(isPresented: $showHint, arrowEdge: .trailing) {
+            VStack(alignment: .leading, spacing: 10) {
+                Text("Press ⌘S to sync changes immediately.")
+                    .font(.callout)
+                Button(String(localized: "Got it")) {
+                    hintDismissed = true
+                    showHint = false
+                }
+                .buttonStyle(.borderedProminent)
+                .controlSize(.small)
+            }
+            .padding(14)
+            .frame(width: 240)
+        }
     }
 
     private var dotColor: Color {
