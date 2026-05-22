@@ -111,6 +111,12 @@ struct TimelogMacApp: App {
                     NSApp.activate(ignoringOtherApps: true)
                 }
             }
+            CommandGroup(after: .appInfo) {
+                Button(String(localized: "Sync Now")) {
+                    MongoSyncService.shared.triggerSyncNow()
+                }
+                .keyboardShortcut("s", modifiers: .command)
+            }
         }
 
         MenuBarExtra {
