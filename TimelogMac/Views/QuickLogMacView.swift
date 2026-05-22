@@ -102,6 +102,7 @@ struct QuickLogMacView: View {
                                      client: selectedClient, project: selectedProject,
                                      userId: settings.userId))
         }
+        try? context.save()
         dismiss()
     }
 }
