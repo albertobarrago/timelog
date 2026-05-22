@@ -106,6 +106,7 @@ struct QuickLogSheet: View {
             e.notes = notes.isEmpty ? nil : notes
             e.client = selectedClient
             e.project = selectedProject
+            try? context.save()
         } else {
             let e = TimeEntry(
                 date: date, durationMinutes: total,
