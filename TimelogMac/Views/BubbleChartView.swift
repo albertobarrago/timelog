@@ -1,7 +1,7 @@
 import SwiftUI
 import TimelogCore
 
-// MARK: - Period
+// MARK: - Enums
 
 enum BubblePeriod: String, CaseIterable, Identifiable {
     case week    = "Week"
@@ -18,90 +18,15 @@ enum BubblePeriod: String, CaseIterable, Identifiable {
     }
 }
 
-// MARK: - Chart
+enum ChartType: String, CaseIterable, Identifiable {
+    case bubble = "Bubble"
+    case donut  = "Donut"
+    var id: String { rawValue }
 
-struct BubbleChartView: View {
-    let allEntries: [TimeEntry]
-    let selectedDate: Date
-    let period: BubblePeriod
-
-    private let maxDiameter: CGFloat = 110
-    private let minDiameter: CGFloat = 36
-
-    // MARK: Data
-
-    private var periodEntries: [TimeEntry] {
-        let cal = Calendar.current
-        switch period {
-        case .week:
-            guard let start = cal.date(from: cal.dateComponents([.yearForWeekOfYear, .weekOfYear], from: selectedDate)) else { return allEntries }
-            let end = cal.date(byAdding: .day, value: 7, to: start) ?? .distantFuture
-            return allEntries.filter { $0.date >= start && $0.date < end }
-        case .month:
-            let comps = cal.dateComponents([.year, .month], from: selectedDate)
-            guard let start = cal.date(from: comps),
-                  let end = cal.date(byAdding: .month, value: 1, to: start) else { return allEntries }
-            return allEntries.filter { $0.date >= start && $0.date < end }
-        case .allTime:
-            return allEntries
-        }
-    }
-
-    private var bubbles: [ProjectBubble] {
-        var acc: [String: ProjectBubble] = [:]
-        for entry in periodEntries {
-            let key: String = {
-                if let proj = entry.project {
-                    return proj.mongoId ?? "local_\(proj.name)"
-                }
-                return "_none_"
-            }()
-            if acc[key] == nil {
-                acc[key] = ProjectBubble(
-                    id: key,
-                    name: entry.project?.name ?? String(localized: "No project"),
-                    color: entry.client?.color ?? Color.secondary.opacity(0.6),
-                    minutes: 0
-                )
-            }
-            if var b = acc[key] {
-                b.minutes += entry.durationMinutes
-                acc[key] = b
-            }
-        }
-        return acc.values.sorted { $0.minutes > $1.minutes }
-    }
-
-    private var maxMinutes: Int { bubbles.map(\.minutes).max() ?? 1 }
-
-    private func diameter(for b: ProjectBubble) -> CGFloat {
-        let ratio = sqrt(Double(b.minutes) / Double(maxMinutes))
-        return minDiameter + CGFloat(ratio) * (maxDiameter - minDiameter)
-    }
-
-    // MARK: Body
-
-    var body: some View {
-        if bubbles.isEmpty {
-            Text("No entries")
-                .foregroundStyle(.secondary)
-                .frame(maxWidth: .infinity)
-                .padding(.vertical, 20)
-        } else {
-            LazyVGrid(
-                columns: [GridItem(.adaptive(minimum: 90, maximum: 140), spacing: 8)],
-                spacing: 16
-            ) {
-                ForEach(bubbles) { b in
-                    BubbleCellView(
-                        bubble: b,
-                        diameter: diameter(for: b),
-                        cellSize: maxDiameter
-                    )
-                }
-            }
-            .padding(.vertical, 8)
-            .animation(.spring(response: 0.4, dampingFraction: 0.75), value: period)
+    var localizedLabel: String {
+        switch self {
+        case .bubble: return String(localized: "Bubble")
+        case .donut:  return String(localized: "Donut")
         }
     }
 }
@@ -115,12 +40,98 @@ struct ProjectBubble: Identifiable {
     var minutes: Int
 }
 
-// MARK: - Cell
+// MARK: - Bubble Chart
+
+struct BubbleChartView: View {
+    let bubbles: [ProjectBubble]
+
+    private let maxDiameter: CGFloat = 110
+    private let minDiameter: CGFloat = 36
+
+    private var maxMinutes: Int { bubbles.map(\.minutes).max() ?? 1 }
+
+    private func diameter(for b: ProjectBubble) -> CGFloat {
+        let ratio = sqrt(Double(b.minutes) / Double(maxMinutes))
+        return minDiameter + CGFloat(ratio) * (maxDiameter - minDiameter)
+    }
+
+    var body: some View {
+        if bubbles.isEmpty {
+            Text("No entries")
+                .foregroundStyle(.secondary)
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 20)
+        } else {
+            BubbleFlowLayout(spacing: 12) {
+                ForEach(bubbles) { b in
+                    BubbleCellView(bubble: b, diameter: diameter(for: b))
+                }
+            }
+            .padding(.vertical, 8)
+        }
+    }
+}
+
+// MARK: - Flow Layout
+
+private struct BubbleFlowLayout: Layout {
+    var spacing: CGFloat = 12
+
+    func sizeThatFits(proposal: ProposedViewSize, subviews: Subviews, cache: inout Void) -> CGSize {
+        let width = proposal.width ?? 300
+        let rows = computeRows(containerWidth: width, subviews: subviews)
+        guard !rows.isEmpty else { return .zero }
+        let totalHeight = rows.reduce(CGFloat(0)) { h, row in
+            h + (row.map { subviews[$0].sizeThatFits(.unspecified).height }.max() ?? 0)
+        } + CGFloat(max(0, rows.count - 1)) * spacing
+        return CGSize(width: width, height: totalHeight)
+    }
+
+    func placeSubviews(in bounds: CGRect, proposal: ProposedViewSize, subviews: Subviews, cache: inout Void) {
+        let rows = computeRows(containerWidth: bounds.width, subviews: subviews)
+        var y = bounds.minY
+        for row in rows {
+            let rowHeight = row.map { subviews[$0].sizeThatFits(.unspecified).height }.max() ?? 0
+            var rowWidth: CGFloat = 0
+            for (offset, i) in row.enumerated() {
+                rowWidth += subviews[i].sizeThatFits(.unspecified).width + (offset > 0 ? spacing : 0)
+            }
+            var x = bounds.midX - rowWidth / 2
+            for i in row {
+                let size = subviews[i].sizeThatFits(.unspecified)
+                subviews[i].place(
+                    at: CGPoint(x: x, y: y + (rowHeight - size.height) / 2),
+                    proposal: .unspecified
+                )
+                x += size.width + spacing
+            }
+            y += rowHeight + spacing
+        }
+    }
+
+    private func computeRows(containerWidth: CGFloat, subviews: Subviews) -> [[Int]] {
+        var rows: [[Int]] = [[]]
+        var currentWidth: CGFloat = 0
+        for (i, subview) in subviews.enumerated() {
+            let w = subview.sizeThatFits(.unspecified).width
+            let needed = rows.last!.isEmpty ? w : w + spacing
+            if !rows.last!.isEmpty && currentWidth + needed > containerWidth {
+                rows.append([i])
+                currentWidth = w
+            } else {
+                rows[rows.count - 1].append(i)
+                currentWidth += needed
+            }
+        }
+        return rows.filter { !$0.isEmpty }
+    }
+}
+
+// MARK: - Bubble Cell
 
 private struct BubbleCellView: View {
     let bubble: ProjectBubble
     let diameter: CGFloat
-    let cellSize: CGFloat
 
     var body: some View {
         VStack(spacing: 4) {
@@ -133,10 +144,7 @@ private struct BubbleCellView: View {
 
                 if diameter >= 54 {
                     let hours = Double(bubble.minutes) / 60.0
-                    let text = hours >= 10
-                        ? String(format: "%.0fh", hours)
-                        : String(format: "%.1fh", hours)
-                    Text(text)
+                    Text(hours >= 10 ? String(format: "%.0fh", hours) : String(format: "%.1fh", hours))
                         .font(.system(
                             size: max(10, min(diameter * 0.24, 19)),
                             weight: .bold,
@@ -145,14 +153,13 @@ private struct BubbleCellView: View {
                         .foregroundStyle(.white)
                 }
             }
-            .frame(width: cellSize, height: cellSize)
 
             Text(bubble.name)
                 .font(.system(size: 10, weight: .medium))
                 .foregroundStyle(.secondary)
                 .lineLimit(1)
                 .truncationMode(.tail)
-                .frame(maxWidth: cellSize)
+                .frame(width: diameter)
         }
         .accessibilityElement(children: .ignore)
         .accessibilityLabel("\(bubble.name), \(bubble.minutes.formattedDuration)")

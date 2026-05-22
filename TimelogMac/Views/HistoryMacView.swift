@@ -10,6 +10,8 @@ struct HistoryMacView: View {
     @State private var selectedDate = Date()
     @State private var entryToEdit: TimeEntry?
     @State private var bubblePeriod: BubblePeriod = .week
+    @State private var chartType: ChartType = .bubble
+    @State private var isChartExpanded = true
 
     // MARK: - Computed
 
@@ -19,6 +21,48 @@ struct HistoryMacView: View {
 
     private var entries: [TimeEntry] {
         userEntries.filter { Calendar.current.isDate($0.date, inSameDayAs: selectedDate) }
+    }
+
+    // MARK: - Chart data
+
+    private var periodEntries: [TimeEntry] {
+        let cal = Calendar.current
+        switch bubblePeriod {
+        case .week:
+            guard let start = cal.date(from: cal.dateComponents([.yearForWeekOfYear, .weekOfYear], from: selectedDate)) else { return userEntries }
+            let end = cal.date(byAdding: .day, value: 7, to: start) ?? .distantFuture
+            return userEntries.filter { $0.date >= start && $0.date < end }
+        case .month:
+            let comps = cal.dateComponents([.year, .month], from: selectedDate)
+            guard let start = cal.date(from: comps),
+                  let end = cal.date(byAdding: .month, value: 1, to: start) else { return userEntries }
+            return userEntries.filter { $0.date >= start && $0.date < end }
+        case .allTime:
+            return userEntries
+        }
+    }
+
+    private var projectBubbles: [ProjectBubble] {
+        var acc: [String: ProjectBubble] = [:]
+        for entry in periodEntries {
+            let key: String = {
+                if let proj = entry.project { return proj.mongoId ?? "local_\(proj.name)" }
+                return "_none_"
+            }()
+            if acc[key] == nil {
+                acc[key] = ProjectBubble(
+                    id: key,
+                    name: entry.project?.name ?? String(localized: "No project"),
+                    color: entry.client?.color ?? Color.secondary.opacity(0.6),
+                    minutes: 0
+                )
+            }
+            if var b = acc[key] {
+                b.minutes += entry.durationMinutes
+                acc[key] = b
+            }
+        }
+        return acc.values.sorted { $0.minutes > $1.minutes }
     }
 
     private var totalMinutes: Int {
@@ -95,21 +139,39 @@ struct HistoryMacView: View {
             .listRowSeparator(.hidden)
             .listRowBackground(Color.clear)
 
-            // Bubble chart — hours per project for selected period
+            // Accordion: hours per project
             Section {
-                Picker("", selection: $bubblePeriod) {
-                    ForEach(BubblePeriod.allCases) { period in
-                        Text(period.localizedLabel).tag(period)
-                    }
-                }
-                .pickerStyle(.segmented)
-                .labelsHidden()
+                DisclosureGroup(isExpanded: $isChartExpanded) {
+                    HStack(spacing: 8) {
+                        Picker("", selection: $chartType) {
+                            ForEach(ChartType.allCases) { t in
+                                Text(t.localizedLabel).tag(t)
+                            }
+                        }
+                        .pickerStyle(.segmented)
+                        .labelsHidden()
+                        .frame(maxWidth: 140)
 
-                BubbleChartView(
-                    allEntries: userEntries,
-                    selectedDate: selectedDate,
-                    period: bubblePeriod
-                )
+                        Picker("", selection: $bubblePeriod) {
+                            ForEach(BubblePeriod.allCases) { p in
+                                Text(p.localizedLabel).tag(p)
+                            }
+                        }
+                        .pickerStyle(.segmented)
+                        .labelsHidden()
+                    }
+                    .padding(.top, 4)
+
+                    if chartType == .bubble {
+                        BubbleChartView(bubbles: projectBubbles)
+                    } else {
+                        DonutChartView(bubbles: projectBubbles)
+                    }
+                } label: {
+                    Text(String(localized: "Hours by project"))
+                        .font(.caption.weight(.semibold))
+                        .foregroundStyle(.secondary)
+                }
             }
             .listRowSeparator(.hidden)
             .listRowBackground(Color.clear)
