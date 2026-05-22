@@ -46,7 +46,11 @@ struct QuickLogMacView: View {
                         Text("None").tag(Optional<Client>.none)
                         ForEach(clients) { Text($0.name).tag(Optional($0)) }
                     }
-                    .onChange(of: selectedClient) { selectedProject = nil }
+                    .onChange(of: selectedClient) { _, newClient in
+                        if selectedProject?.client?.persistentModelID != newClient?.persistentModelID {
+                            selectedProject = nil
+                        }
+                    }
 
                     if !availableProjects.isEmpty {
                         Divider()
