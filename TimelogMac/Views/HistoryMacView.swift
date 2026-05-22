@@ -9,11 +9,16 @@ struct HistoryMacView: View {
 
     @State private var selectedDate = Date()
     @State private var entryToEdit: TimeEntry?
+    @State private var bubblePeriod: BubblePeriod = .week
 
     // MARK: - Computed
 
+    private var userEntries: [TimeEntry] {
+        allEntries.filter { $0.userId == settings.userId }
+    }
+
     private var entries: [TimeEntry] {
-        allEntries.filter { $0.userId == settings.userId && Calendar.current.isDate($0.date, inSameDayAs: selectedDate) }
+        userEntries.filter { Calendar.current.isDate($0.date, inSameDayAs: selectedDate) }
     }
 
     private var totalMinutes: Int {
@@ -86,6 +91,25 @@ struct HistoryMacView: View {
                     minutesForDay: minutesForDay,
                     maxMinutes: maxWeekMinutes
                 ) { selectedDate = $0 }
+            }
+            .listRowSeparator(.hidden)
+            .listRowBackground(Color.clear)
+
+            // Bubble chart — hours per project for selected period
+            Section {
+                Picker("", selection: $bubblePeriod) {
+                    ForEach(BubblePeriod.allCases) { period in
+                        Text(period.localizedLabel).tag(period)
+                    }
+                }
+                .pickerStyle(.segmented)
+                .labelsHidden()
+
+                BubbleChartView(
+                    allEntries: userEntries,
+                    selectedDate: selectedDate,
+                    period: bubblePeriod
+                )
             }
             .listRowSeparator(.hidden)
             .listRowBackground(Color.clear)
