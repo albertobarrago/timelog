@@ -22,7 +22,7 @@ enum BubblePeriod: String, CaseIterable, Identifiable {
 struct ProjectBubble: Identifiable {
     let id: String
     let name: String
-    let color: Color
+    var color: Color
     var minutes: Int
 }
 

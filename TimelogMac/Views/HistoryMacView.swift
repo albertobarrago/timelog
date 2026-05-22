@@ -43,25 +43,55 @@ struct HistoryMacView: View {
 
     private var projectBubbles: [ProjectBubble] {
         var acc: [String: ProjectBubble] = [:]
+        var clientMap: [String: String] = [:]
+
         for entry in periodEntries {
             let key: String = {
                 if let proj = entry.project { return proj.mongoId ?? "local_\(proj.name)" }
                 return "_none_"
             }()
             if acc[key] == nil {
+                let baseColor: Color = key == "_none_"
+                    ? Color.gray.opacity(0.55)
+                    : (entry.client?.color ?? Color.secondary.opacity(0.6))
                 acc[key] = ProjectBubble(
                     id: key,
                     name: entry.project?.name ?? String(localized: "No project"),
-                    color: entry.client?.color ?? Color.secondary.opacity(0.6),
+                    color: baseColor,
                     minutes: 0
                 )
+                clientMap[key] = entry.client?.mongoId ?? entry.client?.name ?? "_no_client_"
             }
             if var b = acc[key] {
                 b.minutes += entry.durationMinutes
                 acc[key] = b
             }
         }
-        return acc.values.sorted { $0.minutes > $1.minutes }
+
+        var sorted = acc.values.sorted { $0.minutes > $1.minutes }
+
+        var clientIndices: [String: [Int]] = [:]
+        for (i, bubble) in sorted.enumerated() {
+            guard bubble.id != "_none_" else { continue }
+            let clientKey = clientMap[bubble.id] ?? "_no_client_"
+            clientIndices[clientKey, default: []].append(i)
+        }
+        for indices in clientIndices.values where indices.count > 1 {
+            for (pos, idx) in indices.enumerated() {
+                sorted[idx].color = colorVariant(base: sorted[idx].color, index: pos, total: indices.count)
+            }
+        }
+
+        return sorted
+    }
+
+    private func colorVariant(base: Color, index: Int, total: Int) -> Color {
+        guard index > 0, total > 1 else { return base }
+        guard let ns = NSColor(base).usingColorSpace(.sRGB) else { return base }
+        var h: CGFloat = 0, s: CGFloat = 0, b: CGFloat = 0, a: CGFloat = 0
+        ns.getHue(&h, saturation: &s, brightness: &b, alpha: &a)
+        let newH = (h + 25.0 / 360.0 * CGFloat(index)).truncatingRemainder(dividingBy: 1.0)
+        return Color(nsColor: NSColor(hue: newH, saturation: s, brightness: b, alpha: a))
     }
 
     private var totalMinutes: Int {
