@@ -16,6 +16,7 @@ build/
 *.ipa
 *.dSYM.zip
 *.dSYM
+TimelogMac/Localizable.xcstrings
 
 # Swift Package Manager
 .build/

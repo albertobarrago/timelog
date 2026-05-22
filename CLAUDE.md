@@ -46,6 +46,7 @@ TimeLog/
 - `Settings` scene → accessible via `⌘,`
 - Toolbar items in detail views, **not** on the `NavigationSplitView` root
 - `columnVisibility` as `@State` (not `.constant`) to allow sidebar toggle
+- **"About"** always means the native `NSApplication.orderFrontStandardAboutPanel` panel — never an in-app settings view
 
 ## Package TimelogCore
 
@@ -72,6 +73,7 @@ TimeLog/
 - Always reference `modelContext` via `@Environment` — never assume it is in scope
 - When querying related objects from a `@State`-held model, use a separate `@Query` filtered by `persistentModelID` rather than accessing the relationship directly (SwiftData relationships on `@State` objects are not always reactive)
 - Verify multi-platform targeting (iOS + macOS) when creating new Xcode targets or files
+- **SwiftData safety**: always call `try? context.save()` explicitly after mutations; never assume auto-save will fire before app termination or a sync push
 
 ## Git
 
