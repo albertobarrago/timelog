@@ -84,6 +84,7 @@ struct HomeView: View {
                                 .swipeActions(edge: .trailing) {
                                     Button(role: .destructive) {
                                         entry.deletedAt = .now
+                                        try? context.save()
                                     } label: {
                                         Label("Delete", systemImage: "trash")
                                     }

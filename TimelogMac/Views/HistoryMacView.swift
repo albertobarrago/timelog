@@ -224,6 +224,7 @@ struct HistoryMacView: View {
                                     Divider()
                                     Button("Delete", role: .destructive) {
                                         entry.deletedAt = .now
+                                        try? context.save()
                                     }
                                 }
                         }
