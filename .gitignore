@@ -45,5 +45,6 @@ CLAUDE.local.md
 *.p12
 *.mobileprovision
 *.provisionprofile
+.claude
 server/node_modules
 Timelog/SyncConfig.local
