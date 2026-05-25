@@ -37,6 +37,10 @@ struct MenuBarView: View {
                     .environment(settings)
             } else if let session = sessionToStop {
                 StopSessionMacView(session: session, onDismiss: { sessionToStop = nil })
+                    .background(Color(nsColor: .windowBackgroundColor))
+                    .clipShape(RoundedRectangle(cornerRadius: 10))
+                    .overlay(RoundedRectangle(cornerRadius: 10).stroke(Color(nsColor: .separatorColor), lineWidth: 1))
+                    .padding(8)
             } else {
                 // Active sessions
                 if !activeSessions.isEmpty {
@@ -82,7 +86,7 @@ struct MenuBarView: View {
                     .controlSize(.small)
 
                     Button {
-                        if let window = NSApp.windows.first(where: { $0.styleMask.contains(.titled) }) {
+                        if let window = NSApp.windows.first(where: { $0.title == "Timelog" }) {
                             if window.isVisible {
                                 window.orderOut(nil)
                             } else {
