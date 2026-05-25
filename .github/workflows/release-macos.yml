@@ -1,0 +1,56 @@
+name: macOS Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: macos-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Select Xcode
+        run: sudo xcode-select -s /Applications/Xcode_16.app
+
+      - name: Resolve packages
+        run: |
+          xcodebuild -resolvePackageDependencies \
+            -workspace TimeLog.xcworkspace \
+            -scheme TimelogMac
+
+      - name: Archive
+        run: |
+          xcodebuild archive \
+            -workspace TimeLog.xcworkspace \
+            -scheme TimelogMac \
+            -configuration Release \
+            -archivePath build/TimelogMac.xcarchive \
+            CODE_SIGN_IDENTITY="" \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGNING_ALLOWED=NO
+
+      - name: Extract .app
+        run: |
+          APP_PATH=$(find build/TimelogMac.xcarchive/Products -name "*.app" | head -1)
+          cp -R "$APP_PATH" build/Timelog.app
+
+      - name: Create DMG
+        run: |
+          hdiutil create \
+            -volname "Timelog" \
+            -srcfolder build/Timelog.app \
+            -ov \
+            -format UDZO \
+            build/Timelog.dmg
+
+      - name: Publish GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: build/Timelog.dmg
+          generate_release_notes: true
