@@ -69,7 +69,6 @@ struct StopSessionMacView: View {
             }
         }
         .padding()
-        .frame(width: 340)
     }
 
     private func dismissSelf() {
