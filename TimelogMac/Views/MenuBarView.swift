@@ -115,63 +115,79 @@ private struct CompactTimerRow: View {
     @State private var pendingPomodoroEnabled = false
 
     var body: some View {
-        HStack(spacing: 12) {
-            VStack(alignment: .leading, spacing: 1) {
-                Text(vm.pomodoroEnabled ? LocalizedStringKey(vm.phase.label) : "Stopwatch")
-                    .font(.caption2).foregroundStyle(.secondary)
-                Text(vm.displayTime)
-                    .font(.system(size: 22, weight: .light, design: .monospaced))
-                    .monospacedDigit()
-            }
-            Spacer()
-            Toggle(isOn: Binding(
-                get: { vm.pomodoroEnabled },
-                set: { newValue in
-                    if vm.elapsed > 0 || vm.isRunning {
-                        pendingPomodoroEnabled = newValue
-                        showModeChangeConfirm = true
-                    } else {
-                        vm.pomodoroEnabled = newValue
-                        vm.reset()
-                    }
+        VStack(spacing: 6) {
+            HStack(spacing: 12) {
+                VStack(alignment: .leading, spacing: 1) {
+                    Text(vm.pomodoroEnabled ? LocalizedStringKey(vm.phase.label) : "Stopwatch")
+                        .font(.caption2).foregroundStyle(.secondary)
+                    Text(vm.displayTime)
+                        .font(.system(size: 22, weight: .light, design: .monospaced))
+                        .monospacedDigit()
                 }
-            )) {
-                Image(systemName: "timer")
-            }
-            .toggleStyle(.button)
-            .controlSize(.small)
-            .accessibilityLabel(String(localized: "Pomodoro mode"))
+                Spacer()
+                Toggle(isOn: Binding(
+                    get: { vm.pomodoroEnabled },
+                    set: { newValue in
+                        if vm.elapsed > 0 || vm.isRunning {
+                            pendingPomodoroEnabled = newValue
+                            showModeChangeConfirm = true
+                        } else {
+                            vm.pomodoroEnabled = newValue
+                            vm.reset()
+                        }
+                    }
+                )) {
+                    Image(systemName: "timer")
+                }
+                .toggleStyle(.button)
+                .controlSize(.small)
+                .accessibilityLabel(String(localized: "Pomodoro mode"))
 
-            Button { vm.reset() } label: {
-                Image(systemName: "arrow.counterclockwise")
-            }
-            .buttonStyle(.plain)
-            .foregroundStyle(.secondary)
-            .disabled(!vm.isRunning && vm.elapsed == 0)
-            .accessibilityLabel(String(localized: "Reset timer"))
+                Button { vm.reset() } label: {
+                    Image(systemName: "arrow.counterclockwise")
+                }
+                .buttonStyle(.plain)
+                .foregroundStyle(.secondary)
+                .disabled(!vm.isRunning && vm.elapsed == 0)
+                .accessibilityLabel(String(localized: "Reset timer"))
 
-            Button { vm.toggle() } label: {
-                Image(systemName: vm.isRunning ? "pause.circle.fill" : "play.circle.fill")
-                    .font(.title2)
-                    .symbolRenderingMode(.hierarchical)
+                Button { vm.toggle() } label: {
+                    Image(systemName: vm.isRunning ? "pause.circle.fill" : "play.circle.fill")
+                        .font(.title2)
+                        .symbolRenderingMode(.hierarchical)
+                }
+                .buttonStyle(.plain)
+                .keyboardShortcut(.space, modifiers: [])
+                .accessibilityLabel(vm.isRunning ? String(localized: "Pause timer") : String(localized: "Start timer"))
             }
-            .buttonStyle(.plain)
-            .keyboardShortcut(.space, modifiers: [])
-            .accessibilityLabel(vm.isRunning ? String(localized: "Pause timer") : String(localized: "Start timer"))
-        }
-        .confirmationDialog(
-            String(localized: "Switch mode"),
-            isPresented: $showModeChangeConfirm,
-            titleVisibility: .visible
-        ) {
-            Button(String(localized: "Reset and switch"), role: .destructive) {
-                vm.pomodoroEnabled = pendingPomodoroEnabled
-                vm.reset()
+
+            if showModeChangeConfirm {
+                HStack(spacing: 8) {
+                    Text(String(localized: "Timer will be reset."))
+                        .font(.caption2)
+                        .foregroundStyle(.secondary)
+                    Spacer()
+                    Button(String(localized: "Cancel")) {
+                        showModeChangeConfirm = false
+                    }
+                    .controlSize(.small)
+                    Button(String(localized: "Reset & switch")) {
+                        vm.pomodoroEnabled = pendingPomodoroEnabled
+                        vm.reset()
+                        showModeChangeConfirm = false
+                    }
+                    .controlSize(.small)
+                    .buttonStyle(.borderedProminent)
+                    .tint(.red)
+                }
+                .padding(.horizontal, 8)
+                .padding(.vertical, 6)
+                .background(.red.opacity(0.08), in: RoundedRectangle(cornerRadius: 6))
+                .transition(.move(edge: .top).combined(with: .opacity))
+                .accessibilityLabel(String(localized: "Confirm mode switch"))
             }
-            Button(String(localized: "Cancel"), role: .cancel) {}
-        } message: {
-            Text("The current session will be reset.")
         }
+        .animation(.easeInOut(duration: 0.15), value: showModeChangeConfirm)
     }
 }
 

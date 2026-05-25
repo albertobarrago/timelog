@@ -63,9 +63,7 @@ struct StopSessionMacView: View {
                     }
                 Spacer()
                 Button("Cancel") { dismissSelf() }
-                    .keyboardShortcut(.escape)
                 Button("Log Entry") { stop() }
-                    .keyboardShortcut(.return)
                     .buttonStyle(.borderedProminent)
                     .disabled(hours == 0 && minutes == 0)
             }
