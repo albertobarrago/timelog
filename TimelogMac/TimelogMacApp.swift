@@ -50,6 +50,8 @@ final class AppNotificationDelegate: NSObject, UNUserNotificationCenterDelegate 
 }
 
 final class AppDelegate: NSObject, NSApplicationDelegate {
+    static weak var mainWindow: NSWindow?
+
     func applicationShouldTerminate(_ sender: NSApplication) -> NSApplication.TerminateReply {
         let ctx = TimelogMacApp.container.mainContext
         let sessions = (try? ctx.fetch(FetchDescriptor<ActiveSession>())) ?? []

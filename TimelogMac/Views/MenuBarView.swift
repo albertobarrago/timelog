@@ -86,10 +86,13 @@ struct MenuBarView: View {
                     .controlSize(.small)
 
                     Button {
-                        if let window = NSApp.windows.first(where: {
-                            $0.title == "Timelog" && !($0 is NSPanel)
-                        }), window.isVisible {
-                            window.orderOut(nil)
+                        if let window = AppDelegate.mainWindow {
+                            if window.isVisible {
+                                window.orderOut(nil)
+                            } else {
+                                window.makeKeyAndOrderFront(nil)
+                                NSApp.activate(ignoringOtherApps: true)
+                            }
                         } else {
                             openWindow(id: "main")
                             NSApp.activate(ignoringOtherApps: true)
