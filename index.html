@@ -1380,6 +1380,20 @@
             <div class="step-desc">Open Timelog from Applications or Spotlight. The menu bar icon appears immediately — no setup required to start tracking.</div>
           </div>
         </div>
+        <div class="install-step">
+          <div class="step-num" style="background:rgba(191,90,242,0.12); border-color:rgba(191,90,242,0.3); color:var(--accent4);">✦</div>
+          <div class="step-body">
+            <div class="step-title">Optional — Enable MongoDB Sync</div>
+            <div class="step-desc">Create the file below with your MongoDB Atlas connection string. Timelog reads it on first launch and saves it to Keychain — the file is only needed once.</div>
+            <div class="code-block">
+              <span class="code-text">~/.config/timelog/mongo.local</span>
+              <button class="copy-btn" onclick="navigator.clipboard.writeText('~/.config/timelog/mongo.local').then(()=>{this.textContent='Copied!';setTimeout(()=>this.textContent='Copy',1800)})">Copy</button>
+            </div>
+            <div class="step-desc" style="margin-top:10px;">
+              <a href="https://github.com/AlbertoBarrago/Timelog/blob/main/docs/SETUP_SYNC_SERVER.md" target="_blank" rel="noopener" style="color:var(--accent);">Full setup guide →</a>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </section>
