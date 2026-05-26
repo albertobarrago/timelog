@@ -15,9 +15,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Select Xcode
-        run: sudo xcode-select -s /Applications/Xcode_16.app
-
       - name: Resolve packages
         run: |
           xcodebuild -resolvePackageDependencies \
@@ -31,6 +28,7 @@ jobs:
             -scheme TimelogMac \
             -configuration Release \
             -archivePath build/TimelogMac.xcarchive \
+            MACOSX_DEPLOYMENT_TARGET=14.0 \
             CODE_SIGN_IDENTITY="" \
             CODE_SIGNING_REQUIRED=NO \
             CODE_SIGNING_ALLOWED=NO
