@@ -23,6 +23,21 @@ enum SidebarItem: String, CaseIterable, Identifiable {
     }
 }
 
+private struct WindowAccessor: NSViewRepresentable {
+    func makeNSView(context: Context) -> NSView {
+        let view = NSView()
+        DispatchQueue.main.async {
+            AppDelegate.mainWindow = view.window
+        }
+        return view
+    }
+    func updateNSView(_ nsView: NSView, context: Context) {
+        if AppDelegate.mainWindow == nil {
+            AppDelegate.mainWindow = nsView.window
+        }
+    }
+}
+
 struct MainMacView: View {
     @Environment(SettingsStore.self) private var settings
     @State private var selection: SidebarItem = .today
@@ -71,6 +86,7 @@ struct MainMacView: View {
             detailView
         }
         .frame(minWidth: 700, minHeight: 460)
+        .background(WindowAccessor())
         .sheet(isPresented: Binding(
             get: { settings.userId.isEmpty },
             set: { _ in }
