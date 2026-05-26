@@ -589,6 +589,153 @@
       border-radius: 50%;
     }
 
+    /* ── INSTALL ── */
+    .install-card {
+      max-width: 760px;
+      margin: 0 auto;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+    }
+
+    .install-download {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      padding: 32px 40px;
+    }
+
+    .install-icon {
+      font-size: 40px;
+      flex-shrink: 0;
+    }
+
+    .install-meta {
+      flex: 1;
+    }
+
+    .install-name {
+      font-size: 17px;
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+
+    .install-req {
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    .install-divider {
+      height: 1px;
+      background: var(--border);
+      margin: 0 40px;
+    }
+
+    .install-steps {
+      padding: 32px 40px;
+      display: flex;
+      flex-direction: column;
+      gap: 28px;
+    }
+
+    .install-step {
+      display: flex;
+      gap: 18px;
+      align-items: flex-start;
+    }
+
+    .step-num {
+      width: 28px;
+      height: 28px;
+      min-width: 28px;
+      border-radius: 50%;
+      background: rgba(0,113,227,0.15);
+      border: 1px solid rgba(0,113,227,0.3);
+      color: var(--accent);
+      font-size: 13px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-top: 1px;
+    }
+
+    .step-title {
+      font-size: 15px;
+      font-weight: 600;
+      margin-bottom: 6px;
+    }
+
+    .step-desc {
+      font-size: 14px;
+      color: var(--muted);
+      line-height: 1.6;
+    }
+
+    .step-desc code {
+      background: rgba(255,255,255,0.07);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 1px 6px;
+      font-family: "SF Mono", "Fira Code", monospace;
+      font-size: 13px;
+      color: var(--text);
+    }
+
+    .code-block {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: #0d0d0d;
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 10px;
+      padding: 12px 16px;
+      margin-top: 12px;
+      font-family: "SF Mono", "Fira Code", monospace;
+      font-size: 13px;
+    }
+
+    .code-prompt {
+      color: var(--accent2);
+      user-select: none;
+    }
+
+    .code-text {
+      flex: 1;
+      color: #e8e8ed;
+    }
+
+    .copy-btn {
+      background: rgba(255,255,255,0.08);
+      border: 1px solid var(--border);
+      color: var(--muted);
+      border-radius: 6px;
+      padding: 4px 10px;
+      font-size: 11px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background .15s, color .15s;
+      white-space: nowrap;
+      font-family: var(--font);
+    }
+    .copy-btn:hover { background: rgba(255,255,255,0.14); color: var(--text); }
+
+    @media (max-width: 768px) {
+      .install-download {
+        flex-direction: column;
+        align-items: flex-start;
+        padding: 24px 24px 20px;
+        gap: 16px;
+      }
+      .install-download .btn-primary {
+        width: 100%;
+        text-align: center;
+      }
+      .install-divider { margin: 0 24px; }
+      .install-steps { padding: 24px; gap: 22px; }
+    }
+
     /* ── OPEN SOURCE BANNER ── */
     .oss-banner {
       background: linear-gradient(135deg, rgba(0,113,227,0.12) 0%, rgba(48,209,88,0.08) 100%);
@@ -950,6 +1097,7 @@
       <li><a href="#platforms">Platforms</a></li>
       <li><a href="#sync">Sync</a></li>
       <li><a href="#tech">Tech</a></li>
+      <li><a href="#install">Install</a></li>
     </ul>
     <a href="https://github.com/AlbertoBarrago/Timelog" class="gh-btn" target="_blank" rel="noopener">
       <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor">
@@ -1182,6 +1330,57 @@
       <span class="tech-pill"><span class="dot" style="background:#fff"></span>Vercel</span>
       <span class="tech-pill"><span class="dot" style="background:#3178c6"></span>TypeScript</span>
       <span class="tech-pill"><span class="dot" style="background:#f05138"></span>Xcode 16+</span>
+    </div>
+  </section>
+
+  <!-- INSTALL -->
+  <section id="install">
+    <p class="section-eyebrow">Download</p>
+    <h2 class="section-title">Get Timelog for Mac.</h2>
+    <p class="section-sub">Download the latest DMG, drag it to Applications, and you're done. No App Store, no account required.</p>
+
+    <div class="install-card fade-in">
+      <div class="install-download">
+        <div class="install-icon">🖥</div>
+        <div class="install-meta">
+          <div class="install-name">Timelog for macOS</div>
+          <div class="install-req">Requires macOS 14 Sonoma or later · Apple Silicon &amp; Intel</div>
+        </div>
+        <a href="https://github.com/AlbertoBarrago/Timelog/releases/latest" class="btn-primary" target="_blank" rel="noopener">
+          Download DMG
+        </a>
+      </div>
+
+      <div class="install-divider"></div>
+
+      <div class="install-steps">
+        <div class="install-step">
+          <div class="step-num">1</div>
+          <div class="step-body">
+            <div class="step-title">Open the DMG and drag to Applications</div>
+            <div class="step-desc">Double-click the downloaded <code>.dmg</code>, then drag <strong>Timelog.app</strong> into your Applications folder.</div>
+          </div>
+        </div>
+        <div class="install-step">
+          <div class="step-num">2</div>
+          <div class="step-body">
+            <div class="step-title">Remove the quarantine attribute</div>
+            <div class="step-desc">macOS blocks unsigned apps with a misleading "damaged" message. Run this once in Terminal to fix it:</div>
+            <div class="code-block">
+              <span class="code-prompt">$</span>
+              <span class="code-text">xattr -cr /Applications/Timelog.app</span>
+              <button class="copy-btn" onclick="navigator.clipboard.writeText('xattr -cr /Applications/Timelog.app').then(()=>{this.textContent='Copied!';setTimeout(()=>this.textContent='Copy',1800)})">Copy</button>
+            </div>
+          </div>
+        </div>
+        <div class="install-step">
+          <div class="step-num">3</div>
+          <div class="step-body">
+            <div class="step-title">Launch Timelog</div>
+            <div class="step-desc">Open Timelog from Applications or Spotlight. The menu bar icon appears immediately — no setup required to start tracking.</div>
+          </div>
+        </div>
+      </div>
     </div>
   </section>
 
