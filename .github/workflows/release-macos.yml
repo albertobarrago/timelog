@@ -3,9 +3,6 @@ name: macOS Release
 on:
   push:
     branches: [ main ]
-  pull_request:
-    branches: [ main ]
-    types: [ closed ]
   workflow_dispatch:
 
 permissions:
@@ -13,11 +10,10 @@ permissions:
 
 jobs:
   build:
-    if: github.event_name != 'pull_request' || github.event.pull_request.merged == true
     runs-on: macos-latest
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           fetch-depth: 0
 
@@ -101,6 +97,7 @@ jobs:
           gh release create "${{ steps.version.outputs.tag }}" \
             --title "Release ${{ steps.version.outputs.tag }}" \
             --notes-file CHANGELOG.md \
+            --clobber \
             "Timelog-${{ steps.version.outputs.version }}.dmg"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
