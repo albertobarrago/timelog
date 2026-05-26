@@ -94,10 +94,14 @@ jobs:
 
       - name: Create GitHub Release
         run: |
-          gh release create "${{ steps.version.outputs.tag }}" \
-            --title "Release ${{ steps.version.outputs.tag }}" \
-            --notes-file CHANGELOG.md \
-            --clobber \
-            "Timelog-${{ steps.version.outputs.version }}.dmg"
+          TAG="${{ steps.version.outputs.tag }}"
+          if gh release view "$TAG" > /dev/null 2>&1; then
+            echo "Release $TAG already exists, skipping"
+          else
+            gh release create "$TAG" \
+              --title "Release $TAG" \
+              --notes-file CHANGELOG.md \
+              "Timelog-${{ steps.version.outputs.version }}.dmg"
+          fi
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
