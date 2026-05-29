@@ -56,7 +56,10 @@ struct ClientsView: View {
                                 }
                             }
                             .swipeActions(edge: .trailing) {
-                                Button(role: .destructive) { client.deletedAt = .now } label: {
+                                Button(role: .destructive) {
+                                    client.deletedAt = .now
+                                    try? context.save()
+                                } label: {
                                     Label("Delete", systemImage: "trash")
                                 }
                                 Button { activeSheet = .edit(client) } label: {
@@ -66,6 +69,7 @@ struct ClientsView: View {
                             .swipeActions(edge: .leading) {
                                 Button {
                                     client.isArchived.toggle()
+                                    try? context.save()
                                 } label: {
                                     Label(client.isArchived ? "Unarchive" : "Archive",
                                           systemImage: client.isArchived ? "tray.and.arrow.up" : "archivebox")

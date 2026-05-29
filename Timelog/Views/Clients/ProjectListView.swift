@@ -100,7 +100,10 @@ struct ProjectListView: View {
             }
         }
         .swipeActions(edge: .trailing) {
-            Button(role: .destructive) { project.deletedAt = .now } label: {
+            Button(role: .destructive) {
+                project.deletedAt = .now
+                try? context.save()
+            } label: {
                 Label("Delete", systemImage: "trash")
             }
             Button { activeSheet = .edit(project) } label: {
@@ -110,6 +113,7 @@ struct ProjectListView: View {
         .swipeActions(edge: .leading) {
             Button {
                 project.isArchived.toggle()
+                try? context.save()
             } label: {
                 Label(project.isArchived ? "Unarchive" : "Archive",
                       systemImage: project.isArchived ? "tray.and.arrow.up" : "archivebox")
