@@ -11,6 +11,7 @@ struct ClientsMacView: View {
     @State private var selectedClientID: PersistentIdentifier?
     @State private var showingAddClient  = false
     @State private var clientToEdit: Client?
+    @State private var clientToDelete: Client?
     @State private var showArchived      = false
 
     private var visibleClients: [Client] {
@@ -36,10 +37,7 @@ struct ClientsMacView: View {
                             }
                             Divider()
                             Button("Delete", role: .destructive) {
-                                if selectedClientID == client.persistentModelID {
-                                    selectedClientID = nil
-                                }
-                                client.deletedAt = .now
+                                clientToDelete = client
                             }
                         }
                 }
@@ -62,17 +60,38 @@ struct ClientsMacView: View {
                 Button { showingAddClient = true } label: {
                     Label("Add Client", systemImage: "plus")
                 }
-                .help("Add a new client")
+                .help(String(localized: "Add a new client"))
 
                 Button { showArchived.toggle() } label: {
                     Label(showArchived ? "Hide Archived" : "Show Archived",
                           systemImage: showArchived ? "archivebox.fill" : "archivebox")
                 }
-                .help(showArchived ? "Hide archived clients" : "Show archived clients")
+                .help(showArchived ? String(localized: "Hide archived clients") : String(localized: "Show archived clients"))
             }
         }
         .sheet(isPresented: $showingAddClient)  { ClientMacFormView() }
         .sheet(item: $clientToEdit)             { ClientMacFormView(client: $0) }
+        .confirmationDialog(
+            clientToDelete.map { "Delete \"\($0.name)\"?" } ?? "",
+            isPresented: Binding(get: { clientToDelete != nil }, set: { if !$0 { clientToDelete = nil } }),
+            titleVisibility: .visible
+        ) {
+            if let client = clientToDelete {
+                let projectCount = client.projects.filter { $0.deletedAt == nil }.count
+                let minutes = client.projects.flatMap { $0.entries }.reduce(0) { $0 + $1.durationMinutes }
+                let detail = [
+                    projectCount > 0 ? "\(projectCount) project\(projectCount == 1 ? "" : "s")" : nil,
+                    minutes > 0 ? "\(minutes.formattedDuration) of tracked time" : nil
+                ].compactMap { $0 }.joined(separator: " and ")
+                Button("Delete client\(detail.isEmpty ? "" : " and \(detail)")", role: .destructive) {
+                    if selectedClientID == client.persistentModelID { selectedClientID = nil }
+                    client.deletedAt = .now
+                    try? context.save()
+                    clientToDelete = nil
+                }
+            }
+            Button("Cancel", role: .cancel) { clientToDelete = nil }
+        }
         .syncGated(while: $showingAddClient)
         .syncGated(whilePresent: $clientToEdit)
         .onReceive(NotificationCenter.default.publisher(for: MongoSyncService.willWipeDataNotification)) { _ in
@@ -87,6 +106,7 @@ private struct ClientMacRow: View {
     var body: some View {
         HStack(spacing: 8) {
             Circle().fill(client.color).frame(width: 10, height: 10)
+                .accessibilityHidden(true)
             Text(client.name)
                 .foregroundStyle(client.isArchived ? .secondary : .primary)
             Spacer()
@@ -94,6 +114,7 @@ private struct ClientMacRow: View {
                 Image(systemName: "archivebox")
                     .font(.caption2)
                     .foregroundStyle(.tertiary)
+                    .accessibilityLabel(String(localized: "Archived"))
             }
         }
         .padding(.vertical, 2)
@@ -107,17 +128,14 @@ struct ProjectsMacView: View {
 
     @State private var showingAddProject = false
     @State private var projectToEdit: Project?
-    @State private var showArchived      = false
+    @State private var projectToDelete: Project?
     @State private var selectedProjects  = Set<Project.ID>()
 
     @Query(sort: \Project.name) private var allProjects: [Project]
     @Query(sort: \ActiveSession.startDate) private var allSessions: [ActiveSession]
 
     private var visibleProjects: [Project] {
-        allProjects.filter {
-            $0.client?.persistentModelID == client.persistentModelID
-            && (showArchived || !$0.isArchived)
-        }
+        allProjects.filter { $0.client?.persistentModelID == client.persistentModelID && $0.deletedAt == nil }
     }
 
     private var activeSessions: [ActiveSession] {
@@ -129,6 +147,7 @@ struct ProjectsMacView: View {
             Section {
                 HStack(spacing: 8) {
                     Circle().fill(client.color).frame(width: 10, height: 10)
+                        .accessibilityHidden(true)
                     Text(client.name).font(.headline)
                     Spacer()
                 }
@@ -145,6 +164,7 @@ struct ProjectsMacView: View {
                             Image(systemName: "folder")
                                 .font(.system(size: 32))
                                 .foregroundStyle(.secondary)
+                                .accessibilityHidden(true)
                             Text("No projects")
                                 .font(.headline)
                                 .foregroundStyle(.secondary)
@@ -173,12 +193,9 @@ struct ProjectsMacView: View {
                         .accessibilityHint(String(localized: "Click to edit project"))
                         .contextMenu {
                             Button("Edit") { projectToEdit = proj }
-                            Button(proj.isArchived ? "Unarchive" : "Archive") {
-                                proj.isArchived.toggle()
-                            }
                             Divider()
                             Button("Delete", role: .destructive) {
-                                proj.deletedAt = .now
+                                projectToDelete = proj
                             }
                         }
                     }
@@ -191,14 +208,25 @@ struct ProjectsMacView: View {
                 Button { showingAddProject = true } label: {
                     Label("Add Project", systemImage: "folder.badge.plus")
                 }
-                Button { showArchived.toggle() } label: {
-                    Label(showArchived ? "Hide Archived" : "Show Archived",
-                          systemImage: showArchived ? "eye.slash" : "eye")
-                }
             }
         }
         .sheet(isPresented: $showingAddProject) { ProjectMacFormView(client: client) }
         .sheet(item: $projectToEdit)            { ProjectMacFormView(client: client, project: $0) }
+        .confirmationDialog(
+            projectToDelete.map { "Delete \"\($0.name)\"?" } ?? "",
+            isPresented: Binding(get: { projectToDelete != nil }, set: { if !$0 { projectToDelete = nil } }),
+            titleVisibility: .visible
+        ) {
+            if let project = projectToDelete {
+                let minutes = project.entries.reduce(0) { $0 + $1.durationMinutes }
+                Button("Delete project\(minutes > 0 ? " and \(minutes.formattedDuration) of tracked time" : "")", role: .destructive) {
+                    project.deletedAt = .now
+                    try? context.save()
+                    projectToDelete = nil
+                }
+            }
+            Button("Cancel", role: .cancel) { projectToDelete = nil }
+        }
         .syncGated(while: $showingAddProject)
         .syncGated(whilePresent: $projectToEdit)
         .onReceive(NotificationCenter.default.publisher(for: MongoSyncService.willWipeDataNotification)) { _ in
@@ -248,7 +276,6 @@ private struct ProjectMacRow: View {
             VStack(alignment: .leading, spacing: 2) {
                 HStack(spacing: 6) {
                     Text(project.name)
-                        .foregroundStyle(project.isArchived ? .secondary : .primary)
                     if let code = project.code {
                         Text(code)
                             .font(.caption)
@@ -260,19 +287,13 @@ private struct ProjectMacRow: View {
                 }
             }
             Spacer()
-            if project.isArchived {
-                Text("Archived")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-            } else {
-                Button(action: onQuickToggle) {
-                    Image(systemName: isActive ? "stop.circle.fill" : "play.circle")
-                        .foregroundStyle(isActive ? .red : .secondary)
-                }
-                .buttonStyle(.plain)
-                .help(isActive ? String(localized: "Stop session") : String(localized: "Start session"))
-                .accessibilityLabel(isActive ? String(localized: "Stop session") : String(localized: "Start session"))
+            Button(action: onQuickToggle) {
+                Image(systemName: isActive ? "stop.circle.fill" : "play.circle")
+                    .foregroundStyle(isActive ? .red : .secondary)
             }
+            .buttonStyle(.plain)
+            .help(isActive ? String(localized: "Stop session") : String(localized: "Start session"))
+            .accessibilityLabel(isActive ? String(localized: "Stop session") : String(localized: "Start session"))
         }
         .padding(.vertical, 2)
     }

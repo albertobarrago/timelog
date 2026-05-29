@@ -70,6 +70,7 @@ struct TodayMacView: View {
                                 .contentShape(Rectangle())
                                 .onTapGesture { entryToEdit = entry }
                                 .accessibilityAddTraits(.isButton)
+                                .accessibilityLabel(String(localized: "Entry, \(entry.client?.name ?? "No client")"))
                                 .accessibilityHint(String(localized: "Click to edit entry"))
                                 .contextMenu {
                                     Button("Edit") { entryToEdit = entry }
@@ -88,17 +89,17 @@ struct TodayMacView: View {
                 Button { showingHistory = true } label: {
                     Label("History", systemImage: "calendar")
                 }
-                .help("Open history")
+                .help(String(localized: "Open history"))
 
                 Button { showingStartTracking = true } label: {
                     Label("Track", systemImage: "play.circle")
                 }
-                .help("Start a new tracking session")
+                .help(String(localized: "Start a new tracking session"))
 
                 Button { showingQuickLog = true } label: {
                     Label("Log", systemImage: "plus")
                 }
-                .help("Log time manually")
+                .help(String(localized: "Log time manually"))
             }
         }
         .sheet(isPresented: $showingQuickLog)      { QuickLogMacView() }
@@ -132,6 +133,7 @@ struct ActiveSessionMacRow: View {
             RoundedRectangle(cornerRadius: 3)
                 .fill(session.client?.color ?? .accentColor)
                 .frame(width: 4, height: 32)
+                .accessibilityHidden(true)
             VStack(alignment: .leading, spacing: 2) {
                 Text(session.client?.name ?? "No client")
                     .fontWeight(.medium)
@@ -151,7 +153,7 @@ struct ActiveSessionMacRow: View {
                         .imageScale(.large)
                 }
                 .buttonStyle(.plain)
-                .help("Stop and log")
+                .help(String(localized: "Stop and log"))
                 .accessibilityLabel(String(localized: "Stop and log session"))
             } else {
                 Image(systemName: "stop.circle.fill")
@@ -176,6 +178,7 @@ struct EntryMacRow: View {
             RoundedRectangle(cornerRadius: 3)
                 .fill(entry.client?.color ?? Color.secondary.opacity(0.3))
                 .frame(width: 4, height: 32)
+                .accessibilityHidden(true)
             VStack(alignment: .leading, spacing: 2) {
                 Text(entry.client?.name ?? "No client").fontWeight(.medium)
                 if let proj = entry.project {

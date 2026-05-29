@@ -16,7 +16,6 @@ build/
 *.ipa
 *.dSYM.zip
 *.dSYM
-TimelogMac/Localizable.xcstrings
 
 # Swift Package Manager
 .build/
@@ -48,3 +47,4 @@ CLAUDE.local.md
 .claude
 server/node_modules
 Timelog/SyncConfig.local
+.vercel

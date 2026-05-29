@@ -78,9 +78,7 @@ public enum WidgetSnapshotStore {
         guard
             let defaults = UserDefaults(suiteName: appGroupID),
             let data = try? JSONEncoder().encode(snapshot)
-        else {
-            return
-        }
+        else { return }
         defaults.set(data, forKey: snapshotKey)
     }
 }

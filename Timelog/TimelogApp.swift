@@ -39,15 +39,12 @@ private struct RestSyncSetup: ViewModifier {
         guard RestSyncService.shared.isConfigured else { return }
         Task {
             isPulling = true
-            do {
-                try await RestSyncService.shared.pullAll(into: modelContext)
-            } catch {
-                print("RestSync error: \(error.localizedDescription)")
-            }
+            try? await RestSyncService.shared.pullAll(into: modelContext)
             isPulling = false
         }
     }
 }
+
 
 // MARK: - Sync flash overlay
 

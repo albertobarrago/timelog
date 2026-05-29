@@ -1,13 +1,31 @@
 {
   "sourceLanguage": "en",
   "strings": {
-    "": {},
+    "": {
+      "shouldTranslate": false
+    },
+    "  |  ": {
+      "shouldTranslate": false
+    },
+    "0": {
+      "shouldTranslate": false
+    },
     "About": {
       "localizations": {
         "it": {
           "stringUnit": {
             "state": "translated",
             "value": "Informazioni"
+          }
+        }
+      }
+    },
+    "About Timelog": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Informazioni su Timelog"
           }
         }
       }
@@ -27,7 +45,7 @@
         "it": {
           "stringUnit": {
             "state": "translated",
-            "value": "Attivo"
+            "value": "Attive"
           }
         }
       }
@@ -42,7 +60,7 @@
         }
       }
     },
-    "Add client": {
+    "Add Client": {
       "localizations": {
         "it": {
           "stringUnit": {
@@ -52,7 +70,7 @@
         }
       }
     },
-    "Add project": {
+    "Add Project": {
       "localizations": {
         "it": {
           "stringUnit": {
@@ -62,7 +80,29 @@
         }
       }
     },
-    "Alberto Barrago": {},
+    "Add a new client": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aggiungi un nuovo cliente"
+          }
+        }
+      }
+    },
+    "After %lld min": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dopo %lld min"
+          }
+        }
+      }
+    },
+    "Alberto Barrago": {
+      "shouldTranslate": false
+    },
     "Alert when idle": {
       "localizations": {
         "it": {
@@ -73,12 +113,12 @@
         }
       }
     },
-    "All clients are archived": {
+    "All Time": {
       "localizations": {
         "it": {
           "stringUnit": {
             "state": "translated",
-            "value": "Tutti i clienti sono archiviati"
+            "value": "Tutto il tempo"
           }
         }
       }
@@ -113,23 +153,22 @@
         }
       }
     },
+    "Auto-advance: when a phase ends the next one starts automatically, no input needed.": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Avanzamento automatico: quando una fase termina, la successiva parte in automatico, senza input."
+          }
+        }
+      }
+    },
     "Blue": {
       "localizations": {
         "it": {
           "stringUnit": {
             "state": "translated",
             "value": "Blu"
-          }
-        }
-      }
-    },
-    "Break": {
-      "extractionState": "stale",
-      "localizations": {
-        "it": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Pausa"
           }
         }
       }
@@ -154,22 +193,42 @@
         }
       }
     },
+    "Changelog": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Changelog"
+          }
+        }
+      }
+    },
+    "Click to edit entry": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Clicca per modificare la registrazione"
+          }
+        }
+      }
+    },
+    "Click to edit project": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Clicca per modificare il progetto"
+          }
+        }
+      }
+    },
     "Client": {
       "localizations": {
         "it": {
           "stringUnit": {
             "state": "translated",
             "value": "Cliente"
-          }
-        }
-      }
-    },
-    "Client name": {
-      "localizations": {
-        "it": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Nome cliente"
           }
         }
       }
@@ -200,6 +259,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Colore"
+          }
+        }
+      }
+    },
+    "Confirm mode switch": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Conferma cambio modalità"
           }
         }
       }
@@ -274,6 +343,27 @@
         }
       }
     },
+    "Delete \"%@\"?": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Eliminare \"%@\"?"
+          }
+        }
+      }
+    },
+    "Delete Client": {
+      "extractionState": "stale",
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Elimina cliente"
+          }
+        }
+      }
+    },
     "Delete all": {
       "localizations": {
         "it": {
@@ -289,7 +379,7 @@
         "it": {
           "stringUnit": {
             "state": "translated",
-            "value": "Elimina tutte le voci"
+            "value": "Elimina tutte le registrazioni"
           }
         }
       }
@@ -299,7 +389,27 @@
         "it": {
           "stringUnit": {
             "state": "translated",
-            "value": "Eliminare tutte le voci?"
+            "value": "Eliminare tutte le registrazioni?"
+          }
+        }
+      }
+    },
+    "Delete client%@": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Elimina cliente%@"
+          }
+        }
+      }
+    },
+    "Delete project%@": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Elimina progetto%@"
           }
         }
       }
@@ -324,7 +434,18 @@
         }
       }
     },
+    "Discard session?": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Scartare la sessione?"
+          }
+        }
+      }
+    },
     "Done": {
+      "extractionState": "stale",
       "localizations": {
         "it": {
           "stringUnit": {
@@ -369,7 +490,7 @@
         "it": {
           "stringUnit": {
             "state": "translated",
-            "value": "Modifica voce"
+            "value": "Modifica registrazione"
           }
         }
       }
@@ -380,6 +501,26 @@
           "stringUnit": {
             "state": "translated",
             "value": "Modifica progetto"
+          }
+        }
+      }
+    },
+    "Entries": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Registrazioni"
+          }
+        }
+      }
+    },
+    "Entry, %@": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Registrazione, %@"
           }
         }
       }
@@ -404,25 +545,12 @@
         }
       }
     },
-    "F": {
-      "comment": "Day abbreviation - Friday",
-      "extractionState": "stale",
+    "Focus: %lld min": {
       "localizations": {
         "it": {
           "stringUnit": {
             "state": "translated",
-            "value": "Ve"
-          }
-        }
-      }
-    },
-    "Focus": {
-      "extractionState": "stale",
-      "localizations": {
-        "it": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Focus"
+            "value": "Concentrazione: %lld min"
           }
         }
       }
@@ -447,6 +575,26 @@
         }
       }
     },
+    "GitHub": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "GitHub"
+          }
+        }
+      }
+    },
+    "Got it": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Capito"
+          }
+        }
+      }
+    },
     "Gray": {
       "localizations": {
         "it": {
@@ -467,12 +615,33 @@
         }
       }
     },
-    "Hide archived": {
+    "Hide Archived": {
       "localizations": {
         "it": {
           "stringUnit": {
             "state": "translated",
             "value": "Nascondi archiviati"
+          }
+        }
+      }
+    },
+    "Hide archived": {
+      "extractionState": "stale",
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nascondi archiviati"
+          }
+        }
+      }
+    },
+    "Hide archived clients": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nascondi clienti archiviati"
           }
         }
       }
@@ -497,12 +666,12 @@
         }
       }
     },
-    "Hours": {
+    "Hours by project": {
       "localizations": {
         "it": {
           "stringUnit": {
             "state": "translated",
-            "value": "Ore"
+            "value": "Ore per progetto"
           }
         }
       }
@@ -527,6 +696,17 @@
         }
       }
     },
+    "Last sync %@": {
+      "extractionState": "stale",
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ultima sincronizzazione %@"
+          }
+        }
+      }
+    },
     "Light Blue": {
       "localizations": {
         "it": {
@@ -547,28 +727,17 @@
         }
       }
     },
+    "Log Entry": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Salva registrazione"
+          }
+        }
+      }
+    },
     "Log Time": {
-      "localizations": {
-        "it": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Registra ore"
-          }
-        }
-      }
-    },
-    "Log Time Manually": {
-      "extractionState": "stale",
-      "localizations": {
-        "it": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Registra il tempo manualmente"
-          }
-        }
-      }
-    },
-    "Log time": {
       "localizations": {
         "it": {
           "stringUnit": {
@@ -578,19 +747,60 @@
         }
       }
     },
-    "M": {
-      "comment": "Day abbreviation - Monday",
+    "Log time": {
       "extractionState": "stale",
       "localizations": {
         "it": {
           "stringUnit": {
             "state": "translated",
-            "value": "Lu"
+            "value": "Registra tempo"
+          }
+        }
+      }
+    },
+    "Log time manually": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Registra il tempo manualmente"
+          }
+        }
+      }
+    },
+    "Log time manually or start a tracking session.": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Registra il tempo manualmente o avvia una sessione di tracciamento."
+          }
+        }
+      }
+    },
+    "Long break: %lld min": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pausa lunga: %lld min"
+          }
+        }
+      }
+    },
+    "M": {
+      "extractionState": "stale",
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "L"
           }
         }
       }
     },
     "Min": {
+      "extractionState": "stale",
       "localizations": {
         "it": {
           "stringUnit": {
@@ -600,8 +810,17 @@
         }
       }
     },
+    "Minutes": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Minuti"
+          }
+        }
+      }
+    },
     "Mode": {
-      "extractionState": "stale",
       "localizations": {
         "it": {
           "stringUnit": {
@@ -621,36 +840,32 @@
         }
       }
     },
-    "N": {
-      "comment": "Day abbreviation - Sunday (Su)",
-      "extractionState": "stale",
+    "MongoDB Sync": {
       "localizations": {
         "it": {
           "stringUnit": {
             "state": "translated",
-            "value": "Do"
+            "value": "Sincronizzazione MongoDB"
+          }
+        }
+      }
+    },
+    "Month": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mese"
           }
         }
       }
     },
     "Name": {
-      "extractionState": "stale",
       "localizations": {
         "it": {
           "stringUnit": {
             "state": "translated",
             "value": "Nome"
-          }
-        }
-      }
-    },
-    "Never Forget to Log": {
-      "extractionState": "stale",
-      "localizations": {
-        "it": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Non dimenticare di registrare"
           }
         }
       }
@@ -685,12 +900,12 @@
         }
       }
     },
-    "Next": {
+    "Next day": {
       "localizations": {
         "it": {
           "stringUnit": {
             "state": "translated",
-            "value": "Avanti"
+            "value": "Giorno successivo"
           }
         }
       }
@@ -705,17 +920,18 @@
         }
       }
     },
-    "No active clients": {
+    "No active sessions on this Mac": {
       "localizations": {
         "it": {
           "stringUnit": {
             "state": "translated",
-            "value": "Nessun cliente attivo"
+            "value": "Nessuna sessione attiva su questo Mac"
           }
         }
       }
     },
-    "No clients": {
+    "No client": {
+      "extractionState": "stale",
       "localizations": {
         "it": {
           "stringUnit": {
@@ -730,7 +946,7 @@
         "it": {
           "stringUnit": {
             "state": "translated",
-            "value": "Nessuna voce"
+            "value": "Nessuna registrazione"
           }
         }
       }
@@ -740,7 +956,17 @@
         "it": {
           "stringUnit": {
             "state": "translated",
-            "value": "Nessuna voce oggi"
+            "value": "Nessuna registrazione oggi"
+          }
+        }
+      }
+    },
+    "No project": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nessun progetto"
           }
         }
       }
@@ -765,6 +991,17 @@
         }
       }
     },
+    "Not connected": {
+      "extractionState": "stale",
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Non connesso"
+          }
+        }
+      }
+    },
     "Notes": {
       "localizations": {
         "it": {
@@ -780,7 +1017,27 @@
         "it": {
           "stringUnit": {
             "state": "translated",
-            "value": "Notifica se ancora aperta alle"
+            "value": "Avvisa se ancora aperta alle"
+          }
+        }
+      }
+    },
+    "Open history": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Apri cronologia"
+          }
+        }
+      }
+    },
+    "Open session": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sessione aperta"
           }
         }
       }
@@ -806,7 +1063,6 @@
       }
     },
     "Pause": {
-      "extractionState": "stale",
       "localizations": {
         "it": {
           "stringUnit": {
@@ -822,6 +1078,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Metti in pausa il timer"
+          }
+        }
+      }
+    },
+    "Paused": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "In pausa"
           }
         }
       }
@@ -866,6 +1132,26 @@
         }
       }
     },
+    "Press ⌘S to sync changes immediately.": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Premi ⌘S per sincronizzare le modifiche immediatamente."
+          }
+        }
+      }
+    },
+    "Previous day": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Giorno precedente"
+          }
+        }
+      }
+    },
     "Project": {
       "localizations": {
         "it": {
@@ -876,22 +1162,22 @@
         }
       }
     },
-    "Project name": {
-      "localizations": {
-        "it": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Nome progetto"
-          }
-        }
-      }
-    },
     "Purple": {
       "localizations": {
         "it": {
           "stringUnit": {
             "state": "translated",
             "value": "Viola"
+          }
+        }
+      }
+    },
+    "Quit Anyway": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Chiudi comunque"
           }
         }
       }
@@ -916,13 +1202,52 @@
         }
       }
     },
+    "Remove %@": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Rimuovi %@"
+          }
+        }
+      }
+    },
     "Reset": {
-      "extractionState": "stale",
       "localizations": {
         "it": {
           "stringUnit": {
             "state": "translated",
             "value": "Reimposta"
+          }
+        }
+      }
+    },
+    "Reset & Pull": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reimposta e scarica"
+          }
+        }
+      }
+    },
+    "Reset & Pull wipes local data and re-downloads everything from MongoDB.": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reimposta e scarica cancella i dati locali e riscarica tutto da MongoDB."
+          }
+        }
+      }
+    },
+    "Reset & switch": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reimposta e cambia"
           }
         }
       }
@@ -948,7 +1273,6 @@
       }
     },
     "Running": {
-      "extractionState": "stale",
       "localizations": {
         "it": {
           "stringUnit": {
@@ -959,7 +1283,6 @@
       }
     },
     "Sa": {
-      "comment": "Day abbreviation - Saturday (same in IT)",
       "extractionState": "stale",
       "localizations": {
         "it": {
@@ -990,23 +1313,33 @@
         }
       }
     },
-    "Session": {
+    "Select a client": {
       "localizations": {
         "it": {
           "stringUnit": {
             "state": "translated",
-            "value": "Sessione"
+            "value": "Seleziona un cliente"
           }
         }
       }
     },
-    "Set a daily reminder in Settings to nudge yourself at the end of the day. Sessions left open past your end-of-day time get an automatic alert too.": {
+    "Sends a notification if a session is still running at this time, or if you have no active session after the idle threshold.": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Invia una notifica se una sessione è ancora in esecuzione a quest'ora, o se non hai sessioni attive dopo la soglia di inattività."
+          }
+        }
+      }
+    },
+    "Session": {
       "extractionState": "stale",
       "localizations": {
         "it": {
           "stringUnit": {
             "state": "translated",
-            "value": "Imposta un promemoria giornaliero nelle Impostazioni. Le sessioni aperte oltre il tuo orario di lavoro ricevono un avviso automatico."
+            "value": "Sessione"
           }
         }
       }
@@ -1021,29 +1354,17 @@
         }
       }
     },
-    "Share this app with your team and start tracking. You can reopen this guide anytime from Settings.": {
-      "extractionState": "stale",
+    "Short break: %lld min": {
       "localizations": {
         "it": {
           "stringUnit": {
             "state": "translated",
-            "value": "Condividi questa app con il tuo team e inizia a tracciare. Puoi riaprire la guida in qualsiasi momento dalle Impostazioni."
+            "value": "Pausa breve: %lld min"
           }
         }
       }
     },
-    "Short Break": {
-      "extractionState": "stale",
-      "localizations": {
-        "it": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Pausa breve"
-          }
-        }
-      }
-    },
-    "Show archived": {
+    "Show Archived": {
       "localizations": {
         "it": {
           "stringUnit": {
@@ -1053,12 +1374,34 @@
         }
       }
     },
-    "Show guide again": {
+    "Show archived": {
+      "extractionState": "stale",
       "localizations": {
         "it": {
           "stringUnit": {
             "state": "translated",
-            "value": "Mostra guida di nuovo"
+            "value": "Mostra archiviati"
+          }
+        }
+      }
+    },
+    "Show archived clients": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mostra clienti archiviati"
+          }
+        }
+      }
+    },
+    "Show guide again": {
+      "extractionState": "stale",
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mostra la guida di nuovo"
           }
         }
       }
@@ -1073,12 +1416,12 @@
         }
       }
     },
-    "Skip": {
+    "Show/hide Timelog window": {
       "localizations": {
         "it": {
           "stringUnit": {
             "state": "translated",
-            "value": "Salta"
+            "value": "Mostra/nascondi la finestra di Timelog"
           }
         }
       }
@@ -1103,6 +1446,16 @@
         }
       }
     },
+    "Sound effects: plays a chime at each phase transition.": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Effetti sonori: suona un segnale acustico ad ogni transizione di fase."
+          }
+        }
+      }
+    },
     "Start": {
       "localizations": {
         "it": {
@@ -1123,6 +1476,16 @@
         }
       }
     },
+    "Start a new tracking session": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Avvia una nuova sessione di tracciamento"
+          }
+        }
+      }
+    },
     "Start session": {
       "localizations": {
         "it": {
@@ -1138,17 +1501,7 @@
         "it": {
           "stringUnit": {
             "state": "translated",
-            "value": "Avvia il timer"
-          }
-        }
-      }
-    },
-    "Start tracking": {
-      "localizations": {
-        "it": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Avvia tracciamento"
+            "value": "Avvia timer"
           }
         }
       }
@@ -1163,13 +1516,12 @@
         }
       }
     },
-    "Stop": {
-      "extractionState": "stale",
+    "Stop & Log": {
       "localizations": {
         "it": {
           "stringUnit": {
             "state": "translated",
-            "value": "Ferma"
+            "value": "Ferma e registra"
           }
         }
       }
@@ -1184,6 +1536,26 @@
         }
       }
     },
+    "Stop and log": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ferma e registra"
+          }
+        }
+      }
+    },
+    "Stop and log session": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ferma e registra la sessione"
+          }
+        }
+      }
+    },
     "Stop session": {
       "localizations": {
         "it": {
@@ -1194,8 +1566,17 @@
         }
       }
     },
+    "Stopwatch": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cronometro"
+          }
+        }
+      }
+    },
     "Su": {
-      "comment": "Day abbreviation - Sunday",
       "extractionState": "stale",
       "localizations": {
         "it": {
@@ -1227,6 +1608,7 @@
       }
     },
     "Sync": {
+      "extractionState": "stale",
       "localizations": {
         "it": {
           "stringUnit": {
@@ -1247,83 +1629,12 @@
       }
     },
     "Syncing…": {
+      "extractionState": "stale",
       "localizations": {
         "it": {
           "stringUnit": {
             "state": "translated",
             "value": "Sincronizzazione in corso…"
-          }
-        }
-      }
-    },
-    "Tap + in Today to add a time entry. Pick client, project, duration — done.": {
-      "extractionState": "stale",
-      "localizations": {
-        "it": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Premi + in Oggi per aggiungere una voce. Scegli cliente, progetto, durata — fatto."
-          }
-        }
-      }
-    },
-    "Tap + to add a project": {
-      "localizations": {
-        "it": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Premi + per aggiungere un progetto"
-          }
-        }
-      }
-    },
-    "Tap + to add your first client": {
-      "localizations": {
-        "it": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Premi + per aggiungere il tuo primo cliente"
-          }
-        }
-      }
-    },
-    "Tap + to log time or ▶ to start tracking": {
-      "localizations": {
-        "it": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Premi + per registrare o ▶ per avviare il tracciamento"
-          }
-        }
-      }
-    },
-    "Tap to edit": {
-      "localizations": {
-        "it": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Tocca per modificare"
-          }
-        }
-      }
-    },
-    "Tap to stop session": {
-      "localizations": {
-        "it": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Tocca per fermare la sessione"
-          }
-        }
-      }
-    },
-    "Tap ▶ to start a session when you begin working. Stop it when you're done — duration is logged automatically. You can run multiple sessions at once.": {
-      "extractionState": "stale",
-      "localizations": {
-        "it": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Premi ▶ per avviare una sessione quando inizi a lavorare. Fermala quando hai finito — la durata viene registrata automaticamente. Puoi avere più sessioni contemporaneamente."
           }
         }
       }
@@ -1339,7 +1650,6 @@
       }
     },
     "Th": {
-      "comment": "Day abbreviation - Thursday",
       "extractionState": "stale",
       "localizations": {
         "it": {
@@ -1360,13 +1670,12 @@
         }
       }
     },
-    "The simple way to track your team's time. No complexity, just results.": {
-      "extractionState": "stale",
+    "The tracked time will be lost.": {
       "localizations": {
         "it": {
           "stringUnit": {
             "state": "translated",
-            "value": "Il modo più semplice per tracciare il tempo del tuo team. Senza complessità, solo risultati."
+            "value": "Il tempo tracciato andrà perso."
           }
         }
       }
@@ -1376,7 +1685,7 @@
         "it": {
           "stringUnit": {
             "state": "translated",
-            "value": "Questa azione eliminerà definitivamente tutte le voci e le sessioni attive. Non può essere annullata."
+            "value": "Questa azione eliminerà definitivamente tutte le registrazioni e le sessioni attive. Non può essere annullata."
           }
         }
       }
@@ -1396,7 +1705,7 @@
         "it": {
           "stringUnit": {
             "state": "translated",
-            "value": "Ora"
+            "value": "Orario"
           }
         }
       }
@@ -1441,12 +1750,32 @@
         }
       }
     },
+    "Timer will be reset.": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Il timer verrà reimpostato."
+          }
+        }
+      }
+    },
     "Today": {
       "localizations": {
         "it": {
           "stringUnit": {
             "state": "translated",
             "value": "Oggi"
+          }
+        }
+      }
+    },
+    "Toggle Timelog window": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mostra/nascondi finestra Timelog"
           }
         }
       }
@@ -1462,7 +1791,6 @@
       }
     },
     "Track": {
-      "extractionState": "stale",
       "localizations": {
         "it": {
           "stringUnit": {
@@ -1472,29 +1800,27 @@
         }
       }
     },
-    "Track in Real Time": {
-      "extractionState": "stale",
+    "Track elapsed time without a fixed interval.": {
       "localizations": {
         "it": {
           "stringUnit": {
             "state": "translated",
-            "value": "Traccia in tempo reale"
+            "value": "Traccia il tempo trascorso senza intervallo fisso."
           }
         }
       }
     },
-    "Track your time.": {
+    "Tracking session in progress": {
       "localizations": {
         "it": {
           "stringUnit": {
             "state": "translated",
-            "value": "Traccia il tuo tempo."
+            "value": "Sessione di tracking in corso"
           }
         }
       }
     },
     "Tu": {
-      "comment": "Day abbreviation - Tuesday",
       "extractionState": "stale",
       "localizations": {
         "it": {
@@ -1545,14 +1871,39 @@
         }
       }
     },
+    "Version %@ (%@)": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Version %1$@ (%2$@)"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Versione %@ (%@)"
+          }
+        }
+      }
+    },
     "W": {
-      "comment": "Day abbreviation - Wednesday",
       "extractionState": "stale",
       "localizations": {
         "it": {
           "stringUnit": {
             "state": "translated",
             "value": "Me"
+          }
+        }
+      }
+    },
+    "Website": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sito web"
           }
         }
       }
@@ -1567,13 +1918,12 @@
         }
       }
     },
-    "Welcome to Timelog": {
-      "extractionState": "stale",
+    "Week": {
       "localizations": {
         "it": {
           "stringUnit": {
             "state": "translated",
-            "value": "Benvenuto in Timelog"
+            "value": "Settimana"
           }
         }
       }
@@ -1598,17 +1948,6 @@
         }
       }
     },
-    "Work": {
-      "extractionState": "stale",
-      "localizations": {
-        "it": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Lavoro"
-          }
-        }
-      }
-    },
     "Yellow": {
       "localizations": {
         "it": {
@@ -1619,23 +1958,56 @@
         }
       }
     },
-    "You'll receive a notification if a session is still running at this time, or if you have no active session after the idle threshold.": {
+    "Your nickname identifies your data.\nEach teammate uses their own.": {
       "localizations": {
         "it": {
           "stringUnit": {
             "state": "translated",
-            "value": "Riceverai una notifica se una sessione è ancora in esecuzione a quest'ora, o se non hai sessioni attive dopo la soglia di inattività."
+            "value": "Il tuo nickname identifica i tuoi dati.\nOgni membro del team usa il proprio."
           }
         }
       }
     },
-    "You're All Set!": {
-      "extractionState": "stale",
+    "h": {
+      "shouldTranslate": false
+    },
+    "m": {
+      "shouldTranslate": false
+    },
+    "quit_anyway_sessions_warning %lld": {
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "You have 1 active session. Quit anyway?"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "You have %lld active sessions. Quit anyway?"
+                }
+              }
+            }
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ci sono %lld sessioni attive. Chiudere comunque?"
+          }
+        }
+      }
+    },
+    "total": {
       "localizations": {
         "it": {
           "stringUnit": {
             "state": "translated",
-            "value": "Sei pronto!"
+            "value": "totale"
           }
         }
       }

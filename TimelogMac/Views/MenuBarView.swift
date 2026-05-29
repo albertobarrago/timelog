@@ -102,7 +102,7 @@ struct MenuBarView: View {
                     }
                     .buttonStyle(.bordered)
                     .controlSize(.small)
-                    .help("Show/hide Timelog window")
+                    .help(String(localized: "Show/hide Timelog window"))
                     .accessibilityLabel(String(localized: "Toggle Timelog window"))
                 }
                 .padding(.horizontal, 12)
@@ -214,6 +214,7 @@ private struct MenuSessionRow: View {
             RoundedRectangle(cornerRadius: 2)
                 .fill(session.client?.color ?? .accentColor)
                 .frame(width: 3, height: 30)
+                .accessibilityHidden(true)
             VStack(alignment: .leading, spacing: 1) {
                 Text(session.client?.name ?? "No client")
                     .font(.caption.weight(.semibold)).lineLimit(1)
@@ -229,7 +230,7 @@ private struct MenuSessionRow: View {
                 Image(systemName: "stop.circle.fill").foregroundStyle(.red)
             }
             .buttonStyle(.plain)
-            .help("Stop and log")
+            .help(String(localized: "Stop and log"))
             .accessibilityLabel(String(localized: "Stop and log session"))
         }
         .padding(.horizontal, 12)

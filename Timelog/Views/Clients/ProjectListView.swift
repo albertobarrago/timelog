@@ -22,12 +22,10 @@ struct ProjectListView: View {
     @Query(sort: \Project.name) private var allProjects: [Project]
     @Query(sort: \ActiveSession.startDate) private var allSessions: [ActiveSession]
     @State private var activeSheet: ProjectSheet?
+    @State private var projectToDelete: Project?
 
-    private var activeProjects: [Project] {
-        allProjects.filter { $0.client?.persistentModelID == client.persistentModelID && !$0.isArchived }
-    }
-    private var archivedProjects: [Project] {
-        allProjects.filter { $0.client?.persistentModelID == client.persistentModelID && $0.isArchived }
+    private var projects: [Project] {
+        allProjects.filter { $0.client?.persistentModelID == client.persistentModelID && $0.deletedAt == nil }
     }
     private var activeSessions: [ActiveSession] {
         allSessions.filter { $0.userId == settings.userId }
@@ -35,23 +33,29 @@ struct ProjectListView: View {
 
     var body: some View {
         List {
-            if activeProjects.isEmpty && archivedProjects.isEmpty {
+            if projects.isEmpty {
                 ContentUnavailableView("No projects", systemImage: "folder",
                     description: Text("Tap + to add a project"))
-            }
-
-            if !activeProjects.isEmpty {
-                Section("Active") {
-                    ForEach(activeProjects, content: projectRow)
-                }
-            }
-            if !archivedProjects.isEmpty {
-                Section("Archived") {
-                    ForEach(archivedProjects, content: projectRow)
-                }
+            } else {
+                ForEach(projects, content: projectRow)
             }
         }
         .navigationTitle(client.name)
+        .confirmationDialog(
+            projectToDelete.map { "Delete \"\($0.name)\"?" } ?? "",
+            isPresented: Binding(get: { projectToDelete != nil }, set: { if !$0 { projectToDelete = nil } }),
+            titleVisibility: .visible
+        ) {
+            if let project = projectToDelete {
+                let minutes = project.entries.reduce(0) { $0 + $1.durationMinutes }
+                Button("Delete project\(minutes > 0 ? " and \(minutes.formattedDuration) of tracked time" : "")", role: .destructive) {
+                    project.deletedAt = .now
+                    try? context.save()
+                    projectToDelete = nil
+                }
+            }
+            Button("Cancel", role: .cancel) { projectToDelete = nil }
+        }
         .toolbar {
             ToolbarItem(placement: .primaryAction) {
                 Button { activeSheet = .add } label: { Image(systemName: "plus") }
@@ -82,43 +86,30 @@ struct ProjectListView: View {
                     .background(.secondary.opacity(0.15), in: Capsule())
             }
             Spacer()
-            if !project.isArchived {
-                Button {
-                    if isActive {
-                        autoStop(activeSessions.filter { $0.project?.persistentModelID == project.persistentModelID })
-                    } else {
-                        autoStop(activeSessions)
-                        quickStart(project: project)
-                    }
-                } label: {
-                    Image(systemName: isActive ? "stop.circle.fill" : "play.circle")
-                        .foregroundStyle(isActive ? .red : .secondary)
-                        .imageScale(.large)
+            Button {
+                if isActive {
+                    autoStop(activeSessions.filter { $0.project?.persistentModelID == project.persistentModelID })
+                } else {
+                    autoStop(activeSessions)
+                    quickStart(project: project)
                 }
-                .buttonStyle(.plain)
-                .accessibilityLabel(isActive ? String(localized: "Stop session") : String(localized: "Start session"))
+            } label: {
+                Image(systemName: isActive ? "stop.circle.fill" : "play.circle")
+                    .foregroundStyle(isActive ? .red : .secondary)
+                    .imageScale(.large)
             }
+            .buttonStyle(.plain)
+            .accessibilityLabel(isActive ? String(localized: "Stop session") : String(localized: "Start session"))
         }
         .swipeActions(edge: .trailing) {
             Button(role: .destructive) {
-                project.deletedAt = .now
-                try? context.save()
+                projectToDelete = project
             } label: {
                 Label("Delete", systemImage: "trash")
             }
             Button { activeSheet = .edit(project) } label: {
                 Label("Edit", systemImage: "pencil")
             }
-        }
-        .swipeActions(edge: .leading) {
-            Button {
-                project.isArchived.toggle()
-                try? context.save()
-            } label: {
-                Label(project.isArchived ? "Unarchive" : "Archive",
-                      systemImage: project.isArchived ? "tray.and.arrow.up" : "archivebox")
-            }
-            .tint(.orange)
         }
     }
 
