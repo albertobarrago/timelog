@@ -29,6 +29,12 @@ let package = Package(
             dependencies: ["TimelogCore"],
             path: "Tests/TimelogCoreTests",
             swiftSettings: [.swiftLanguageMode(.v5)]
+        ),
+        .testTarget(
+            name: "TimelogSyncTests",
+            dependencies: ["TimelogSync"],
+            path: "Tests/TimelogSyncTests",
+            swiftSettings: [.swiftLanguageMode(.v5)]
         )
     ]
 )

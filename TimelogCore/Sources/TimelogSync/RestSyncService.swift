@@ -159,19 +159,8 @@ public final class RestSyncService {
         guard let fileURL = Bundle.main.url(forResource: "SyncConfig", withExtension: "local") else { return }
         #endif
         guard let raw = try? String(contentsOf: fileURL, encoding: .utf8) else { return }
-        var serverURL: String?
-        var apiKey: String?
-        for line in raw.components(separatedBy: .newlines) {
-            let parts = line.split(separator: "=", maxSplits: 1).map(String.init)
-            guard parts.count == 2 else { continue }
-            switch parts[0].trimmingCharacters(in: .whitespaces) {
-            case "URL":     serverURL = parts[1].trimmingCharacters(in: .whitespaces)
-            case "API_KEY": apiKey    = parts[1].trimmingCharacters(in: .whitespaces)
-            default: break
-            }
-        }
-        if let u = serverURL, let k = apiKey, !u.isEmpty, !k.isEmpty {
-            saveConfig(serverURL: u, apiKey: k)
+        if let config = RestSyncLocalConfig.parse(raw) {
+            saveConfig(serverURL: config.serverURL, apiKey: config.apiKey)
         }
     }
 
@@ -206,11 +195,7 @@ public final class RestSyncService {
     /// Opens the SSE event stream. Call once on app appear after `userId` is set.
     public func startListening() {
         guard let base = readServerURL(), let apiKey = readApiKey(), !userId.isEmpty else { return }
-        let trimmed = base.trimmingCharacters(in: .init(charactersIn: "/"))
-        guard var comps = URLComponents(string: trimmed) else { return }
-        comps.path = (comps.path.isEmpty ? "" : comps.path) + "/api/events"
-        comps.queryItems = [URLQueryItem(name: "userId", value: userId)]
-        guard let url = comps.url else { return }
+        guard let url = RestSyncEndpoint.eventsURL(base: base, userId: userId) else { return }
         sseClient.onChangeEvent = { [weak self] in self?.handleSSEChange() }
         sseClient.start(url: url, apiKey: apiKey)
     }
@@ -436,17 +421,14 @@ public final class RestSyncService {
 
     private func serverURL(path: String) -> URL? {
         guard let base = readServerURL() else { return nil }
-        return URL(string: base.trimmingCharacters(in: .init(charactersIn: "/")) + path)
+        return RestSyncEndpoint.serverURL(base: base, path: path)
     }
 
     /// `/api/pull` with the current `userId` as a query item so the server can scope
     /// the response per user (defense-in-depth — the client also filters on receipt).
     private func pullURL() -> URL? {
-        guard let base = serverURL(path: "/api/pull") else { return nil }
-        guard !userId.isEmpty,
-              var comps = URLComponents(url: base, resolvingAgainstBaseURL: false) else { return base }
-        comps.queryItems = (comps.queryItems ?? []) + [URLQueryItem(name: "userId", value: userId)]
-        return comps.url ?? base
+        guard let base = readServerURL() else { return nil }
+        return RestSyncEndpoint.pullURL(base: base, userId: userId)
     }
 
     private func get<T: Decodable>(url: URL) async throws -> T {

@@ -5,6 +5,10 @@ import TimelogSync
 import UIKit
 import UserNotifications
 
+private enum TimelogRuntime {
+    static let isUITesting = ProcessInfo.processInfo.arguments.contains("--ui-testing")
+}
+
 private struct RestSyncSetup: ViewModifier {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.scenePhase) private var scenePhase
@@ -39,6 +43,7 @@ private struct RestSyncSetup: ViewModifier {
     }
 
     private func pullLatest() {
+        guard !TimelogRuntime.isUITesting else { return }
         guard RestSyncService.shared.isConfigured, !isPulling else { return }
         isPulling = true
         let ctx = modelContext
@@ -49,6 +54,7 @@ private struct RestSyncSetup: ViewModifier {
     }
 
     private func setup() {
+        guard !TimelogRuntime.isUITesting else { return }
         RestSyncService.shared.userId = settings.userId
         RestSyncService.shared.loadConfigFromFile()
         RestSyncService.shared.storedContext = modelContext
@@ -172,10 +178,20 @@ private struct EndOfDayAlertModifier: ViewModifier {
 
 @main
 struct TimelogApp: App {
-    @State private var settings  = SettingsStore()
-    @State private var timerVM   = TimerViewModel()
-    @State private var showSplash = true
+    @State private var settings: SettingsStore
+    @State private var timerVM: TimerViewModel
+    @State private var showSplash = !TimelogRuntime.isUITesting
     @State private var notificationDelegate = ForegroundNotificationDelegate()
+
+    init() {
+        let defaults = UserDefaults.standard
+        if TimelogRuntime.isUITesting {
+            defaults.set(true, forKey: "onboarding_completed")
+            defaults.set("ui-test", forKey: "user_id")
+        }
+        _settings = State(initialValue: SettingsStore(defaults: defaults))
+        _timerVM = State(initialValue: TimerViewModel())
+    }
 
     var body: some Scene {
         WindowGroup {
@@ -184,8 +200,10 @@ struct TimelogApp: App {
                     .onAppear {
                         UNUserNotificationCenter.current().delegate = notificationDelegate
                         timerVM.applySettings(settings)
-                        NotificationManager.shared.requestPermission()
-                        settings.applyReminders()
+                        if !TimelogRuntime.isUITesting {
+                            NotificationManager.shared.requestPermission()
+                            settings.applyReminders()
+                        }
                     }
                     .modifier(RestSyncSetup())
                     .modifier(SyncFlashOverlay())

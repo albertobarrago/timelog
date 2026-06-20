@@ -8,7 +8,7 @@ This checklist is for the frozen-scope phase. Do not add new product features he
 - [x] iOS Debug build passes on an available simulator.
 - [x] macOS Debug build passes locally.
 - [x] iOS app unit tests pass from `xcodebuild test -only-testing:TimelogTests`.
-- [ ] iOS full test scheme, including UI tests, completes without hanging in Xcode log/coverage finalization.
+- [x] iOS full test scheme, including UI tests, completes without hanging in Xcode log/coverage finalization.
 - [ ] macOS smoke test run completed from a clean install state.
 - [ ] Release configuration builds for iOS and macOS.
 
@@ -27,6 +27,7 @@ This checklist is for the frozen-scope phase. Do not add new product features he
 
 - [x] Mutations call explicit `context.save()` in reviewed primary flows.
 - [ ] Save failures in destructive flows are surfaced instead of silently swallowed.
+- [x] Sync local config parsing and REST/SSE endpoint construction have focused unit tests.
 - [ ] `RestSyncService` has tests for pending push and deferred pull behavior.
 - [ ] `RestSyncService` has tests for orphan session adoption after server-generated IDs.
 - [ ] Pull merge behavior verified with deleted clients, projects, entries, and sessions.

@@ -1,19 +1,19 @@
 # Performance and Stability Baseline
 
 Date: 2026-06-20
-Branch: `audit-performance-stability-docs`
+Branch: `fix/test-scheme-and-sync-coverage`
 Scope: no new product features; this baseline is for performance, stability, clean code, and release readiness.
 
 ## Current Verification
 
 | Check | Command | Result | Notes |
 |-------|---------|--------|-------|
-| Package tests | `cd TimelogCore && swift test` | Pass | 55 Swift Testing tests passed. |
+| Package tests | `cd TimelogCore && swift test` | Pass | 59 Swift Testing tests passed, including focused `TimelogSyncTests` for config parsing and REST/SSE endpoint construction. |
 | iOS unit tests | `xcodebuild test -workspace TimeLog.xcworkspace -scheme Timelog -destination 'platform=iOS Simulator,name=iPhone 17,OS=26.5' -only-testing:TimelogTests` | Pass | App unit test target passed after fixing stale imports and timer phase assumptions. |
 | macOS build | `xcodebuild build -workspace TimeLog.xcworkspace -scheme TimelogMac -destination platform=macOS` | Pass | Debug build succeeded. |
 | iOS build | `xcodebuild build -workspace TimeLog.xcworkspace -scheme Timelog -destination 'platform=iOS Simulator,name=iPhone 17,OS=26.5'` | Pass | Debug simulator build succeeded. |
 | iOS build command sanity | `... name=iPhone 16` | Not reproducible locally | This machine has no `iPhone 16` simulator; use an available destination from `xcodebuild -list`. |
-| Full iOS test scheme | `xcodebuild test ...` | Needs follow-up | Unit tests ran; UI tests launched, but the command hung while Xcode finalized coverage/log records after one unit test failure in the first run. Re-run after UI test plan cleanup. |
+| Full iOS test scheme | `xcodebuild test -workspace TimeLog.xcworkspace -scheme Timelog -destination 'platform=iOS Simulator,name=iPhone 17,OS=26.5'` | Pass | Unit tests and UI tests completed successfully after isolating UI-test launch from sync, notifications, and splash timing. |
 
 ## Profiling Plan
 
@@ -42,13 +42,13 @@ Record each profile on a clean Debug build first, then repeat on Release when th
 - Root `README.md` was stale around sync architecture. It still described macOS as using direct MongoDB/MongoKitten, while the current code and `docs/04-sync.md` use `RestSyncService` plus SSE on both iOS and macOS.
 - UI localization is only partially enforced at source level. Many SwiftUI string literals rely on automatic extraction or existing `.xcstrings`; before App Store submission, run Xcode string catalog validation for both targets and verify missing translations.
 - Many user data mutations use `try? context.save()`. This matches the project rule requiring explicit saves, but swallowed save failures reduce diagnosability. For release hardening, destructive and sync-adjacent writes should surface failures in UI or sync state.
-- iOS app tests had stale scaffolding: one test imported the old `TimeLog2` module, one file missed `Foundation`, and Pomodoro progress tests assumed `.work` despite `TimerViewModel` restoring persisted phase from `UserDefaults`. These are fixed in this branch.
+- iOS app tests had stale scaffolding: one test imported the old `TimeLog2` module, one file missed `Foundation`, and Pomodoro progress tests assumed `.work` despite `TimerViewModel` restoring persisted phase from `UserDefaults`. These are fixed.
 
 ### Low
 
-- The repo has strong package-level coverage for core analytics and model helpers, but no automated sync reconciliation tests for `RestSyncService`.
+- The repo has strong package-level coverage for core analytics and model helpers, plus focused sync support coverage. It still needs automated sync reconciliation tests for `RestSyncService`.
 - The current terminal baseline validates builds and package tests, not runtime UI behavior, memory graph, or energy usage. Instruments traces are still required before calling performance work complete.
-- The full iOS test scheme still needs a clean UI-test run; current reliable command is `-only-testing:TimelogTests`.
+- The full iOS test scheme now completes cleanly on the available `iPhone 17` simulator.
 
 ## Stability Hotspots To Profile First
 
