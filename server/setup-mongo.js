@@ -1,18 +1,18 @@
 // setup-mongo.js — run once to create collections and indexes
 // Usage: mongosh "mongodb+srv://..." /path/to/setup-mongo.js
 
-const db = globalThis.db || db; // mongosh exposes db globally
+const db = globalThis.db; // mongosh exposes db globally
 
 const collections = ["clients", "projects", "time_entries", "active_sessions"];
 
 for (const name of collections) {
-    const existing = db.getCollectionNames();
-    if (!existing.includes(name)) {
-        db.createCollection(name);
-        print(`Created collection: ${name}`);
-    } else {
-        print(`Collection already exists: ${name}`);
-    }
+  const existing = db.getCollectionNames();
+  if (!existing.includes(name)) {
+    db.createCollection(name);
+    print(`Created collection: ${name}`);
+  } else {
+    print(`Collection already exists: ${name}`);
+  }
 }
 
 // clients
