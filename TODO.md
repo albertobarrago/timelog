@@ -18,6 +18,7 @@
 - Update the sync server and DTOs to sync `DayReview`.
 - Add tests for end-of-day closure parsing/migration.
 - Design a lightweight `Appunti di oggi` section connected to day closure.
+- Evaluate an optional voice summary via `say` after closing the off-day modal.
 - Evaluate manual export to macOS Notes after `DayReview` is stable.
 - Keep iOS in maintenance mode: green build, no new features except compatibility.
 
